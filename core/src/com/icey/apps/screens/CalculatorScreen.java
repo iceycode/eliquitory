@@ -60,7 +60,7 @@ import com.icey.apps.utils.CalcUtils;
  *  TODO: fix menu buttons alignments
  *
  * TODO: fix Widgets
- *    TODO:
+ * TODO: specify error (which flavor or percent) in popup
  *
  */
 public class CalculatorScreen implements Screen {
@@ -269,7 +269,7 @@ public class CalculatorScreen implements Screen {
         table.titleTextField.setMessageText(calcUtils.getRecipeName());
         table.amtDesTextField.setMessageText(Double.toString(calcUtils.getAmountDesired()));
         table.strTextField.setMessageText(Double.toString(calcUtils.getStrengthDesired()));
-        table.baseStrTF.setMessageText(Double.toString(calcUtils.getStrengthNic()));
+        table.baseStrTF.setMessageText(Double.toString(calcUtils.getBaseStrength()));
         
         //set up the percent text fields
         Array<Integer> percents = new Array<Integer>();

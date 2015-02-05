@@ -1,4 +1,4 @@
-package com.icey.apps.tests;
+package com.icey.apps.desktop.tests;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.IntMap;

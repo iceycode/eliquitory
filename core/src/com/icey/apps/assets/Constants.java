@@ -14,6 +14,8 @@ public class Constants {
     public static final float SCREEN_WIDTH = 480f;
 
     public static String SAVE_FILE_NAME  = "save.json" ;
+    public static String SAVE_FILE_2 = "assets/save/save.json";
+    public static String SAVE_FILE_2_ENCODED = "assets/save/save_encoded.json";
 
 
     //=====================Menu Constants=====================-
@@ -47,7 +49,7 @@ public class Constants {
 
     public static final String[] DESIRED_PERC_LABELS = {"PG %:", "VG %:", "EtOH/H2O/etc %:"};
     public static final String[] BASE_PERC_LABELS = {"Base PG %:", "Base VG %:", "Base EtOH/H2O/etc %:"};
-    public static final String[] FLAVOR_PERC_LABELS = {"Flavor %: ", "Flavor PG %:", "Flavor VG %:", "Flavor EtOH/H2O/etc %:"};
+    //public static final String[] FLAVOR_PERC_LABELS = {"Flavor %: ", "Flavor PG %:", "Flavor VG %:", "Flavor EtOH/H2O/etc %:"};
     
     //error messages for when calulating
     public static final String ERROR_MAIN = "Error";
@@ -87,7 +89,7 @@ public class Constants {
 
 
     public static Double[] DEFAULT_GOAL_AMOUNTS = {0.0, 0.0, 0.0, 0.0, 0.0}; //default values
-    public static Array<Double> DEFAULT_GOALS_ML = new Array<Double>(DEFAULT_GOAL_AMOUNTS);
+    public static Array<Double> INITLAL_FINAL_MLS = new Array<Double>(DEFAULT_GOAL_AMOUNTS);
 
 
 
@@ -124,7 +126,7 @@ public class Constants {
          */
         public final static Double[][] EXPECTED_FAs = {{15.0, 65.0, 0.0, 10.0, 10.0},{15.0, 60.0, 0.0, 10.0, 10.0, 5.0},
                 {13.5, 56.5, 0.0, 10.0, 10.0, 5.0, 5.0}, {12.0, 58.0, 10.0, 10.0, 10.0},
-                {10.5, 54.5, 0.0, 10.0, 10.0, 5.0},{10.5, 49.5, 0.0, 0.0, 10.0, 10.0, 5.0}};
+                {10.5, 54.5, 10.0, 10.0, 10.0, 5.0},{10.5, 49.5, 10.0, 10.0, 10.0, 5.0, 5.0}};
     }
 
 

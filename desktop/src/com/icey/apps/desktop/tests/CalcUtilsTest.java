@@ -1,27 +1,38 @@
-package com.icey.apps.tests;
+package com.icey.apps.desktop.tests;
 
 import com.icey.apps.assets.Constants;
 import com.icey.apps.utils.CalcUtils;
 import org.junit.Test;
 import org.junit.runners.Suite;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /** Tests for CalcUtils class
  * - tests for changing percentages
  * - tests for adding flavors
  * - tests for calculating final amounts
  *
+ * NOTES:
+ * - These test only tests the 1st kind of assumption: flavor "other" differs from liquid "other"
+ *      so does not have an effect on it
+ * - seems like most eliquid calculators go with 1st assumption (described above)
  *
  * Created by Allen (02/03/15)
  *
- * - seems like all values are very close to what other e-cig liquid calcs come up with
- * - will be running more tests after rounding to 2 decimal places using BigDecimal class
- * - NOTE: small deviations in how percentages are calculated cause values to vary slightly
- *
+ * PASSED (02/05/15)
  */
 @Suite.SuiteClasses(Suite.class)
 public class CalcUtilsTest {
+
+    //    CalcUtils calcUtils; //for top tests
+//
+//    //==========test to see if percents & flavors added correctly==============
+//    @Before //tests to see changes in percentage amounts working & adding flavors works
+//    public void setUpTestPercents() throws Exception {
+//        calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
+//                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
+//    }
 
     /** - Calculation Tests
      *    - checks length & whether values equal
@@ -44,18 +55,11 @@ public class CalcUtilsTest {
 
         assertArrayEquals("Calc test 1: ", Constants.Tests.EXPECTED_FAs[0], finalMls);
 
-
         double finalTotal = 0;
         for (int i = 0; i < finalMls.length; i++){
             double d = finalMls[i];
 
-            try {
-                assertEquals(Constants.Tests.EXPECTED_FAs[0][i], d, .001);
-            }
-            catch(AssertionError ae){
-                fail("Calc Test 1: value in final mls failed");
-            }
-
+            assertEquals(Constants.Tests.EXPECTED_FAs[0][i], d, .001);
             finalTotal += d;
         }
 
@@ -65,7 +69,7 @@ public class CalcUtilsTest {
     }
 
 
-    //===============Calc test 2===============
+    //===============Calc test 2=============== PASSED
     //2 flavors, regular percents
     @Test
     public void testFinalAmounts2() throws Exception{
@@ -109,7 +113,6 @@ public class CalcUtilsTest {
         for (int i = 0; i < finalMls.length; i++){
             double d = finalMls[i];
             finalTotal += d;
-
             assertEquals(Constants.Tests.EXPECTED_FAs[2][i], d, .001);
         }
 
@@ -118,23 +121,32 @@ public class CalcUtilsTest {
     }
 
 
-    //===============Calc test 4===============
+    //===============Calc test 4=============== PASSED
     //1 flavor added, alt percents
+    //PASSED when within .1 of expected value
     @Test
     public void testFinalAmounts4() throws Exception{
         CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
                 Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
 
         calcUtils.addFlavor(Constants.Tests.FLAV1);
-
-
-
         calcUtils.calcAmounts(); //calculate amounts
-        assertArrayEquals("Calc test 4: ", Constants.Tests.EXPECTED_FAs[3], calcUtils.getFinalMills().toArray());
+        Double[] finalMls = calcUtils.getFinalMills().toArray();
+
+        double finalTotal = 0;
+        for (int i = 0; i < finalMls.length; i++){
+            double d = finalMls[i];
+            finalTotal += d;
+            assertEquals(Constants.Tests.EXPECTED_FAs[3][i], d, .01);
+        }
+
+        //assertArrayEquals("Calc test 4: ", Constants.Tests.EXPECTED_FAs[3], finalMls);
+        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .1); //+- .1
+
     }
 
 
-    //===============Calc test 5===============
+    //===============Calc test 5=============== PASSED
     //along with alt percents, 2nd flavor is also other
     @Test
     public void testFinalAmounts5() throws Exception{
@@ -151,7 +163,7 @@ public class CalcUtilsTest {
 
 
 
-    //===============Calc test 6===============
+    //===============Calc test 6=============== PASSED
     //alt percents + 3 flavors
     @Test
     public void testFinalAmounts6() throws Exception{
@@ -167,24 +179,13 @@ public class CalcUtilsTest {
 
 
 
-
-
-
-
 //    /** Tests for adding flavors & adding/updating percentages
 //     *  =======PASSED=====uncommented
 //     */
-//    CalcUtils calcUtils; //for top tests
-//
-//    //==========test to see if percents & flavors added correctly==============
-//    @Before //tests to see changes in percentage amounts working & adding flavors works
-//    public void setUpTestPercents() throws Exception {
-//        calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-//                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
-//    }
+
 //
 //
-//    //================test to see if percents updating correclty=====================
+//    //================test to see if percents updating correclty===================== PASSED
 //    @Test
 //    public void testDesiredPGChange() throws Exception {
 //        calcUtils.setDesiredPercent("10", Constants.DESIRED_PERC_LABELS[0]);

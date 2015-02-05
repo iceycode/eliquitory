@@ -145,7 +145,7 @@ public class CalcTable extends Table{
         baseStrTF = new TextField("", skin, "numTextField");
         baseStrTF.setName("basestrengthTextField");
         baseStrTF.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
-        baseStrTF.setMessageText(Double.toString(calcUtils.getStrengthNic()));
+        baseStrTF.setMessageText(Double.toString(calcUtils.getBaseStrength()));
         baseStrTF.setColor(Color.RED);
         add(new Label("Strength (mg): ", skin)).align(Align.right); //width(120).height(25f).
         add(baseStrTF).width(fieldsWidth).height(fieldsHeight).align(Align.left);

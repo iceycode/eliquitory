@@ -5,6 +5,7 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.*;
 import com.google.gson.Gson;
+import com.icey.apps.data.SaveData;
 import com.icey.apps.data.SaveData.RecipeData;
 import com.icey.apps.data.SaveData.Save;
 import com.icey.apps.data.SaveData.SupplyData;
@@ -28,7 +29,7 @@ public class SaveManager {
     
     private static SaveManager instance;
     
-    private boolean encoded; //default is true
+    private boolean encoded = true; //default is true
     private Save save;
 
     private Preferences userPrefs; //user preferences store basic info (name, email, etc)
@@ -52,13 +53,35 @@ public class SaveManager {
 
     }
 
+    public SaveManager(boolean encoded, boolean json, FileHandle saveFile){
+        this.encoded = encoded;
+        this.json = json;
+
+        this.saveFile = saveFile;
+
+        try{
+            this.save = getSave();
+        }
+        catch(NullPointerException e){
+            this.save = new Save();
+            log("No savefile! Created new Save class" + e.toString());
+        }
+    }
+
     public Save getSave() throws NullPointerException{
         Save save = new Save();
 
         if(saveFile.exists()){
             Json json = new Json();
-            if(encoded) save = json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString()));
-            else save = json.fromJson(Save.class, saveFile.readString());
+            
+            try{
+                if(encoded) save = json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString()));
+                else save = json.fromJson(Save.class, saveFile.readString());
+            }
+            catch(SerializationException se){
+                log("problem with json serialization...class probably changed/moved");
+            }
+
         }
 
         return save;
@@ -116,6 +139,39 @@ public class SaveManager {
         else
             return null;   //this if() avoids an exception, but check for null on load.
     }
+
+    /** gets the recipe data into the CalcUtil class
+     *
+     * @param name
+     */
+    public void getRecipeData(String name, CalcUtils calcUtils){
+
+        try {
+            SaveData.RecipeData data = (SaveData.RecipeData) loadRecipeData(name);
+            calcUtils.setRecipeName(data.recipeName);
+            calcUtils.setAmountDesired(data.amountDesired);
+            calcUtils.setStrengthDesired(data.strengthDesired);
+            calcUtils.setDesiredPercents(data.desiredPercents);
+
+            //Base
+            calcUtils.setBase(data.base);
+
+            //base strengths
+            calcUtils.setBaseStrength(data.strengthNic);
+            calcUtils.setBasePercents(data.basePercents);
+
+            //flavors
+            calcUtils.setFlavors(data.flavors);
+
+            calcUtils.setFinalMills(data.finalMills); //final amounts
+
+            calcUtils.loaded = true; //calcUtils now loaded with values
+        }
+        catch (NullPointerException e){
+            log("All values from SaveData not there!" + e.toString());
+        }
+    }
+
     
     @SuppressWarnings("unchecked")
     public Object loadSupplyData(int key){
@@ -216,7 +272,7 @@ public class SaveManager {
     }
 
 
-    private void log(String message){
+    private static void log(String message){
         System.out.println("SaveManager LOG: " + message);
     }
 }

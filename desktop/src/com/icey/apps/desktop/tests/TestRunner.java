@@ -1,4 +1,4 @@
-package com.icey.apps.tests;
+package com.icey.apps.desktop.tests;
 
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;

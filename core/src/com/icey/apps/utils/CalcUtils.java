@@ -16,6 +16,20 @@ import java.math.RoundingMode;
 
 /** Records user input, calculates and saves data relating to recipe
  * - also recieves supply info, updates it & sends it back to supply util class
+ * - instead of using EtOH/H2O/etc I used "other" to refer to those liquids
+ *      - otherFlavor is a flavor consisting of that
+ *
+ * Calculation Notes:
+ * - remember to use doubleValue() method for Double, or else will not calculate correct values
+ * - round the numbers using BigDecimal class (using Rounding.HALF_DOWN)
+ * - flavors percentage & base percentage will always use same desired amount
+ * - liquid supplies are effected by how much flavor & base is used
+ *
+ * 2 kinds of assumptions about the data can be made which effect final results:
+ *  1) If flavor "other" is also the same as "EtOH/H2O/etc" for regular liquid, then
+ *          it will effect the final amount of "EtOH/H2O/etc" that liquid uses
+ *  2) Flavor "other" is different from liquid "EtOH/H2O/etc" so has no effect on it
+ * TODO: figure out what kind of assumption to make about flavor "other" liquid
  *
  * Created by Allen on 1/14/15.
  *
@@ -26,7 +40,7 @@ public class CalcUtils {
 
     String recipeName; //recipe name
     
-    double strengthNic; //base strength
+    double baseStrength; //base strength
     double amountDesired; //final desired amount
     double strengthDesired; //final strength
     
@@ -57,15 +71,17 @@ public class CalcUtils {
             base = SupplyUtils.getSupplyUtils().getBase();
             supplies = SupplyUtils.getSupplyUtils().getSupplies();
 
-            strengthNic = base.getBaseStrength();
+            baseStrength = base.getBaseStrength();
             basePercents = base.getBasePercents();
         }
         else{
-            strengthNic = base.getBaseStrength(); //strength of nicotine default
+            base = Constants.DEFAULT_BASE;
+            
+            baseStrength = base.getBaseStrength(); //strength of nicotine default
             basePercents = base.getBasePercents();
         }
 
-        finalMills = Constants.DEFAULT_GOALS_ML;
+        finalMills = Constants.INITLAL_FINAL_MLS;
     }
 
     //constructor for testing purposes
@@ -76,7 +92,7 @@ public class CalcUtils {
 
         this.base = base;
         this.basePercents = base.getBasePercents();
-        this.strengthNic = base.getBaseStrength();
+        this.baseStrength = base.getBaseStrength();
 
         flavors = new Array<Flavor>();
         numFlavors = 0;
@@ -110,7 +126,6 @@ public class CalcUtils {
     }
 
 
-    //TODO: figure out whether to use Array for just 2 values
     public void setBasePercent(String chars, String fieldName){
         int percent = Integer.parseInt(chars);
         int change = 100 - percent; //- basePercents.get(2)
@@ -163,7 +178,7 @@ public class CalcUtils {
         }
         else{
             basePercents.set(0, change);
-            CalcTable.instance.percentTextFields.get(4).setText(Double.toString(change));
+            CalcTable.instance.percentTextFields.get(3).setText(Double.toString(change));
         }
     }
 
@@ -174,28 +189,38 @@ public class CalcUtils {
         }
         else{
             basePercents.set(1, change);
-            CalcTable.instance.percentTextFields.get(5).setText(Double.toString(change));
+            CalcTable.instance.percentTextFields.get(4).setText(Double.toString(change));
         }
     }
 
-    //NOTE: remember to use doubleValue() method for Double, or else will not calculate correct values
-    //also, make sure to round final amounts
+
+
+    /** This calc method is the second kind of assupmtion: flavor "other" is unique,
+     * - does not effect liquid "other"
+     *
+     */
     public void calcAmounts(){
+        log("desired percents = " + desiredPercents.toString(", DP= "));
+        log("base percents = " + basePercents.toString());
+
+        double tempAmt = amountDesired; //so that flavor/base %s not skewed by change if other
+        double otherAmt = (desiredPercents.get(2).doubleValue()/100) * amountDesired; //amt of "other" based on %
+
         //set the base first, since it is requierd to be specific to nicotine amount
-        double baseAmt = base.getRecipeAmount(amountDesired, strengthDesired);
+        double baseAmt = base.getRecipeAmount(tempAmt, strengthDesired);
         finalMills.set(3, baseAmt);
 
-        //set the flavors next, since also need to recalculate
+        //set the flavors next, since need to take into account flavor type of "other"
         for (int i = 0; i < flavors.size; i++){
             Flavor f = flavors.get(i);
-            finalMills.set(i + 4, f.calcRecipeAmount(amountDesired));
-            f.recalcAmount(finalMills); //only recalculates amount needed in liquids
+            finalMills.set(i + 4, f.calcRecipeAmount(tempAmt));
+            amountDesired = f.recalcAmount(amountDesired, finalMills);
         }
 
-        //need to recalculate PG/VG ratios only if != 0; could be negative value
-        if (desiredPercents.get(2).intValue() != 0) {
-            finalMills.set(2, (desiredPercents.get(2).doubleValue()/100) * amountDesired); //set other amount
-            amountDesired -= Math.abs(finalMills.get(2).doubleValue()); //subtract from amount desired
+        //"other" of liquid also effects amountDesired like "other" of flavor
+        if (desiredPercents.get(2).intValue() > 0) {
+            finalMills.set(2, otherAmt - finalMills.get(2)); //set other amount, take into account flavor "other" set
+            amountDesired -= finalMills.get(2).doubleValue(); //subtract from amount desired
         }
 
 
@@ -206,12 +231,61 @@ public class CalcUtils {
         }
 
         base.recalcLiquidAmts(finalMills); //recalculate with base percents & amount
+        roundAllFinalAmounts();
     }
 
 
+    /** This calc method is the 1st kind of assumption: flavor "other" is same as liquid "EtOH/H2O/etc"
+     *  - so this changes final amount of "other" (EtOH/H2O/etc) of liquid (aka supply)
+     *
+     */
+    public void calcAmounts_Alt(){
+        double tempAmt = amountDesired; //so that flavor/base %s not skewed by change if other
+        double otherAmt = (desiredPercents.get(2).doubleValue()/100) * amountDesired; //amt of "other" based on %
 
-    //rounds down all values by half-decimal place, so that values equals desired amount
-    public double rounded(Double value){
+        //set the base first, since it is requierd to be specific to nicotine amount
+        double baseAmt = base.getRecipeAmount(tempAmt, strengthDesired);
+        finalMills.set(3, baseAmt);
+
+        //set the flavors next, since need to calculate "other" & take into account flavor type of "other"
+        for (int i = 0; i < flavors.size; i++){
+            Flavor f = flavors.get(i);
+            finalMills.set(i + 4, f.calcRecipeAmount(tempAmt));
+            amountDesired = f.recalcAmount_Alt(amountDesired, finalMills, otherAmt);
+        }
+
+        //set "other" only if it was not already covered by flavor "other"
+        if (otherAmt >= finalMills.get(2).doubleValue()) {
+            finalMills.set(2, otherAmt - finalMills.get(2)); //set other amount, take into account flavor "other" set
+            amountDesired -= finalMills.get(2).doubleValue(); //subtract from amount desired
+        }
+
+
+        //now, after taking into acount other liquids, calculate PG & VG amounts
+        for (int i = 0; i < 2; i++){
+            double liqAmt = amountDesired*(desiredPercents.get(i).doubleValue()/100);
+            finalMills.set(i, finalMills.get(i).doubleValue() + liqAmt); //need to add to previous amt as it may be altered
+        }
+
+        base.recalcLiquidAmts(finalMills); //recalculate with base percents & amount
+        roundAllFinalAmounts();
+    }
+
+    //rounds all values
+    public void roundAllFinalAmounts(){
+        //rounds all values to 1 decimal place
+        for (int i = 0; i < finalMills.size; i++){
+            finalMills.set(i, round(finalMills.get(i)));
+            log(" i : " + Integer.toString(i) + ", amt = " + finalMills.get(i).toString());
+        }
+    }
+
+    /**rounds down all values by half-decimal place, so that values equals desired amount
+     *
+     * @param value
+     * @return returns value that rounds 2nd decimal place to 1st (ie 2.12 ~2.1; 2.55 ~2.5; 2.46 ~2.5
+     */
+    public double round(Double value){
         //in setScale, first parameter is places to round to
         double d = new BigDecimal(value.doubleValue()).setScale(2, RoundingMode.HALF_DOWN).doubleValue();
         return d;
@@ -255,6 +329,7 @@ public class CalcUtils {
     
     public void addFlavor(Flavor flavor){
         flavors.add(flavor);
+
         numFlavors = flavors.size;
 
         finalMills.add(0.0); //add entry into finalMills
@@ -277,7 +352,7 @@ public class CalcUtils {
         try {
             SaveData.RecipeData recipeData = new SaveData.RecipeData();
 
-            recipeData.base = new Base(strengthNic, basePercents);
+            recipeData.base = new Base(baseStrength, basePercents);
 
             recipeData.recipeName = this.recipeName;
 
@@ -300,7 +375,7 @@ public class CalcUtils {
     public boolean loaded;
     public void loadData(String name, boolean encoded){
         log("Data loading...");
-        
+//        MainApp.saveManager.getRecipeData(name, this);
         try {
             SaveData.RecipeData data = (SaveData.RecipeData) MainApp.saveManager.loadRecipeData(name);
             recipeName = data.recipeName;
@@ -312,7 +387,7 @@ public class CalcUtils {
             base = data.base;
 
             //base strengths
-            strengthNic = data.strengthNic;
+            baseStrength = data.strengthNic;
             basePercents = data.basePercents;
 
             //flavors
@@ -353,8 +428,8 @@ public class CalcUtils {
         return recipeTitles;
     }
 
-    public void setStrengthNic(double strengthNic) {
-        this.strengthNic = strengthNic;
+    public void setBaseStrength(double baseStrength) {
+        this.baseStrength = baseStrength;
     }
 
     public void setStrengthDesired(double strengthDesired) {
@@ -365,14 +440,22 @@ public class CalcUtils {
         this.basePercents = basePercents;
     }
 
+    public void setBase(Base base){
+        this.base = base;
+    }
+
     public void setDesiredPercents(Array<Integer> desiredPercents) {
         this.desiredPercents = desiredPercents;
     }
 
     public void setFlavors(Array<Flavor> flavors){
         this.flavors = flavors;
-        for (int i = 0; i < flavors.size; i++)
+
+        for (int i = 0; i < flavors.size; i++) {
+//            if (flavors.get(i).getType() == 2)
+//                otherFlavors.add(flavors.get(i));
             finalMills.add(0.0);
+        }
     }
 
     public void setFinalMills(Array<Double> finalMills){
@@ -387,8 +470,8 @@ public class CalcUtils {
         return finalMills;
     }
 
-    public double getStrengthNic() {
-        return strengthNic;
+    public double getBaseStrength() {
+        return baseStrength;
     }
 
     public double getAmountDesired() {
@@ -419,6 +502,8 @@ public class CalcUtils {
         flavors.get(index).setName(name);
     }
 
+
+    //logs messages
     private void log(String message){
         System.out.println("CalcUtil LOG: " + message);
     }

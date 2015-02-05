@@ -62,10 +62,30 @@ public class Flavor {
      *
      * @param finalMills : the final calculations
      */
-    public void recalcAmount(Array<Double> finalMills){
-        //TODO:!! need to subract amount from finalMills.get(2) if it is > 0 - RUN TESTS TO SEE IF WORKS
-        double prevAmt = finalMills.get(type).doubleValue();
-        finalMills.set(type, prevAmt - amount);
+    public double recalcAmount(double amountDesired, Array<Double> finalMills ){
+        if (type == 2){
+            amountDesired -= amount;
+        }
+        else{
+            finalMills.set(type, finalMills.get(type).doubleValue() - amount);
+        }
+
+        return amountDesired;
+    }
+
+
+    public double recalcAmount_Alt(double amountDesired, Array<Double> finalMills, double otherAmt){
+        if (type == 2){
+            if (otherAmt >= amount) //only if > 0, then  update
+                finalMills.set(type, otherAmt - amount); //recalculate amount of "other" to be used
+
+            amountDesired -= amount;
+        }
+        else{
+            finalMills.set(type, finalMills.get(type).doubleValue() - amount);
+        }
+
+        return amountDesired;
     }
 
     /** checks to see if flavor values are set as supply
@@ -96,6 +116,9 @@ public class Flavor {
     }
 
     public int getPercent() {
+
+        log("Flavor percent = " + percent);
+
         return percent;
     }
 
@@ -115,5 +138,10 @@ public class Flavor {
 
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+    
+    
+    public void log(String message){
+        System.out.println("Flavor LOG: "+  message);
     }
 }

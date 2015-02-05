@@ -54,20 +54,17 @@ public class Base {
      * @return - updated PG, VG & Other amounts in array
      */
     public void recalcLiquidAmts(Array<Double> finalMills){
-
         for (int i = 0; i < 2; i++){
             double amt = finalMills.get(i).doubleValue() - (amountNeeded*(basePercents.get(i).doubleValue()/100));
             finalMills.set(i, amt);
         }
     }
 
-
     /** checks to see that base is set
      *
      * @return
      */
     public boolean isBaseSet(){
-
         if (!areBasePercentsSet() || baseStrength == -1 || totalAmount == -1)
             return false;
 
