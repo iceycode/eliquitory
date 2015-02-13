@@ -1,6 +1,7 @@
 package com.icey.apps.data;
 
 import com.badlogic.gdx.utils.Array;
+import com.icey.apps.ui.SupplyWindow;
 
 /** The class which stores info about nicotine base solution
  * - stores info about the percentage PG/VG (other - this is rare)
@@ -9,22 +10,19 @@ import com.badlogic.gdx.utils.Array;
  * - calculates the amount needed for recipe
  *      - also returns an array of modified plain PG/VG/Other values
  *
+ * TODO: keep this as subclass of Supply IF it works
+ *
  * Created by Allen on 1/22/15.
  */
-public class Base {
-    
-    public int baseCount; //in case of multiple bases
-    
-    //strength & percents set to default values
-    double baseStrength = -1;
-    Array<Integer> basePercents = new Array<Integer>();
-    
-    double totalAmount = -1; //the amoutn in the supply
-    double amountNeeded = 0; //the amount needed for recipe
+public class Base extends Supply{
 
-    boolean supplied; //the base supply entered by user
-    boolean defaultBase; //default base proided
-    
+//    //strength & percents set to default values
+//    double baseStrength = -1;
+//    Array<Integer> basePercents = new Array<Integer>();
+//
+//    double totalAmount = -1; //the amoutn in the supply
+//    double amountNeeded = 0; //the amount needed for recipe
+
     //no-arg constructor for json reader (default base)
     public Base(){} 
 
@@ -39,6 +37,13 @@ public class Base {
         this.totalAmount = amount;
         this.baseStrength = strength;
         this.basePercents = percents;
+    }
+    
+    //for getting Base from Supply
+    public Base (Supply supply){
+        this.totalAmount = supply.getTotalAmount();
+        this.basePercents = supply.getBasePercents();
+        this.baseStrength = supply.getBaseStrength();
     }
 
     //returns the amount of nicotine base needed
@@ -88,40 +93,56 @@ public class Base {
     }
 
 
-    public double getBaseStrength() {
-        return baseStrength;
-    }
+//    public double getBaseStrength() {
+//        return baseStrength;
+//    }
+//
+//    public void setBaseStrength(double baseStrength) {
+//        this.baseStrength = baseStrength;
+//    }
+//
+//    public double getTotalAmount() {
+//        return totalAmount;
+//    }
+//
+//    public void setTotalAmount(double totalAmount) {
+//        this.totalAmount = totalAmount;
+//    }
+//
+//
+//    public Array<Integer> getBasePercents() {
+//        return basePercents;
+//    }
+//
+//    //sets all the base percents in one shot
+//    public void setBasePercents(Array<Integer> basePercents) {
+//        this.basePercents = basePercents;
+//    }
 
-    public void setBaseStrength(double baseStrength) {
-        this.baseStrength = baseStrength;
-    }
 
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public Array<Integer> getBasePercents() {
-        return basePercents;
-    }
-
-    //sets all the base percents in one shot TODO: get rid of this if not used ever in future
-    public void setBasePercents(Array<Integer> basePercents) {
-        this.basePercents = basePercents;
-    }
-    
+    /** sets the propylene glycol percent
+     * 
+     * @param pgPercent : the pgPercent user entered
+     */
     public void setPgPercent(int pgPercent) {
+        int change = 100 - pgPercent;
         basePercents.set(0, pgPercent);
+        basePercents.set(1, change);
+
+        SupplyWindow.percentTextFields.get(1).setText(Integer.toString(change));
     }
 
+
+    /** sets the vegetable glycerin
+     *
+     * @param vgPercent : vgPercent user entered
+     */
     public void setVgPercent(int vgPercent) {
+        int change = 100 - vgPercent;
         basePercents.set(1, vgPercent);
+        basePercents.set(0, change);
+
+        SupplyWindow.percentTextFields.get(0).setText(Integer.toString(change));
     }
 
-    public void setOtherPercent(int otherPercent) {
-        basePercents.set(2, otherPercent);
-    }
 }

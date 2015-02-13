@@ -1,12 +1,6 @@
 package com.icey.apps.desktop.tests;
 
-import com.icey.apps.assets.Constants;
-import com.icey.apps.utils.CalcUtils;
-import org.junit.Test;
 import org.junit.runners.Suite;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 /** Tests for CalcUtils class
  * - tests for changing percentages
@@ -30,7 +24,7 @@ public class CalcUtilsTest {
 //    //==========test to see if percents & flavors added correctly==============
 //    @Before //tests to see changes in percentage amounts working & adding flavors works
 //    public void setUpTestPercents() throws Exception {
-//        calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
+//        calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
 //                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
 //    }
 
@@ -41,140 +35,140 @@ public class CalcUtilsTest {
      */
     //==============Calc test 1===============  PASSED
     //test calculations, 1 flavor, Regular Desired Percents
-    @Test
-    public void testFinalAmounts1() throws Exception {
-
-
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
-
-        calcUtils.addFlavor(Constants.Tests.FLAV1);
-
-        calcUtils.calcAmounts(); //calculate amounts
-        Double[] finalMls = calcUtils.getFinalMills().toArray();
-
-        assertArrayEquals("Calc test 1: ", Constants.Tests.EXPECTED_FAs[0], finalMls);
-
-        double finalTotal = 0;
-        for (int i = 0; i < finalMls.length; i++){
-            double d = finalMls[i];
-
-            assertEquals(Constants.Tests.EXPECTED_FAs[0][i], d, .001);
-            finalTotal += d;
-        }
-
-
-        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
-
-    }
-
-
-    //===============Calc test 2=============== PASSED
-    //2 flavors, regular percents
-    @Test
-    public void testFinalAmounts2() throws Exception{
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
-
-        calcUtils.addFlavor(Constants.Tests.FLAV1);
-        calcUtils.addFlavor(Constants.Tests.FLAV2);
-
-        calcUtils.calcAmounts(); //calculate amounts
-
-        Double[] finalMls = calcUtils.getFinalMills().toArray();
-        assertArrayEquals("Calc test 2: ", Constants.Tests.EXPECTED_FAs[1], finalMls);
-
-        double finalTotal = 0;
-        for (int i = 0; i < finalMls.length; i++){
-            double d = finalMls[i];
-            finalTotal += d;
-
-            assertEquals(Constants.Tests.EXPECTED_FAs[1][i], d, .001);
-        }
-
-        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
-    }
-
-    //===============Calc test 3=============== PASSED
-    //3 flavors, regular percents
-    @Test
-    public void testFinalAmounts3() throws AssertionError{
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
-
-
-        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
-
-        calcUtils.calcAmounts(); //calculate amounts
-        Double[] finalMls = calcUtils.getFinalMills().toArray();
-
-
-        double finalTotal = 0;
-        for (int i = 0; i < finalMls.length; i++){
-            double d = finalMls[i];
-            finalTotal += d;
-            assertEquals(Constants.Tests.EXPECTED_FAs[2][i], d, .001);
-        }
-
-        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
-        //assertArrayEquals("Calc test 3: ", Constants.Tests.EXPECTED_FAs[2], finalMls);
-    }
-
-
-    //===============Calc test 4=============== PASSED
-    //1 flavor added, alt percents
-    //PASSED when within .1 of expected value
-    @Test
-    public void testFinalAmounts4() throws Exception{
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
-
-        calcUtils.addFlavor(Constants.Tests.FLAV1);
-        calcUtils.calcAmounts(); //calculate amounts
-        Double[] finalMls = calcUtils.getFinalMills().toArray();
-
-        double finalTotal = 0;
-        for (int i = 0; i < finalMls.length; i++){
-            double d = finalMls[i];
-            finalTotal += d;
-            assertEquals(Constants.Tests.EXPECTED_FAs[3][i], d, .01);
-        }
-
-        //assertArrayEquals("Calc test 4: ", Constants.Tests.EXPECTED_FAs[3], finalMls);
-        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .1); //+- .1
-
-    }
-
-
-    //===============Calc test 5=============== PASSED
-    //along with alt percents, 2nd flavor is also other
-    @Test
-    public void testFinalAmounts5() throws Exception{
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
-
-        calcUtils.addFlavor(Constants.Tests.FLAV1);
-        calcUtils.addFlavor(Constants.Tests.FLAV3);
-
-        calcUtils.calcAmounts(); //calculate amounts
-        assertArrayEquals("Calc test 5: ", Constants.Tests.EXPECTED_FAs[4], calcUtils.getFinalMills().toArray());
-
-    }
-
-
-
-    //===============Calc test 6=============== PASSED
-    //alt percents + 3 flavors
-    @Test
-    public void testFinalAmounts6() throws Exception{
-        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.DESIRED_STR,
-                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
-
-        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
-
-        calcUtils.calcAmounts(); //calculate amounts
-        assertArrayEquals("Calc test 6: ", Constants.Tests.EXPECTED_FAs[5], calcUtils.getFinalMills().toArray());
-    }
+//    @Test
+//    public void testFinalAmounts1() throws Exception {
+//
+//
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
+//
+//        calcUtils.addFlavor(Constants.Tests.FLAV1);
+//
+//        calcUtils.calcAmounts(); //calculate amounts
+//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//
+//        assertArrayEquals("Calc test 1: ", Constants.Tests.EXPECTED_FAs[0], finalMls);
+//
+//        double finalTotal = 0;
+//        for (int i = 0; i < finalMls.length; i++){
+//            double d = finalMls[i];
+//
+//            assertEquals(Constants.Tests.EXPECTED_FAs[0][i], d, .001);
+//            finalTotal += d;
+//        }
+//
+//
+//        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
+//
+//    }
+//
+//
+//    //===============Calc test 2=============== PASSED
+//    //2 flavors, regular percents
+//    @Test
+//    public void testFinalAmounts2() throws Exception{
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
+//
+//        calcUtils.addFlavor(Constants.Tests.FLAV1);
+//        calcUtils.addFlavor(Constants.Tests.FLAV2);
+//
+//        calcUtils.calcAmounts(); //calculate amounts
+//
+//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//        assertArrayEquals("Calc test 2: ", Constants.Tests.EXPECTED_FAs[1], finalMls);
+//
+//        double finalTotal = 0;
+//        for (int i = 0; i < finalMls.length; i++){
+//            double d = finalMls[i];
+//            finalTotal += d;
+//
+//            assertEquals(Constants.Tests.EXPECTED_FAs[1][i], d, .001);
+//        }
+//
+//        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
+//    }
+//
+//    //===============Calc test 3=============== PASSED
+//    //3 flavors, regular percents
+//    @Test
+//    public void testFinalAmounts3() throws AssertionError{
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.DESIRED_PERCS);
+//
+//
+//        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
+//
+//        calcUtils.calcAmounts(); //calculate amounts
+//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//
+//
+//        double finalTotal = 0;
+//        for (int i = 0; i < finalMls.length; i++){
+//            double d = finalMls[i];
+//            finalTotal += d;
+//            assertEquals(Constants.Tests.EXPECTED_FAs[2][i], d, .001);
+//        }
+//
+//        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .001); //+- .001
+//        //assertArrayEquals("Calc test 3: ", Constants.Tests.EXPECTED_FAs[2], finalMls);
+//    }
+//
+//
+//    //===============Calc test 4=============== PASSED
+//    //1 flavor added, alt percents
+//    //PASSED when within .1 of expected value
+//    @Test
+//    public void testFinalAmounts4() throws Exception{
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
+//
+//        calcUtils.addFlavor(Constants.Tests.FLAV1);
+//        calcUtils.calcAmounts(); //calculate amounts
+//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//
+//        double finalTotal = 0;
+//        for (int i = 0; i < finalMls.length; i++){
+//            double d = finalMls[i];
+//            finalTotal += d;
+//            assertEquals(Constants.Tests.EXPECTED_FAs[3][i], d, .01);
+//        }
+//
+//        //assertArrayEquals("Calc test 4: ", Constants.Tests.EXPECTED_FAs[3], finalMls);
+//        assertEquals(Constants.Tests.DESIRED_AMT, finalTotal, .1); //+- .1
+//
+//    }
+//
+//
+//    //===============Calc test 5=============== PASSED
+//    //along with alt percents, 2nd flavor is also other
+//    @Test
+//    public void testFinalAmounts5() throws Exception{
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
+//
+//        calcUtils.addFlavor(Constants.Tests.FLAV1);
+//        calcUtils.addFlavor(Constants.Tests.FLAV3);
+//
+//        calcUtils.calcAmounts(); //calculate amounts
+//        assertArrayEquals("Calc test 5: ", Constants.Tests.EXPECTED_FAs[4], calcUtils.getFinalMills().toArray());
+//
+//    }
+//
+//
+//
+//    //===============Calc test 6=============== PASSED
+//    //alt percents + 3 flavors
+//    @Test
+//    public void testFinalAmounts6() throws Exception{
+//        CalcUtils calcUtils = new CalcUtils(Constants.Tests.DESIRED_AMT, Constants.Tests.ZERO_STRENGTH,
+//                Constants.Tests.TEST_BASE, Constants.Tests.ALT_DESIRED_PERCS);
+//
+//        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
+//
+//        calcUtils.calcAmounts(); //calculate amounts
+//        assertArrayEquals("Calc test 6: ", Constants.Tests.EXPECTED_FAs[5], calcUtils.getFinalMills().toArray());
+//    }
 
 
 
@@ -188,14 +182,14 @@ public class CalcUtilsTest {
 //    //================test to see if percents updating correclty===================== PASSED
 //    @Test
 //    public void testDesiredPGChange() throws Exception {
-//        calcUtils.setDesiredPercent("10", Constants.DESIRED_PERC_LABELS[0]);
+//        calcUtils.setPercent("10", Constants.DESIRED_PERC_LABELS[0]);
 //        assertSame("Check to see PG value changed", 10, calcUtils.getDesiredPercents().get(0));
 //        assertSame("Check to see that changing PG changed VG.", 90, calcUtils.getDesiredPercents().get(1));
 //    }
 //
 //    @Test //PASSED
 //    public void testDesiredVGChange() throws Exception{
-//        calcUtils.setDesiredPercent("10", Constants.DESIRED_PERC_LABELS[1]);
+//        calcUtils.setPercent("10", Constants.DESIRED_PERC_LABELS[1]);
 //        assertSame("Check to see VG value changed", 10, calcUtils.getDesiredPercents().get(1));
 //        assertSame("Check to see that changing VG changed PG.", 90, calcUtils.getDesiredPercents().get(0));
 //    }

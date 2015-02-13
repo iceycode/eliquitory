@@ -62,7 +62,7 @@ check-off
   index: -1
 check-on
   rotate: false
-  xy: 2, 2
+  xy: 484, 379
   size: 10, 10
   orig: 10, 10
   offset: 0, 0
@@ -132,7 +132,7 @@ flavorLabelBack
   index: -1
 flavorVKnob
   rotate: false
-  xy: 484, 379
+  xy: 104, 2
   size: 10, 10
   orig: 10, 10
   offset: 0, 0
@@ -170,6 +170,20 @@ saveBtnSmallUp
   xy: 484, 391
   size: 125, 25
   orig: 125, 25
+  offset: 0, 0
+  index: -1
+slider
+  rotate: false
+  xy: 2, 2
+  size: 100, 10
+  orig: 100, 10
+  offset: 0, 0
+  index: -1
+sliderKnob
+  rotate: false
+  xy: 356, 29
+  size: 10, 10
+  orig: 10, 10
   offset: 0, 0
   index: -1
 supplyBtnDown

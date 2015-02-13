@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 
 /** Flavor class - stores flavor info
  *
+ * TODO: consider making this a subclass of Supply
  * Created by Allen on 1/12/15.
  */
 public class Flavor {
@@ -17,10 +18,18 @@ public class Flavor {
 
     //the values for calculating
     private int percent = -1; //percent desired
-    private double amount = -1; //amount needed
+    private double amount = 0; //amount needed
 
     //no-arg constructor for reconstructing flavors from json
-    public Flavor (){};
+    public Flavor (){
+    }
+    
+    public Flavor(Supply supply){
+        this.name = supply.getName();
+        this.totalAmount = supply.getTotalAmount();
+        this.type = supply.getFlavorType();
+        
+    }
     
     //when typing in on Calculator screen
     public Flavor(String name){
@@ -139,9 +148,16 @@ public class Flavor {
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
     }
-    
-    
+
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
+    }
+
     public void log(String message){
-        System.out.println("Flavor LOG: "+  message);
+        System.out.println("Flavor LOG: " + message);
     }
 }

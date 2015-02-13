@@ -2,11 +2,11 @@ package com.icey.apps.utils;
 
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
-import com.icey.apps.data.SaveData;
 import com.icey.apps.data.Supply;
 import com.icey.apps.ui.CalcTable;
 import com.icey.apps.ui.FlavorTable;
@@ -30,6 +30,7 @@ import java.math.RoundingMode;
  *          it will effect the final amount of "EtOH/H2O/etc" that liquid uses
  *  2) Flavor "other" is different from liquid "EtOH/H2O/etc" so has no effect on it
  * TODO: figure out what kind of assumption to make about flavor "other" liquid
+ * TODO: make sure ALL flavor percents are checked to having set type
  *
  * Created by Allen on 1/14/15.
  *
@@ -37,69 +38,55 @@ import java.math.RoundingMode;
 public class CalcUtils {
     
     private static CalcUtils instance;
-
+    
     String recipeName; //recipe name
     
-    double baseStrength; //base strength
     double amountDesired; //final desired amount
     double strengthDesired; //final strength
-    
-    Array<Flavor> flavors; //flavors added
+    Array<Integer> desiredPercents; //desired percents
+
+    Array<Flavor> supplyFlavors; //flavors that are in supply
+    Array<Flavor> flavors; //flavors added in screen
     int numFlavors;
 
-    Array<Supply> supplies; //pg, vg or other
     Base base; //nicotine base supply
-
+    double baseStrength; //base strength
     Array<Integer> basePercents; //base percents
-    Array<Integer> desiredPercents; //desired percents
+    
     Array<Double> finalMills; //all calculated values
+    Array<Double> finalSupplyAmts; //the supply amount after recipe calculated
+    
+    //fields for the supplies
+    SupplyUtils supplyUtils = SupplyUtils.getSupplyUtils();
+    IntMap<Double> supplyAmounts;
+    
+    IntMap<Supply> supplies;
 
+    public boolean flavorSupplied = false;
+    public boolean supplied = false;
+    public boolean updatedSupply = false; //whether supply was updated (for saving)
+    
+    String errorDetail = ""; //details about error, if applicable
 
     public CalcUtils(){
 
         //the default values set when calculator screen first seen
         recipeName = "New Recipe";
-        amountDesired = Constants.DEFAULT_FINAL_AMT; //default ml desired
-        strengthDesired = Constants.DESIRED_STR; //default strength
+        amountDesired = Constants.ZERO_FINAL_AMOUNT; //default ml desired
+        strengthDesired = Constants.ZERO_STRENGTH; //default strength
 
-        desiredPercents = Constants.DEFAULT_DESIRED_PERCENTS;
+        desiredPercents = Constants.ZERO_DESIRED_PERCENTS;
+        basePercents = Constants.ZERO_BASE_PERCENTS;
 
         flavors = new Array<Flavor>();
         numFlavors = 1;
 
-        if (SupplyUtils.getSupplyUtils().supplied){
-            base = SupplyUtils.getSupplyUtils().getBase();
-            supplies = SupplyUtils.getSupplyUtils().getSupplies();
-
-            baseStrength = base.getBaseStrength();
-            basePercents = base.getBasePercents();
-        }
-        else{
-            base = Constants.DEFAULT_BASE;
-            
-            baseStrength = base.getBaseStrength(); //strength of nicotine default
-            basePercents = base.getBasePercents();
-        }
-
         finalMills = Constants.INITLAL_FINAL_MLS;
+        
+        if (supplyUtils.supplied)
+            setSupplies(); //set amounts in the supply & if supplied
     }
 
-    //constructor for testing purposes
-    public CalcUtils(double amountDesired, double desiredStrength, Base base, Array<Integer> desiredPercents){
-        this.amountDesired = amountDesired;
-        this.strengthDesired = desiredStrength;
-        this.desiredPercents = desiredPercents;
-
-        this.base = base;
-        this.basePercents = base.getBasePercents();
-        this.baseStrength = base.getBaseStrength();
-
-        flavors = new Array<Flavor>();
-        numFlavors = 0;
-
-        Double[] finalMls = {0.0, 0.0, 0.0, 0.0};
-        finalMills = new Array<Double>(finalMls);
-    }
     
     public static CalcUtils getCalcUtil(){
         if (instance == null){
@@ -107,30 +94,29 @@ public class CalcUtils {
         }
         return instance;
     }
+
     
-    public void setDesiredPercent(String chars, String type){
-        int percent = Integer.parseInt(chars);
-        int change = 100 - percent;
+    
+    //===========user entries for calculations==============
+    //for any percents that need to be set
+    public void setPercent(int percent, String fieldName){
+
+        int change = 100 - percent; //change in PG or VG
         
-        if (type.equals(Constants.DESIRED_PERC_LABELS[0])){
+        //desired percents are set
+        if (fieldName.equals(Constants.DESIRED_PERC_LABELS[0])){
             desiredPercents.set(0, percent);
             updateVG(change, true);
         }
-        else if (type.equals(Constants.DESIRED_PERC_LABELS[1])){
+        else if (fieldName.equals(Constants.DESIRED_PERC_LABELS[1])){
             desiredPercents.set(1, percent);
             updatePG(change, true);
         }
-        else if (type.equals(Constants.DESIRED_PERC_LABELS[2])){
+        else if (fieldName.equals(Constants.DESIRED_PERC_LABELS[2])){
             desiredPercents.set(2, percent);
         }
-    }
-
-
-    public void setBasePercent(String chars, String fieldName){
-        int percent = Integer.parseInt(chars);
-        int change = 100 - percent; //- basePercents.get(2)
-
-        if (fieldName.equals(Constants.BASE_PERC_LABELS[0])){
+        //base percents set
+        else if (fieldName.equals(Constants.BASE_PERC_LABELS[0])){
             basePercents.set(0, percent);
             updateVG(change, false);
         }
@@ -138,16 +124,52 @@ public class CalcUtils {
             basePercents.set(1, percent);
             updatePG(change, false);
         }
-    }
-
-    public void setFlavorPercent(String chars, int index){
-        int percent = Integer.parseInt(chars);
-        int change = desiredPercents.get(index) - percent;
+        else if (fieldName.equals(Constants.SLIDER_NAMES[0])){
+            desiredPercents.set(0, percent);
+            CalcTable.instance.percentTextFields.get(0).setText(Double.toString(percent));
+            updateVG(change, true);
+        }
+        else if (fieldName.equals(Constants.SLIDER_NAMES[1])){
+            basePercents.set(0, percent);
+            CalcTable.instance.percentTextFields.get(3).setText(Double.toString(percent));
+            updateVG(change, false);
+        }
         
-        if (change > 0)
-            flavors.get(index).setPercent(change);
     }
     
+    
+    //adds a flavor to the supply
+    public void addFlavor(Flavor flavor){
+        flavors.add(flavor);
+
+        numFlavors = flavors.size;
+        finalMills.add(0.0); //add entry into finalMills
+
+        log("Added a new flavor, " + flavor.getName() + "; size of flavors array = " + flavors.size);
+    }
+    
+    
+    public void switchFlavor(int index, Flavor flavor){
+        flavors.set(index, flavor);
+    }
+    
+
+    public void removeFlavor(int index){
+        flavors.removeIndex(index);
+        log("removed flavor; size of array = " + flavors.size);
+    }
+
+
+    //flavor percent
+    public void setFlavorPercent(String chars, int index){
+        int percent = Integer.parseInt(chars);
+
+        if (percent > 0)
+            flavors.get(index).setPercent(percent);
+    }
+    
+    
+    //flavor type
     public void setFlavorType(CheckBox box, int index){
         if (box.getName().contains("PG")){
             flavors.get(index).setType(0);
@@ -155,19 +177,18 @@ public class CalcUtils {
         else if (box.getName().contains("VG")){
             flavors.get(index).setType(1);
         }
-        else{
+        else if (box.getName().contains("EtOH")){
             flavors.get(index).setType(2);
         }
         uncheckBoxes(box, index);
-        //checkFlavorPercent(index, flavors.get(index).getType());
     }
 
-    private void uncheckBoxes(CheckBox box, int key){
+    //uncheck other the other boxes if this one checked
+    protected void uncheckBoxes(CheckBox box, int key){
         for (CheckBox b: FlavorTable.instance.checkBoxMap.get(key)){
             if (!box.equals(b) && b.isChecked())
                 b.setChecked(false);
         }
-
     }
 
 
@@ -193,15 +214,22 @@ public class CalcUtils {
         }
     }
 
-
-
+    
+    //=============CALCULATIONS====================//
     /** This calc method is the second kind of assupmtion: flavor "other" is unique,
      * - does not effect liquid "other"
-     *
+     * TODO: fix flavor percent setting
      */
     public void calcAmounts(){
-        log("desired percents = " + desiredPercents.toString(", DP= "));
-        log("base percents = " + basePercents.toString());
+        
+        //some logs
+        for (Flavor f : flavors){
+            log("flavor percent " + f.getPercent());
+        }
+        log("desired percents = " + desiredPercents.toString() + "\nbase percents = " + basePercents.toString()
+                + "\nbase strength = " + baseStrength + "\ndesired strength = " + strengthDesired 
+                + "\ndesired amount = " + amountDesired );
+        
 
         double tempAmt = amountDesired; //so that flavor/base %s not skewed by change if other
         double otherAmt = (desiredPercents.get(2).doubleValue()/100) * amountDesired; //amt of "other" based on %
@@ -230,8 +258,12 @@ public class CalcUtils {
             finalMills.set(i, finalMills.get(i).doubleValue() + liqAmt); //need to add to previous amt as it may be altered
         }
 
-        base.recalcLiquidAmts(finalMills); //recalculate with base percents & amount
+        //base.recalcLiquidAmts(finalMills); //recalculate with base percents & amount
+        subtractBaseAmounts();
         roundAllFinalAmounts();
+        
+        if (supplied) 
+            updateSupplyAmounts(); //updates the supply amount
     }
 
 
@@ -267,12 +299,23 @@ public class CalcUtils {
             finalMills.set(i, finalMills.get(i).doubleValue() + liqAmt); //need to add to previous amt as it may be altered
         }
 
-        base.recalcLiquidAmts(finalMills); //recalculate with base percents & amount
+        subtractBaseAmounts(); //recalculate with base percents & amount
         roundAllFinalAmounts();
     }
-
+    
+    
+    //subtracts the amount of PG/VG base adds to mix
+    protected void subtractBaseAmounts(){
+        for (int i = 0; i < 2; i++){
+            double baseAmt = finalMills.get(3) * (basePercents.get(i).doubleValue()/100);
+            double amt = finalMills.get(i).doubleValue() - baseAmt;
+            finalMills.set(i, amt);
+        }
+    }
+    
+    
     //rounds all values
-    public void roundAllFinalAmounts(){
+    protected void roundAllFinalAmounts(){
         //rounds all values to 1 decimal place
         for (int i = 0; i < finalMills.size; i++){
             finalMills.set(i, round(finalMills.get(i)));
@@ -285,13 +328,37 @@ public class CalcUtils {
      * @param value
      * @return returns value that rounds 2nd decimal place to 1st (ie 2.12 ~2.1; 2.55 ~2.5; 2.46 ~2.5
      */
-    public double round(Double value){
+    public double round(double value){
         //in setScale, first parameter is places to round to
-        double d = new BigDecimal(value.doubleValue()).setScale(2, RoundingMode.HALF_DOWN).doubleValue();
-        return d;
+        if (value > 0)
+            return new BigDecimal(value).setScale(2, RoundingMode.HALF_DOWN).doubleValue();
+//        double d = Math.round(value.doubleValue());
+        return 0;
     }
 
-
+    
+    //updates supply amounts (only for screen)
+    //stores them as temporary amounts, then if saved, updates supply utils with the amounts
+    public void updateSupplyAmounts(){
+        finalSupplyAmts = new Array<Double>();
+        
+        for (int i = 0; i < finalMills.size; i++){
+            if (supplyAmounts.containsKey(i)){
+                double newAmt = supplyAmounts.get(i) - finalMills.get(i).doubleValue();
+                
+                if (newAmt != supplyAmounts.get(i)){
+                    supplyAmounts.remove(i);
+                    supplyAmounts.put(i, newAmt);
+                    updatedSupply = true;
+                }
+            }
+        }
+        
+        
+    }
+    
+    
+    //===============methods which check to see if user set all values==============
     public boolean areFlavorsSet(){
         for (Flavor f : flavors){
             if (f.isFlavorSet())
@@ -300,6 +367,7 @@ public class CalcUtils {
 
         return true;
     }
+    
     
     public boolean areDesiredAt100(){
         int totalDesired = 0;
@@ -318,7 +386,7 @@ public class CalcUtils {
         int totalBase = 0;
         
         for (Integer i : basePercents){
-            totalBase += i;
+            totalBase += i.intValue();
         }
         
         if (totalBase != 100)
@@ -327,21 +395,14 @@ public class CalcUtils {
         return true;
     }
     
-    public void addFlavor(Flavor flavor){
-        flavors.add(flavor);
-
-        numFlavors = flavors.size;
-
-        finalMills.add(0.0); //add entry into finalMills
-
-        log("Added a new flavor, " + flavor.getName() + "; size of flavors array = " + flavors.size);
+    
+    //returns a detailed error about values not being set
+    public String getError(){
+        return errorDetail;
     }
     
-    public void removeFlavor(int index){
-        flavors.removeIndex(index);
-        log("removed flavor; size of array = " + flavors.size);
-    }
-
+    
+    //returns name of recipe
     public String getRecipeName() {
         return recipeName;
     }
@@ -350,7 +411,7 @@ public class CalcUtils {
     public boolean saved; //whether saved or not
     public void saveData(){
         try {
-            SaveData.RecipeData recipeData = new SaveData.RecipeData();
+            SaveManager.RecipeData recipeData = new SaveManager.RecipeData();
 
             recipeData.base = new Base(baseStrength, basePercents);
 
@@ -377,7 +438,7 @@ public class CalcUtils {
         log("Data loading...");
 //        MainApp.saveManager.getRecipeData(name, this);
         try {
-            SaveData.RecipeData data = (SaveData.RecipeData) MainApp.saveManager.loadRecipeData(name);
+            SaveManager.RecipeData data = (SaveManager.RecipeData) MainApp.saveManager.loadRecipeData(name);
             recipeName = data.recipeName;
             amountDesired = data.amountDesired;
             strengthDesired = data.strengthDesired;
@@ -427,13 +488,50 @@ public class CalcUtils {
         
         return recipeTitles;
     }
+    
+    protected void setSupplies(){
+        supplies = supplyUtils.getSupplyMap();
 
+        base = supplyUtils.getBase();
+        baseStrength = base.getBaseStrength();
+        basePercents = base.getBasePercents();
+            
+        
+        supplyFlavors = supplyUtils.getAllFlavors();
+        if (supplyFlavors.size > 0){
+            flavorSupplied = true;
+        }
+
+        supplyAmounts = supplyUtils.getSupplyAmounts();
+        
+        supplied = true;
+
+//        log("PG amount = " + supplies.get(0).getTotalAmount() + "\nVG amount = " + supplies.get(1).getTotalAmount()
+//                + "\nbase percents = " + basePercents.toString() + "\nbase strength = " + baseStrength
+//                    + "\nOther amount = " + supplies.get(2).getTotalAmount());
+
+    }
+
+    public IntMap<Double> getSupplyAmounts(){
+        return supplyAmounts;
+    }
+
+
+    //==========getters & setters=========
     public void setBaseStrength(double baseStrength) {
         this.baseStrength = baseStrength;
     }
 
+    public double getBaseStrength() {
+        return baseStrength;
+    }
+
     public void setStrengthDesired(double strengthDesired) {
         this.strengthDesired = strengthDesired;
+    }
+
+    public double getStrengthDesired() {
+        return strengthDesired;
     }
 
     public void setBasePercents(Array<Integer> basePercents) {
@@ -465,21 +563,17 @@ public class CalcUtils {
     public Array<Flavor> getFlavors() {
         return flavors;
     }
+    
+    public Array<Flavor> getSupplyFlavors(){
+        return supplyFlavors;
+    }
 
     public Array<Double> getFinalMills() {
         return finalMills;
     }
 
-    public double getBaseStrength() {
-        return baseStrength;
-    }
-
     public double getAmountDesired() {
         return amountDesired;
-    }
-
-    public double getStrengthDesired() {
-        return strengthDesired;
     }
 
     public Array<Integer> getBasePercents() {
@@ -507,70 +601,23 @@ public class CalcUtils {
     private void log(String message){
         System.out.println("CalcUtil LOG: " + message);
     }
+
 }
 
 
-//TODO: get rid of these if not using:
-
-//    /**the difference the base pg/vg makes in the regular PG/VG values
-//     *
-//     */
-//    private void baseDifference(double baseAmt){
-//        for (int i = 0; i < 2; i++){
-//            double amt = amountDesired-(baseAmt*(basePercents.get(i).doubleValue()/100));
-//            finalMills.set(i, rounded(amt));
-//        }
-//    }
+//    //constructor for testing purposes COMMENTED OUT: finished with testing for now
+//    public CalcUtils(double amountDesired, double desiredStrength, Base base, Array<Integer> desiredPercents){
+//        this.amountDesired = amountDesired;
+//        this.strengthDesired = desiredStrength;
+//        this.desiredPercents = desiredPercents;
 //
+//        this.base = base;
+//        this.basePercents = base.getBasePercents();
+//        this.baseStrength = base.getBaseStrength();
 //
-//    /**the difference the flavor pg/vg/other makes in the regular PG/VG/other values
-//     *
-//     * @param type : type of flavor - PG, VG or Other
-//     * @param amount : the amount, so subtract from original amount to calculate true PG/VG ratios
-//     */
-//    private void flavorDifference(int type, double amount){
-//        if (type < 2){
-//            double prevAmt = finalMills.get(type).doubleValue();
-//            finalMills.set(type, rounded(prevAmt - amount));
-//        }
-//        else{
-//            amountDesired -= amount;
-//        }
+//        flavors = new Array<Flavor>();
+//        numFlavors = 0;
 //
-//        amountDesired -= amount;
-//    }
-
-
-//    public void updateBasePG(int change){
-//        basePercents.set(0, basePercents.get(0));
-//        CalcTable.instance.percentTextFields.get(3).setText(Double.toString(change));
-//    }
-//
-//    public void updateBaseVG(int change){
-//        basePercents.set(1, change);
-//        CalcTable.instance.percentTextFields.get(4).setText(Double.toString(change));
-//    }
-//
-//    public void updateBaseOther(int change){
-//        basePercents.set(2, change);
-//        CalcTable.instance.percentTextFields.get(5).setText(Double.toString(change));
-//    }
-
-
-//    private void checkFlavorPercent(int index, int type){
-//        int percent = flavors.get(index).getPercent();
-//        int change = desiredPercents.get(type) - percent;
-//
-//        if (change > 0) {
-//            desiredPercents.set(type, change);
-//            //ensure100(desiredPercents, type, change);
-//        }
-//    }
-//
-//    private void checkFlavorType(int index, int percent){
-//        int type = flavors.get(index).getType();
-//        if (type != -1){
-//            int change = desiredPercents.get(type) - percent;
-//            desiredPercents.set(type, percent);
-//        }
+//        Double[] finalMls = {0.0, 0.0, 0.0, 0.0};
+//        finalMills = new Array<Double>(finalMls);
 //    }

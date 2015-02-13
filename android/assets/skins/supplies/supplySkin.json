@@ -1,14 +1,16 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
     neometric-font: { file: fonts/neometric-med.fnt },
-    default-font: { file: fonts/stencil-med.fnt }
+    default-font: { file: fonts/opensans_bold_med.fnt },
+    light-font: { file: fonts/opensans_light_med.fnt }
   } ,
   com.badlogic.gdx.graphics.Color: {
     green: { a: 1, b: 0, g: 1, r: 0 },
     white: { a: 1, b: 1, g: 1, r: 1 },
     red: { a: 1, b: 0, g: 0, r: 1 },
     black: { a: 1, b: 0, g: 0, r: 0 },
-    grey: { a: 1, b: .5, g: .5, r: .5} //divide by 255 to get the float value
+    grey: { a: 1, b: .5, g: .5, r: .5}, //divide by 255 to get the float value
+    blue : { a: .8, b: 1, g: 0, r : 0}
   },
 
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
@@ -28,15 +30,16 @@
     default: { vScroll: flavorVScroll, background: supplyWindowBack, vScrollKnob: flavorVKnob}
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
-    default: { font: default-font, fontColor: black },
+    default: { font: default-font, fontColor: black }, //default also does not have background
     base: {font: default-font, fontColor: black, background: baseLabelBack},
     flavor: {font: default-font, fontColor: black, background: flavorLabelBack},
     title: {font: default-font, fontColor: white, background: titleBack},
-    supply: {font: default-font, fontColor: grey, background: supplyLabelBack},
+    supply: {font: default-font, fontColor: black, background: supplyLabelBack},
     supplyTab: {font: default-font, fontColor: black, background: supplyTabBack}
-},
+  },
   com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-    default: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor},
+    default: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor,
+      messageFont: light-font, messageFontColor: grey}
     //numTextField: {selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor},
     //nameTextField: { selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor}
   },
@@ -50,5 +53,8 @@
   
   com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
     default: { fontColorUnselected: grey, selection: defaultSelection, fontColorSelected: black, font: default-font }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+    default-horizontal: { background: slider, knob: sliderKnob } //need to put -horizontal or -vertical identifier
   }
 }

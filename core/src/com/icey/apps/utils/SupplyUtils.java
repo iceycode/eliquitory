@@ -3,14 +3,13 @@ package com.icey.apps.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.OrderedMap;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
-import com.icey.apps.data.SaveData;
 import com.icey.apps.data.Supply;
 import com.icey.apps.screens.SupplyScreen;
+import com.icey.apps.ui.CalcTable;
 
 /** Manages the supplies user has
  * - Works with SupplyScreen & CalculatorScreen
@@ -21,7 +20,8 @@ import com.icey.apps.screens.SupplyScreen;
  *    can always add onto these later
  *  Can hold multiple flavors, starts at 4
  *
- * TODO: create error checking methods
+ *  TODO: figure out whether a default map should be set (method created already)
+ *  TODO: show a small popup it supplies are not set, urging user to enter them
  *
  * Created by Allen on 1/19/15.
  */
@@ -31,22 +31,35 @@ public class SupplyUtils {
     
     SaveManager saveManager = MainApp.saveManager; //for saving recipes
 
-    IntMap<Object> supplyMap; //supplies loaded/saved into supplyMap
-    public boolean supplied; //whether user is supplied or not
-
+    IntMap<Supply> supplyMap; //supplies loaded/saved into supplyMap
+    IntMap<Supply> emptyMap; //an empty map of supplies, if none is present
+    
+    IntMap<Double> supplyAmounts; //amount of supplies
+    IntMap<Double> flavorAmounts; //amount of flavors
+    public boolean supplied = false; //whether user is supplied or not
+    public boolean supplyChange = false; //whether supply changed
+    
+    public Supply supply; //current supply being saved in window
+    public Supply supplyPrev; //previous supply
+    
     public int lastFlavorKey = 4;
 
     public SupplyUtils(){
         supplyMap = saveManager.getSupplyData();
-
+        
         if (supplyMap.size > 0){
+            fillMissingValues(); //fills missing supplies
+            setSupplyAmounts(); //sets the amounts
+            
+            if (supplyMap.containsKey(4)) 
+                lastFlavorKey = getLastFlavorKey();
+            
             supplied = true;
-            lastFlavorKey = getLastFlavorKey();
         }
         else{
-            log("no supplies are stored...going to need to add values OR defaul is set");
-            //TODO: figure out whether a default map should be set (method created already)
-            supplied = false;//need to enter in the supplies first
+            log ("no supply map is stored in save file");
+            emptyMap = emptySupplyMap();
+            setSupplyAmounts();
         }
     }
 
@@ -56,57 +69,39 @@ public class SupplyUtils {
         }
         return instance;
     }
-    
-    //returns a map of the supplies to amounts
-    public OrderedMap<Integer, Double> getAllSupplyAmounts(){
-        OrderedMap<Integer, Double> supplyAmounts = new OrderedMap<Integer, Double>();
 
-        for (int i = 0; i < supplyMap.size; i++) {
-            SaveData.SupplyData data = (SaveData.SupplyData)supplyMap.entries().next().value;
-            double total = getSupplyTotal(data);
-            
-            //finds key of vlaue, -1 if not found
-            int key = supplyMap.findKey(supplyMap.entries().next().value, false, -1);
 
-            supplyAmounts.put(key, total);
-        }
-
-        return supplyAmounts;
-    }
-
-    public double getSupplyTotal(SaveData.SupplyData data) {
-        double total;
-        //check for supply class & then assign total
-        if (data.supply != null) total = data.supply.getTotalAmount();
-        else if (data.base != null) total = data.base.getTotalAmount();
-        else total = data.flavor.getTotalAmount();
-
-        log("total = " + Double.toString(total));
-
-        return total;
-    }
-    
     public Array<Supply> getSupplies(){
         Array<Supply> supplies = new Array<Supply>();
         
         for (int i = 0; i < 3; i++){
-            supplies.add((Supply)getSupplyByType(i));
+            Supply s = getSupplyByType(i);
+            if (s != null)
+                supplies.add(s);
+            else
+                supplies.add(new Supply(0, i));
         }
         
         return supplies;
     }
     
     public Base getBase(){
-        return (Base)getSupplyByType(3);
+        if (supplyMap.containsKey(3))
+            return new Base(getSupplyByType(3));
+        
+        return new Base(0, 0, Constants.ZERO_BASE_PERCENTS);
     }
 
     //returns an array of all the flavors
     public Array<Flavor> getAllFlavors(){
         Array<Flavor> flavorSupply = new Array<Flavor>();
-        
-        if (supplyMap.size >= 4) {
-            for (int i = 4; i < supplyMap.size; i++) {
-                flavorSupply.add((Flavor)getSupplyByType(i));
+
+        if (supplyMap.containsKey(4)) {
+            for (IntMap.Entry e : supplyMap){
+                Supply s = (Supply)e.value;
+                if (s.getSupplyType() >= 4){
+                    flavorSupply.add(new Flavor(s));
+                }
             }
         }
         
@@ -118,15 +113,16 @@ public class SupplyUtils {
      * @param key : the key of supply
      * @return null (should never return this)
      */
-    public Object getSupplyByType(int key){
-        SaveData.SupplyData supplyData = (SaveData.SupplyData)supplyMap.get(key);
+    public Supply getSupplyByType(int key){
+        if (supplyMap.containsKey(key)){
+            return supplyMap.get(key);
+        }
         
-        if (supplyData.supply != null) return supplyData.supply;
-        else if (supplyData.base != null) return supplyData.base;
-        else if (supplyData.flavor != null) return supplyData.flavor;
-        
-        return null;
+        return new Supply(0, key); //returns an empty supply
     }
+    
+    
+    
 
     //need to obtain any keys >= 4
     public int getLastFlavorKey(){
@@ -147,40 +143,37 @@ public class SupplyUtils {
      * @param key
      * @param supply
      */
-    public void saveSupply(int key, Object supply){
-
-        if (supplyMap.containsKey(key)){
-            SaveData.SupplyData data = updateSupply(key, supply);
-            SupplyScreen.instance.updateSupplyTable(key, data);
+    public void saveSupply(int key, Supply supply){
+        
+//        if (saveManager.supplyData != null){
+//            
+//        }
+//        else{
+//            saveNewSupply(key, supply);
+//        }
+        if (saveManager.supplyData.containsKey(key)){
+            updateSupply(key, supply);
+            SupplyScreen.instance.updateSupplyTable(key, supply);
         }
         else{
-            SaveData.SupplyData data = saveNewSupply(key, supply);
-            SupplyScreen.instance.addToSupplyTable(data);
+            saveNewSupply(key, supply);
         }
-
+        
+        //update the supply label in table on the screen
+        if (key < 4)
+            CalcTable.instance.updateSupply(key, supply.getTotalAmount());
     }
 
     /** saves & returns a new supply as supplyData object
      *
      * @param key
      * @param supply
-     * @return
      */
-    public SaveData.SupplyData saveNewSupply(int key, Object supply){
-        SaveData.SupplyData supplyData = new SaveData.SupplyData();
-
-        if (key < 3)
-            supplyData.supply = (Supply)supply;
-        else if (key == 3)
-            supplyData.base= (Base)supply;
-        else
-            supplyData.flavor = (Flavor)supply;
-
-        supplyMap.put(key, supplyData);
-
-        saveManager.saveSupplyData(key, supplyData);
-
-        return supplyData;
+    public void saveNewSupply(int key, Supply supply){
+        
+        supplyMap.put(key, supply);
+        saveManager.saveSupplyData(key, supply);
+        SupplyScreen.instance.addToSupplyTable(supply);
     }
 
 
@@ -190,32 +183,16 @@ public class SupplyUtils {
      * @param supply
      * @return
      */
-    public SaveData.SupplyData updateSupply(int key, Object supply){
-        SaveData.SupplyData supplyData = (SaveData.SupplyData)supplyMap.get(key);
-
-        if (key < 3) {
-            supplyData.supply = (Supply) supply;
-
-        }
-        else if (key == 3) {
-            supplyData.base = (Base) supply;
-
-        }
-        else{
-            supplyData.flavor = (Flavor)supply;
-        }
-
-
+    public Object updateSupply(int key, Supply supply){
         //save into supply utils map
         supplyMap.remove(key);
-        supplyMap.put(key, supplyData);
+        supplyMap.put(key, supply);
 
-        //save into saved map
-        saveManager.updateSupplyData(key, supplyData);
+        //save into save data
+        saveManager.updateSupplyData(key, supply);
 
-        return supplyData;
+        return supply;
     }
-
 
     
     public void removeSupply(int key){
@@ -223,28 +200,53 @@ public class SupplyUtils {
     }
     
     
-    public IntMap<Object> setEmptySupplyMap(){
-        IntMap<Object>  data = new IntMap<Object> ();
+    public void setSupplyAmounts(){
+        supplyAmounts = new IntMap<Double>();
+
+        for (IntMap.Entry entry: supplyMap.entries()){
+            Supply s = (Supply)entry.value;
+            supplyAmounts.put(s.getSupplyType(), s.getTotalAmount());
+        }
+    }
+    
+    
+    public void fillMissingValues(){
+        for (int i = 0; i < 3; i++){
+            if (!supplyMap.containsKey(i)){
+                supplyMap.put(i, new Supply(0, i));
+            }
+        }
+        
+        if (!supplyMap.containsKey(3)){
+            supplyMap.put(3, new Supply(Constants.EMPTY_BASE)) ;
+        }
+    }
+    
+    
+    public IntMap<Supply> emptySupplyMap(){
+        IntMap<Supply>  data = new IntMap<Supply> ();
         
         for (int i = 0; i < 3; i++){
-            SaveData.SupplyData supplyData = new SaveData.SupplyData();
-            supplyData.supply = new Supply(0, i);
+            Supply supplyData = new Supply(0, i);
             data.put(i, supplyData);
         }
         
-        SaveData.SupplyData baseData = new SaveData.SupplyData();
-        baseData.base = Constants.DEFAULT_BASE;
-        data.put(3, baseData);
-        
-        SaveData.SupplyData flavorData = new SaveData.SupplyData();
-        flavorData.flavor = Constants.FLAVOR_DEFAULT;
-        data.put(4, flavorData);
+        data.put(3, new Supply(Constants.EMPTY_BASE));
         
         return data;
     }
     
-    public IntMap<Object> getSupplyMap(){
+    public IntMap<Supply> getSupplyMap(){
+        this.supplyMap = saveManager.getSupplyData();
+        
+        if (supplyMap.size == 0)
+            return emptyMap;
+        
         return supplyMap;
+    }
+    
+    public IntMap<Double> getSupplyAmounts(){
+        return supplyAmounts;
     }
 
 

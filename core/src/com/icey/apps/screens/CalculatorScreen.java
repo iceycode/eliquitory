@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Array;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.assets.Constants;
@@ -54,12 +53,16 @@ import com.icey.apps.utils.CalcUtils;
  *
  * Created by Allen on 1/10/15.
  *
- * --------TODOs for Calculator-------
- * TODO: fix table properties/alignments
- *  TODO: fix subtitle sizing (it is off screen)
- *  TODO: fix menu buttons alignments
+ * --------TODOs for Calculator------- 
+ * * see CalcTable/FlavorTable for details
+ *  TODO: fix supply amount labels (VG works properly)
+ *      TODO: center messageText labels - figure out how to do this
+ *      TODO: expand recipe title name
  *
- * TODO: fix Widgets
+ *            
+ *  TODO: menu buttons need to be offset a little
+ *     TODO: load needs to be cenetered, back button goes to left side
+ *
  * TODO: specify error (which flavor or percent) in popup
  *
  */
@@ -71,7 +74,7 @@ public class CalculatorScreen implements Screen {
     FlavorTable flavorTable;
 
     String errorMsg = Constants.ERROR_MAIN;
-    String[] errorMsgs = Constants.ERROR_MSGS; //1=flavor, 2=desired percents, 3 = base percents
+    String[] errorMsgs = Constants.ERROR_MSGS; //0=flavor, 1=desired percents, 2 = base percents
     
     LoadWindow loadWindow;
     CalcUtils calcUtils = CalcUtils.getCalcUtil(); //tool used for calculations, loading, saving
@@ -89,7 +92,7 @@ public class CalculatorScreen implements Screen {
 
     
     public void setCalcTable(){
-        table = new CalcTable(skin, stage);
+        table = new CalcTable(skin);
         
         setFlavorScrollTable();
 
@@ -100,23 +103,19 @@ public class CalculatorScreen implements Screen {
     }
 
     //a nested table with a scrollpane in it
-    private void setFlavorScrollTable(){
-        //---FLAVORS--- third category: initially adds 1 FLavor by name of name
-        Label flavorLabel = new Label(" Flavor(s)", skin, "flavorLabel");
-        table.add(flavorLabel).width(300).height(50).align(Align.center).colspan(4);
-        table.row();
-        
+    protected void setFlavorScrollTable(){
+
         flavorTable = new FlavorTable(skin);
 
         ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
-        table.add(scroll).width(480).height(200).colspan(4); //add to the outer table
+        table.add(scroll).width(480).height(200).colspan(6); //add to the outer table
         table.row();
 
     }
 
 
     boolean loadWindowSetup = false;
-    private void setLoadWindow(){
+    protected void setLoadWindow(){
 
         if (!loadWindowSetup){
             loadWindow = new LoadWindow("Saved Recipes", skin, "load");
@@ -128,18 +127,18 @@ public class CalculatorScreen implements Screen {
 
     }
 
-    private void setButtons(){
+    protected void setButtons(){
         //the flavor button
         final TextButton flavorButton = new TextButton("Add flavor", skin, "flavor");
         flavorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (flavorButton.isPressed())
-                    flavorTable.addNewFlavor();//add new flavor
+                if (flavorButton.isPressed()) 
+                    flavorTable.addNewFlavor(new Flavor("Flavor " + flavorTable.numFlavors));//add new flavor
             }
         });
 
-        table.add(flavorButton).width(200).height(50).colspan(4).align(Align.center);
+        table.add(flavorButton).width(200).height(50).colspan(6).align(Align.center);
         table.row();
 
         //the calculator button
@@ -152,14 +151,17 @@ public class CalculatorScreen implements Screen {
             }
         });
 
-        table.add(calcButton).width(200).height(50).colspan(3).align(Align.center);
-        table.row();
+        table.add(calcButton).width(200).height(50).colspan(6).align(Align.center);
+        
 
         setMenuButtons();
 
     }
 
-    private void setMenuButtons(){
+
+    protected void setMenuButtons(){
+        table.row().pad(5);
+        
         //the save button
         TextButton saveButton = new TextButton("Save", skin, "menu");
         saveButton.addListener(new InputListener(){
@@ -181,7 +183,7 @@ public class CalculatorScreen implements Screen {
                 return true;
             }
         });
-        table.add(saveButton);
+        table.add(saveButton).width(100).align(Align.center);
 
 
         //the load button
@@ -195,7 +197,7 @@ public class CalculatorScreen implements Screen {
                 }
             }
         });
-        table.add(loadButton);
+        table.add(loadButton).width(100).align(Align.center);
 
 
         //the back button
@@ -208,10 +210,11 @@ public class CalculatorScreen implements Screen {
                 }
             }
         });
-        table.add(backButton).width(30);
+        table.add(backButton).width(100).align(Align.left);
     }
 
-    public void setErrorDialog(String message){
+    
+    protected void setErrorDialog(String message, String detail){
         Dialog errorDialog = new Dialog("", skin){
             protected void result(Object object) {
                 outsideDialog(this);
@@ -232,15 +235,15 @@ public class CalculatorScreen implements Screen {
         //calculate amounts if touchdown
         if (!calcUtils.areFlavorsSet()){
             log("flavors not set!");
-            setErrorDialog(errorMsgs[0]);
+            setErrorDialog(errorMsgs[0], calcUtils.getError());
         }
         else if (!calcUtils.areDesiredAt100()){
             log("desired percents do not add up to 100");
-            setErrorDialog(errorMsgs[1]);
+            setErrorDialog(errorMsgs[1], calcUtils.getError());
         }
         else if (!calcUtils.areBaseAt100()){
             log("base percents do not add up to 100");
-            setErrorDialog(errorMsgs[2]);
+            setErrorDialog(errorMsgs[2], calcUtils.getError());
         }
         else{
             log("calculating now...");
@@ -251,14 +254,13 @@ public class CalculatorScreen implements Screen {
     
     
     //display the calculated results
-    private void displayResults(){
-        for (int i = 0; i < 4; i++){
-            String text = String.format("%.1f", calcUtils.getFinalMills().get(i))+" (" +
-                    (int)(calcUtils.getFinalMills().get(i).doubleValue()*20)+")";
-            table.calcLabels.get(i).setText(text);
-            
-            if (i > 4)
-                flavorTable.calcLabels.get(i).setText(text);
+    protected void displayResults(){
+        table.updateCalcLabels();
+        flavorTable.updateCalcLabels();
+        
+        if (calcUtils.updatedSupply){
+            table.updateSupplyLabels();
+            flavorTable.updateSupplyLabels();
         }
     }
     
@@ -266,26 +268,12 @@ public class CalculatorScreen implements Screen {
     //display data that is loaded
     private void displayLoadedData(){
         
-        table.titleTextField.setMessageText(calcUtils.getRecipeName());
-        table.amtDesTextField.setMessageText(Double.toString(calcUtils.getAmountDesired()));
-        table.strTextField.setMessageText(Double.toString(calcUtils.getStrengthDesired()));
-        table.baseStrTF.setMessageText(Double.toString(calcUtils.getBaseStrength()));
-        
-        //set up the percent text fields
-        Array<Integer> percents = new Array<Integer>();
-        for (Integer percent: calcUtils.getDesiredPercents())
-            percents.add(percent);
-        for (Integer percent : calcUtils.getBasePercents())
-            percents.add(percent);
-        
-        for (int i = 0; i < percents.size; i ++){
-            table.percentTextFields.get(i).setMessageText(Double.toString(percents.get(i)));
-        }
+        table.setLoadedRecipe();
         
         //set up the flavors
         for (Flavor f : calcUtils.getFlavors()){
-            if (calcUtils.getFlavors().size > flavorTable.flvrTitleTFs.size)
-                flavorTable.addNewFlavor();
+            if (calcUtils.getFlavors().size > flavorTable.numFlavors)
+                flavorTable.addNewFlavor(new Flavor("Flavor " + flavorTable.numFlavors));
             
             for (TextField tf: flavorTable.flvrTitleTFs)
                 tf.setMessageText(f.getName());

@@ -4,11 +4,9 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.Array;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.assets.Constants;
 import com.icey.apps.screens.CalculatorScreen;
 import com.icey.apps.screens.MenuScreen;
 import com.icey.apps.screens.SupplyScreen;
@@ -26,10 +24,11 @@ import com.icey.apps.utils.SaveManager;
 public class MainApp implements ApplicationListener{
 
     Screen screen; //the current screen being shown
-    Array<Screen> screens; //all the screens (0=menu, 1 = calc, 2 =supply)
+    Array<Screen> screens; //all the screens (0=menu, 1 =supply, 2 = calc)
     boolean screensLoaded = false; //whether screens are loaded or not
-
-    public static SaveManager saveManager = new SaveManager(new FileHandle(Constants.SAVE_FILE_NAME));
+    
+    //(boolean - encoded, boolean json
+    public static SaveManager saveManager = new SaveManager(false, true);
 
     private static boolean screenSet = false; //value determines whether screen is set
 
@@ -37,6 +36,11 @@ public class MainApp implements ApplicationListener{
     // -1: causes exit; 0: menu, 1: calc, 2: supplies (more to come)
     public static int state;
     public static int prevState; //the previous state
+    
+    MenuScreen menuScreen;
+    CalculatorScreen calcScreen;
+    SupplyScreen supplyScreen;
+
 
 	@Override
 	public void create () {
@@ -45,12 +49,16 @@ public class MainApp implements ApplicationListener{
     }
 
     private void setScreens(){
-        screens = new Array<Screen>();
-
-        screens.add(new MenuScreen());
-        screens.add(new CalculatorScreen());
-        screens.add(new SupplyScreen());
-
+        screens = new Array<Screen>(3);
+        
+        //add all the screens to an Array for switching
+//        screens.add(new MenuScreen());
+//        screens.add(new CalculatorScreen());
+//        screens.add(new SupplyScreen());
+        
+        menuScreen = new MenuScreen();
+//        calcScreen = new CalculatorScreen();
+        
         setState(0);
         screensLoaded = true;
     }
@@ -80,10 +88,10 @@ public class MainApp implements ApplicationListener{
 
     //updates state if back button or escape hit
     private void updateState(){
-        if (state == 2 && prevState == 1)
+
+        
+        if ((state == 1 && prevState == 2) || (state == 2 && prevState == 1))
             setState(0); //to prevent user being stuck on calc & supply screens
-        else if (state == 1 && prevState == 2)
-            setState(0);
         else if (state > 0)
             setState(prevState);
         else
@@ -95,7 +103,11 @@ public class MainApp implements ApplicationListener{
     private void showScreen(){
         //set the screen if it has not been set recently or at all
         if (!screenSet && state >= 0){
-            setScreen(screens.get(state));
+            if (state == 0) setScreen(menuScreen);
+            else if (state == 1) setScreen(new CalculatorScreen());
+            else setScreen(new SupplyScreen());
+            
+            //setScreen(screens.get(state));
             screenSet = true;
         }
 
@@ -154,6 +166,7 @@ public class MainApp implements ApplicationListener{
     public static void setState(int newState){
         prevState = state; //previous state set to current one
 
+        
         state = newState; //set to the new state
         screenSet = false; //set to false, so switch screen can occur
     }

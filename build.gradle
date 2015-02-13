@@ -88,6 +88,8 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
+        
+        compile "com.google.code.gson:gson:2.3.1"
 
     }
 }
@@ -98,10 +100,12 @@ project(":core") {
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        
+
         compile "com.google.code.gson:gson:2.3.1"
-        compile "org.mockito:mockito-core:2.0.3-beta"
-        compile "junit:junit:4.12-beta-1"
+
+        //putting these in core, might be cause of errors in modules dependent on it
+//        compile "org.mockito:mockito-core:2.0.3-beta"
+//        compile "junit:junit:4.12-beta-1"
     }
 }
 
