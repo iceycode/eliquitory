@@ -120,7 +120,7 @@ public class CalcTable extends Table{
         //amount desired textfield 
         amtDesTextField = new TextField("", skin, "numTextField");
         amtDesTextField.setName("amountTextField");
-//        amtDesTextField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        amtDesTextField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         amtDesTextField.setTextFieldListener(UIUtils.numTextFieldListener(Constants.AMOUNT_LISTENER_TYPE[0]));
         amtDesTextField.setFocusTraversal(true);
         amtDesTextField.setAlignment(Align.center); //offets text alignment by 2
@@ -136,7 +136,7 @@ public class CalcTable extends Table{
         
         strTextField = new TextField("", skin, "numTextField");
         strTextField.setName("strengthTextField");
-        strTextField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        strTextField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         strTextField.setTextFieldListener(UIUtils.numTextFieldListener(Constants.AMOUNT_LISTENER_TYPE[1]));
         strTextField.setFocusTraversal(true);
         strTextField.setMessageText(Double.toString(calcUtils.getStrengthDesired()));
@@ -165,7 +165,7 @@ public class CalcTable extends Table{
 
         baseStrTF = new TextField("", skin, "numTextField");
         baseStrTF.setName("basestrengthTextField");
-        //baseStrTF.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        baseStrTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         baseStrTF.setAlignment(Align.center);
         baseStrTF.setMessageText(Double.toString(calcUtils.getBaseStrength()));
         baseStrTF.setColor(Color.RED);
@@ -284,8 +284,6 @@ public class CalcTable extends Table{
             double amt = 0;
             if (supplyMap.containsKey(i))
                 amt = (supplyMap.get(i)).getTotalAmount();
-//                if (i == 3)
-//                    amt = ((Base)supplyMap.get(i)).getTotalAmount();
             
             Label l = supplyLabels.get(i);
             

@@ -103,7 +103,7 @@ public class SupplyScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (addBaseBtn.isPressed()){
-                    new SupplyWindow(skin, 1, new Supply(), false).show(stage);
+                    new SupplyWindow(skin, 3, new Supply(), false).show(stage);
                 }
             }
         });
@@ -113,7 +113,7 @@ public class SupplyScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (addFlavorBtn.isPressed()){
-                    new SupplyWindow(skin, 2, new Supply(), false).show(stage);
+                    new SupplyWindow(skin, 4, new Supply(), false).show(stage);
                 }
             }
         });
@@ -126,11 +126,14 @@ public class SupplyScreen implements Screen{
     
     
     //the supply table, showing which supplies user has
+    //layout of table--> [title : amount : type/percent/empty : edit : save]
     private void setSupplyTable(){
         supplyTable = new Table(); //current supply table
         supplyTable.top().left().pad(10); //set properties of table
         supplyTable.setBackground(new TextureRegionDrawable(new TextureRegion(supplyTableBack)));
-        supplyTable.defaults().pad(5); //set all cells to pad 5 all ways
+        supplyTable.defaults().pad(2); //set all cells to pad 5 all ways
+        
+        supplyTable.debug();
 
         //if user has previously entered supplies, they will be added to to table on creation
         if (supplyUtils.supplied) {
@@ -175,9 +178,15 @@ public class SupplyScreen implements Screen{
     }
     
     
-    //adds supplies to supply table (row keeps track of hwere they are in table)
-    int row = 0;
+
+    int row = 0; //for keeping track, for deletion
+    final int COLS = 5; //as of now, 5 columns
+    /** Adds supplies to supply table
+     *  
+     * @param data
+     */
     public void addToSupplyTable(Supply data){
+        String type = ""; //the type of liquid (either Flavor or Supply)
 
         Label nameLabel; //supply label name
         Label amountLabel; //the amount of the supply
@@ -192,15 +201,14 @@ public class SupplyScreen implements Screen{
         else if (key == 3) {
             Base base = new Base(data);
             nameLabel = new Label("Nicotine Base", skin, "base");
-            String percentDisplay = "PG/VG Ratio: " + base.getBasePercents().get(0) + ":" + base.getBasePercents().get(1);
-            percentLabel = new Label(percentDisplay, skin, "base");
-            amountLabel = new Label(Double.toString(base.getTotalAmount()), skin, "base");
+            
+            amountLabel = new Label(Double.toString(data.getTotalAmount()), skin, "base");
         }
         else{
             Flavor flavor = new Flavor(data);
-            nameLabel = new Label("Flavor: " + flavor.getName(), skin, "supply");
-            typeLabel = new Label("Type: " + flavor.getType(), skin, "supply");
-            amountLabel = new Label(Double.toString(flavor.getTotalAmount()), skin, "supply");
+            nameLabel = new Label("" + flavor.getName(), skin, "flavor");
+            type = flavor.getTypeName();
+            amountLabel = new Label(Double.toString(flavor.getTotalAmount()), skin, "flavor");
         }
 
         //set name as row for identification purposes (to edit later)
@@ -211,10 +219,16 @@ public class SupplyScreen implements Screen{
         supplyTable.add(nameLabel).width(120);
         supplyTable.add(amountLabel).width(40);
 
-        if (key == 3)
-            supplyTable.add(typeLabel).width(50);
-        else
+        if (key == 3){
+            String percentDisplay = "PG:VG " + data.getBasePercents().get(0) + ":" + data.getBasePercents().get(1);
+            percentLabel = new Label(percentDisplay, skin, "base");
             supplyTable.add(percentLabel).width(100);
+        }
+        else{
+            typeLabel = new Label(type, skin, "flavor");
+            supplyTable.add(typeLabel).width(100);
+        }
+            
         
         supplyTable.add(editButton(key)).padLeft(15).width(50);
         supplyTable.add(deleteButton(row, key)).padLeft(5).width(50);
@@ -236,18 +250,7 @@ public class SupplyScreen implements Screen{
 
         nameLabel.setText(data.getName());
         amountLabel.setText(Double.toString(data.getTotalAmount()));
-        
-//        if (data.supply != null){
-//            
-//        }
-//        else if (data.base != null){
-//            nameLabel.setText("Nicotine Base");
-//            amountLabel.setText(Double.toString(data.base.getTotalAmount()));
-//        }
-//        else{
-//            nameLabel.setText(data.flavor.getName());
-//            nameLabel.setText(Double.toString(data.flavor.getTotalAmount()));
-//        }
+
     }
 
 
@@ -290,18 +293,23 @@ public class SupplyScreen implements Screen{
         return deleteButton;
     }
     
-    final int COLS = 5; //as of now, 6 columns
-    private void deleteSupply(int row, int key){
+
+    /**Deletes the wdigets in the supplyTable based on row#
+     *
+     * @param row : row supply is in
+     * @param key : the supply key in the supplyUtils map
+     */
+    protected void deleteSupply(int row, int key){
         SnapshotArray<Actor> children = supplyTable.getChildren();
         children.ordered = false;
         
         if (children.size > 1) {
-            for (int i = row*4; i < children.size - 5; i++) {
+            for (int i = row*COLS; i < children.size - COLS; i++) {
                 children.swap(i, i + 1);
             }
         }
         
-        for (int i = 0; i < 4; i++){
+        for (int i = 0; i < COLS; i++){
             supplyTable.removeActor(children.get(children.size - 1));
         }
         

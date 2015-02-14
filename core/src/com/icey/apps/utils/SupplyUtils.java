@@ -9,7 +9,6 @@ import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.data.Supply;
 import com.icey.apps.screens.SupplyScreen;
-import com.icey.apps.ui.CalcTable;
 
 /** Manages the supplies user has
  * - Works with SupplyScreen & CalculatorScreen
@@ -48,11 +47,8 @@ public class SupplyUtils {
         supplyMap = saveManager.getSupplyData();
         
         if (supplyMap.size > 0){
-            fillMissingValues(); //fills missing supplies
+            //fillMissingValues(); //fills missing supplies
             setSupplyAmounts(); //sets the amounts
-            
-            if (supplyMap.containsKey(4)) 
-                lastFlavorKey = getLastFlavorKey();
             
             supplied = true;
         }
@@ -87,7 +83,7 @@ public class SupplyUtils {
     
     public Base getBase(){
         if (supplyMap.containsKey(3))
-            return new Base(getSupplyByType(3));
+            return new Base(supplyMap.get(3));
         
         return new Base(0, 0, Constants.ZERO_BASE_PERCENTS);
     }
@@ -138,34 +134,29 @@ public class SupplyUtils {
         return largestKey;
     }
     
-    /** adds a supply & saves it
-     * 
-     * @param key
-     * @param supply
+    /** adds a supply & saves it if not in map
+     *  updates supply if in the map
+     *
+     * @param key : current supply key
+     * @param supply : current supply
      */
     public void saveSupply(int key, Supply supply){
-        
-//        if (saveManager.supplyData != null){
-//            
-//        }
-//        else{
-//            saveNewSupply(key, supply);
-//        }
+
         if (saveManager.supplyData.containsKey(key)){
             updateSupply(key, supply);
-            SupplyScreen.instance.updateSupplyTable(key, supply);
+
         }
         else{
             saveNewSupply(key, supply);
         }
         
         //update the supply label in table on the screen
-        if (key < 4)
-            CalcTable.instance.updateSupply(key, supply.getTotalAmount());
+//        if (key < 4)
+//            CalcTable.instance.updateSupply(key, supply.getTotalAmount());
     }
 
     /** saves & returns a new supply as supplyData object
-     *
+     * - also updates supplyscreen window
      * @param key
      * @param supply
      */
@@ -178,7 +169,7 @@ public class SupplyUtils {
 
 
     /** updates an already saved supply
-     *
+     * - also updates the supplyscreen table
      * @param key
      * @param supply
      * @return
@@ -190,7 +181,8 @@ public class SupplyUtils {
 
         //save into save data
         saveManager.updateSupplyData(key, supply);
-
+        
+        SupplyScreen.instance.updateSupplyTable(key, supply);
         return supply;
     }
 
@@ -209,20 +201,7 @@ public class SupplyUtils {
         }
     }
     
-    
-    public void fillMissingValues(){
-        for (int i = 0; i < 3; i++){
-            if (!supplyMap.containsKey(i)){
-                supplyMap.put(i, new Supply(0, i));
-            }
-        }
-        
-        if (!supplyMap.containsKey(3)){
-            supplyMap.put(3, new Supply(Constants.EMPTY_BASE)) ;
-        }
-    }
-    
-    
+
     public IntMap<Supply> emptySupplyMap(){
         IntMap<Supply>  data = new IntMap<Supply> ();
         
@@ -236,6 +215,8 @@ public class SupplyUtils {
         return data;
     }
     
+    
+    //TODO: fix this so that empty map not returned, but requested
     public IntMap<Supply> getSupplyMap(){
         this.supplyMap = saveManager.getSupplyData();
         

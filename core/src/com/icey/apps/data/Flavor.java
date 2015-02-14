@@ -28,7 +28,6 @@ public class Flavor {
         this.name = supply.getName();
         this.totalAmount = supply.getTotalAmount();
         this.type = supply.getFlavorType();
-        
     }
     
     //when typing in on Calculator screen
@@ -108,6 +107,17 @@ public class Flavor {
         return true;
     }
     
+    
+    public String getTypeName(){
+        if (type == 0)
+            return "PG";
+        else if (type == 1)
+            return "VG";
+
+        return "Other";
+    }
+    
+    
     public String getName() {
         return name;
     }
@@ -115,7 +125,8 @@ public class Flavor {
     public void setName(String name) {
         this.name = name;
     }
-
+    
+    
     public int getType() {
         return type;
     }

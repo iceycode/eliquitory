@@ -27,6 +27,7 @@ public class Base extends Supply{
     public Base(){} 
 
 
+    
     public Base(double strength, Array<Integer> percents) {
         this.baseStrength = strength;
         this.basePercents = percents;

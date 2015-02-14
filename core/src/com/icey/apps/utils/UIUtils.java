@@ -3,7 +3,10 @@ package com.icey.apps.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.icey.apps.assets.Constants;
@@ -137,7 +140,7 @@ public class UIUtils {
     
     public static class SupplyUI{
 
-        protected TextField.TextFieldListener flavorNameListener(final Supply supply){
+        public static TextField.TextFieldListener flavorNameListener(final Supply supply){
             TextField.TextFieldListener nameTextFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c) {
@@ -156,7 +159,7 @@ public class UIUtils {
             return nameTextFieldListener;
         }
 
-        protected TextField.TextFieldListener percentListener(final Supply supply){
+        public static TextField.TextFieldListener percentListener(final Supply supply){
             TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c) {
@@ -180,7 +183,7 @@ public class UIUtils {
         }
 
 
-        protected TextField.TextFieldListener amountListener(final int type, final Supply supply){
+        public static TextField.TextFieldListener amountListener(final int type, final Supply supply){
             TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c){
@@ -228,8 +231,93 @@ public class UIUtils {
 
             return flavorBoxListener;
         }
+
+    }
+
+    /** a customized inputlistener for keyboard
+     *
+     * @param supply
+     * @param textField
+     * @param type
+     * @return
+     */
+    public static InputListener amountValueListener(final Supply supply, final TextField textField, final int type){
+        InputListener listener = new InputListener(){
+            @Override
+            public boolean keyTyped(InputEvent event, char character) {
+                if ((character == '\r' || character == '\n')) {
+                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+                            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
+                }
+                else if (Character.isDigit(character) || Character.getType(character)==Character.DECIMAL_DIGIT_NUMBER) {
+                    if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
+                        if (type == 0) {
+                            supply.setTotalAmount(Double.parseDouble(textField.getText()));
+                        }
+                        else {
+                            supply.setBaseStrength(Double.parseDouble(textField.getText()));
+                        }
+                    }
+                }
+
+                return true;
+            }
+        };
+
+
+        return listener;
+    }
+
+
+
+    //this is a customized TextFieldFilter for double values (not just numbers)
+    public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
+        
+        @Override
+        public boolean acceptChar(TextField textField, char c) {
+            //((c >= '0' && c <= '9') || c == '.')  && isDecimalDigit(c)
+            if (textField.getText().contains(".") && c == '.')
+                return false;
+            
+            return isDecimalDigit(c);
+        }
+        
+        public static boolean isDecimalDigit(char c){
+            return c == '.' || (c >= '0' && c <= '9');
+        }
+    }
+    
+    
+    //custom textfield class
+    public static class DecimalTextField extends TextField{
+        
+        //for default
+        public DecimalTextField(String text, Skin skin) {
+            super(text, skin);
+        }
+
+        //for other types of textfield listeners
+        public DecimalTextField(String text, Skin skin, String styleName) {
+            super(text, skin, styleName);
+        }
+
+        @Override
+        public void setFocusTraversal(boolean focusTraversal) {
+            
+            
+            
+            super.setFocusTraversal(focusTraversal);
+        }
+        
+        
+        
         
     }
+    
+    
+    
+    
+    
     
     
 

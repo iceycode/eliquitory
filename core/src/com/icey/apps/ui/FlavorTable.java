@@ -17,7 +17,7 @@ import com.icey.apps.utils.UIUtils;
  *  
  * Created by Allen on 1/21/15.
  * TODO: for flavor table, supply amount label is off (a bit
- *      TODO: center individual flavor tables
+ * 
  */
 public class FlavorTable extends Table{
 
@@ -55,8 +55,7 @@ public class FlavorTable extends Table{
 
     public FlavorTable(Skin skin){
         instance = FlavorTable.this;
-        
-        
+
         this.skin = skin;
         
         defaults().maxWidth(480).maxHeight(200);
@@ -218,7 +217,7 @@ public class FlavorTable extends Table{
     protected void addSelectBox(final int flavorID, Table table){
         final SelectBox dropDown = new SelectBox(skin); //select box
         dropDown.setItems(flavorNames);
-        dropDown.setSelectedIndex(flavorID); //sets 1st item as selected
+        dropDown.setSelectedIndex(0); //sets 1st item as selected
         
         dropDown.addListener(new ChangeListener() {
             @Override

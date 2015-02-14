@@ -37,7 +37,7 @@ import com.icey.apps.utils.CalcUtils;
  * For amount of PG, VG & Other:
  *  AmountTotal*(desired PG%/100) - BaseNeeded*(Base PG/100)
  *  AmountTotal * (desired VG/100) - BaseNeeded*(Base VG/100)
- *  ...
+ *
  *
  * STYLES used from skin
  * textbutton styles: flavor, menu;

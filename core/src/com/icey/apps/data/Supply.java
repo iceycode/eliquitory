@@ -24,7 +24,7 @@ public class Supply {
     Array<Integer> basePercents = new Array<Integer>(); //if this is a base type, then percents are set
     double baseStrength;
     
-    double percent;
+    int percent; //flavor percent
 
     double amountNeeded = 0; //the amount needed for recipe
 
@@ -117,6 +117,7 @@ public class Supply {
 
         return name;
     }
+
     
     
     public void setTempName(){
@@ -148,6 +149,16 @@ public class Supply {
         SupplyWindow.percentTextFields.get(0).setText(Integer.toString(change));
     }
 
+
+    public String getTypeName(){
+        if (supplyType == 0)
+            return "PG";
+        else if (supplyType == 1)
+            return "VG";
+
+        return "Other";
+    }
+    
     public void setName(String name) {
         this.name = name;
     }
@@ -201,11 +212,12 @@ public class Supply {
         this.flavorType = flavorType;
     }
 
-    public void setPercent(double percent) {
+    public void setPercent(int percent) {
+        log("Flavor percent = " + percent);
         this.percent = percent;
     }
 
-    public double getPercent() {
+    public int getPercent() {
         return percent;
     }
     
@@ -215,6 +227,33 @@ public class Supply {
     
     public String getErrorMessage(){
         return errorMsg;
+    }
+
+    
+    @Override
+    public String toString(){
+        String modString = "";
+        String type = "";
+        
+        if (supplyType == 3){
+            modString = "\nBase percents: " + getBasePercents().toString() + "\n" +
+                    "Base Strength: " + getBaseStrength();
+        }
+        else if (supplyType > 4){
+            type = "Flavor type:" + getFlavorType() ;
+        }
+        else{
+            type = "Type: " + getTypeName();
+        }
+
+        return "Supply name : " + getName() + "\n" +
+                "Amount: " + getTotalAmount() + "\n" + type + "\n" + modString;
+
+                
+    }
+    
+    public void log(String message){
+        System.out.println("Flavor LOG: " + message);
     }
 
 }
