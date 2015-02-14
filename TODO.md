@@ -28,4 +28,4 @@ SupplyScreen
 SupplyScreen & CalculatorScreen
 
 * when going from Calcscreen to SupplyScreen, nicotine base supply is set to settings in calcscreen
-~~set a custom textfieldfilter.~~ <---should be strikethrough
+* ~~ set a custom textfieldfilter.~~
