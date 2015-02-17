@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.SnapshotArray;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.assets.Constants;
@@ -29,6 +30,7 @@ import com.icey.apps.utils.SupplyUtils;
  * - only for flavor name needs to be added
  * - all require an amount to be added
  *
+ * TODO: set back button to right (padRight(10)
  *
  * Created by Allen on 1/19/15.
  */
@@ -41,30 +43,38 @@ public class SupplyScreen implements Screen{
 
     //background textures
     Texture supplyTableBack = Assets.manager.get(Constants.SUPPLY_TABLE_BACK, Texture.class);
-    Texture mainBackground = Assets.manager.get(Constants.SUPPLY_MENU_BACKGROUND, Texture.class);
+    Texture screenBackground = Assets.manager.get(Constants.SUPPLY_MENU_BACKGROUND, Texture.class);
 
     Stage stage; //the stage, holds ui - table & supply Table
     Table table; //the root table
     Table supplyTable; //the supply table (goes under add buttons)
 
-
+    float scaleX = MainApp.scaleX;
+    float scaleY = MainApp.scaleY;
+    
     //constructor for supply screen
     public SupplyScreen(){
         instance = SupplyScreen.this;
+
+        stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
         
-        stage = new Stage();
         setRootTable();
+
     }
 
-    
+
     //the main table, encapsulates all UI elements
     private void setRootTable(){
         table = new Table();
-        table.setBounds(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-        table.top().center();
+        //table.setScale(scaleX, scaleY); //TODO: figure out if scaling individual cells is needed if this is here
+
+        table.setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        table.center();
+
         table.setClip(true);
+        table.setLayoutEnabled(true); //need this for invalidating hierarchy
         
-        table.setBackground(new TextureRegionDrawable(new TextureRegion(mainBackground))); //set background
+        table.setBackground(new TextureRegionDrawable(new TextureRegion(screenBackground))); //set background
         
         table.debug();
 
@@ -93,17 +103,19 @@ public class SupplyScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (addSupplyBtn.isPressed()){
-                    new SupplyWindow(skin, 0, new Supply(), false).show(stage);
+                    new SupplyWindow(skin, "default", new Supply(), false).show(stage);
                 }
             }
         });
 
-        final TextButton addBaseBtn = new TextButton("Add Nicotine Base", skin, "base");
+        String baseText = "Add Base";
+        final TextButton addBaseBtn = new TextButton(baseText, skin, "base");
+//        addBaseBtn.setWidth(addBaseBtn.getStyle().font.getBounds(baseText).width);
         addBaseBtn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (addBaseBtn.isPressed()){
-                    new SupplyWindow(skin, 3, new Supply(), false).show(stage);
+                    new SupplyWindow(skin, "base", new Supply(), false).show(stage);
                 }
             }
         });
@@ -113,15 +125,16 @@ public class SupplyScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (addFlavorBtn.isPressed()){
-                    new SupplyWindow(skin, 4, new Supply(), false).show(stage);
+                    new SupplyWindow(skin, "flavor", new Supply(), false).show(stage);
                 }
             }
         });
         
-        table.add(addSupplyBtn);
-        table.add(addBaseBtn);
-        table.add(addFlavorBtn);
+        table.add(addSupplyBtn).fill().pad(10);
 
+        table.add(addFlavorBtn).fill().pad(10);
+
+        table.add(addBaseBtn).fill().pad(10);
     }
     
     
@@ -130,6 +143,7 @@ public class SupplyScreen implements Screen{
     private void setSupplyTable(){
         supplyTable = new Table(); //current supply table
         supplyTable.top().left().pad(10); //set properties of table
+
         supplyTable.setBackground(new TextureRegionDrawable(new TextureRegion(supplyTableBack)));
         supplyTable.defaults().pad(2); //set all cells to pad 5 all ways
         
@@ -261,7 +275,13 @@ public class SupplyScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (editButton.isPressed()){
-                    SupplyWindow editWindow = new SupplyWindow(skin, key, supplyUtils.getSupplyByType(key), true);
+                    SupplyWindow editWindow;
+                    if (key < 3)
+                        editWindow = new SupplyWindow(skin, "default", supplyUtils.getSupplyByType(key), true);
+                    else if (key == 3)
+                        editWindow = new SupplyWindow(skin, "base", supplyUtils.getSupplyByType(key), true);
+                    else
+                        editWindow = new SupplyWindow(skin, "flavor", supplyUtils.getSupplyByType(key), true);
                     editWindow.show(stage);
                 }
             }
@@ -335,6 +355,11 @@ public class SupplyScreen implements Screen{
     @Override
     public void resize(int width, int height) {
 
+        //restore the stage's viewport; true updates camera to 0,0 - do not need this
+        stage.getViewport().update(width, height, false);
+
+        table.invalidateHierarchy();
+        table.setSize(width, height);
     }
 
     @Override

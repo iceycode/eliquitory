@@ -4,18 +4,28 @@ import com.badlogic.gdx.utils.Array;
 import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
 
-/**
+/** Constants class
+ * - contains fields used throughout the
+ *
+ *
  * Created by Allen on 1/11/15.
  */
 public class Constants {
 
     //--------global constants for app (used anywhere/everywhere)--------
+    //default screen width & height
     public static final float SCREEN_HEIGHT = 800f;
     public static final float SCREEN_WIDTH = 480f;
 
-    public static String SAVE_FILE_NAME  = "save.json" ;
+    //default values for advertisements
+    public static final float AD_SIZE = 50;
+
+    public static String SAVE_FILE = "save.json" ;
     public static String SAVE_FILE_2 = "assets/save/save.json";
     public static String SAVE_FILE_ENCODED = "assets/save/save_encoded.json";
+
+    public static String FONT_DEFAULT = "fonts/opensans_bold_med.fnt";
+    public static String FONT_LIGHT = "fonts/opensans_light_med.fnt";
 
 
     //=====================Menu Constants=====================-
@@ -23,7 +33,8 @@ public class Constants {
     public static final String MENU_BACKGROUND_FILE = "textures/main_menu/background.png"; //menu background
 
     public static final float[] MENU_TITLE_POS = {Constants.SCREEN_WIDTH/2 - 350/2, 400f};
-    public static final float[] MENU_TITLE_SIZE = {350, 100};
+    public static final float[] MENU_TITLE_SIZE = {375, 150};
+    public static final float[] MENU_BTN_SIZE = {225, 100};
 
 
 
@@ -66,8 +77,7 @@ public class Constants {
     public static final String NEW_FLAVOR_STRING = "New Flavor: ";
     public static Flavor NEW_FLAVOR = new Flavor("New Flavor");
     
-    
-    
+
     //error messages for when calulating
     public static final String ERROR_MAIN = "Error";
     public static final String[] ERROR_MSGS = {"A flavor type or percent not set", "Desired percents not at 100%", 
@@ -100,14 +110,12 @@ public class Constants {
     //----these are empty initial values---
     //default base strength & percents - user can change in settings
     public static final double ZERO_FINAL_AMOUNT = 0.0;
-    public static final Integer[] ZERO_DPs = {0, 0, 0};
-    public static final Array<Integer> ZERO_DESIRED_PERCENTS = new Array<Integer>(ZERO_DPs);
+    public static final Array<Integer> ZERO_DESIRED_PERCENTS = new Array<Integer>(new Integer[]{0, 0, 0});
     public static final double ZERO_STRENGTH = 0.0; //desired strength (medium)
     
     //base defaults - user will be able to change in settings
     public static final double EMPTY_BASE_STR = 100.0;
-    public static final Integer[] EMPTY_BPs = {0, 0};
-    public static final Array<Integer> ZERO_BASE_PERCENTS = new Array<Integer>(EMPTY_BPs);
+    public static final Array<Integer> ZERO_BASE_PERCENTS = new Array<Integer>(new Integer[]{0, 0});
     public static final Base EMPTY_BASE = new Base(0, EMPTY_BASE_STR, ZERO_BASE_PERCENTS);
 
     //flavor default - the go-to flavor for user, can change in settings
@@ -115,9 +123,7 @@ public class Constants {
     public static final String DEFAULT_FLAV_NAME = "Flavor1"; //name of flavor
     public static final Flavor EMPTY_FLAVOR = new Flavor(0, "Flavor1");
 
-
-    public static Double[] DEFAULT_GOAL_AMOUNTS = {0.0, 0.0, 0.0, 0.0, 0.0}; //default values
-    public static Array<Double> INITLAL_FINAL_MLS = new Array<Double>(DEFAULT_GOAL_AMOUNTS);
+    public static Array<Double> INITLAL_FINAL_MLS = new Array<Double>(new Double[]{0.0, 0.0, 0.0, 0.0, 0.0});
 
 
 
@@ -128,21 +134,15 @@ public class Constants {
         //=============Constants for CalcUtilTests (6 expected final amounts)============
         public static double DESIRED_AMT = 100.0;
         public static double DESIRED_STR = 10.0;
-        public static Integer[][] DPs = {{30, 70, 0}, {30, 70, 10}};
-        public static Array<Integer> DESIRED_PERCS = new Array<Integer>(DPs[0]);
-        public static Array<Integer> ALT_DESIRED_PERCS = new Array<Integer>(DPs[1]);
+        public static Array<Integer> DESIRED_PERCS = new Array<Integer>(new Integer[]{30, 70, 0});
+        public static Array<Integer> ALT_DESIRED_PERCS = new Array<Integer>(new Integer[]{30, 70, 10});
 
-        public static int FLAV_PERC = 10;
-        public static int[] FLAV_TYPES = {0, 1, 2};
-        public static String[] FLAV_NAMES = {"Flavor1", "Flavor2", "Flavor3"};
-        public static Flavor FLAV1 = new Flavor(FLAV_NAMES[0], FLAV_PERC, FLAV_TYPES[0]);
-        public static Flavor FLAV2 = new Flavor(FLAV_NAMES[1], FLAV_PERC/2, FLAV_TYPES[1]);
-        public static Flavor FLAV3 = new Flavor(FLAV_NAMES[2], FLAV_PERC/2, FLAV_TYPES[2]);
-        public static Flavor[] flavs = {FLAV1, FLAV2, FLAV3};
-        public static Array<Flavor> TEST_FLAVORS = new Array<Flavor>(flavs);
+        public static Flavor FLAV1 = new Flavor("Flavor1", 10, 0);
+        public static Flavor FLAV2 = new Flavor("Flavor2", 5, 1);
+        public static Flavor FLAV3 = new Flavor("Flavor3", 5, 2);
+        public static Array<Flavor> TEST_FLAVORS = new Array<Flavor>(new Flavor[]{FLAV1, FLAV2, FLAV3});
 
-        public static Integer[] BP = {50, 50};
-        public static Array<Integer> BASE_PERCS = new Array<Integer>(BP);
+        public static Array<Integer> BASE_PERCS = new Array<Integer>(new Integer[]{50, 50});
         public static double BASE_STR = 100;
         public static Base TEST_BASE = new Base(BASE_STR, BASE_PERCS);
 
@@ -155,6 +155,7 @@ public class Constants {
         public final static Double[][] EXPECTED_FAs = {{15.0, 65.0, 0.0, 10.0, 10.0},{15.0, 60.0, 0.0, 10.0, 10.0, 5.0},
                 {13.5, 56.5, 0.0, 10.0, 10.0, 5.0, 5.0}, {12.0, 58.0, 10.0, 10.0, 10.0},
                 {10.5, 54.5, 10.0, 10.0, 10.0, 5.0},{10.5, 49.5, 10.0, 10.0, 10.0, 5.0, 5.0}};
+
     }
 
 
@@ -166,14 +167,12 @@ public class Constants {
         //----User constants---these can be altered by user in settings
         //default base strength & percents - user can change in settings
         public static double DEFAULT_FINAL_AMT = 30.0;
-        public static Integer[] DESIRED_PERCENTS = {70, 30, 0};
-        public static Array<Integer> DEFAULT_DESIRED_PERCENTS = new Array<Integer>(DESIRED_PERCENTS);
+        public static Array<Integer> DEFAULT_DESIRED_PERCENTS = new Array<Integer>(new Integer[]{70, 30, 0});
         public static double DESIRED_STR = 16.0; //desired strength (medium)
 
         //base defaults - user will be able to change in settings
         public static double DEFAULT_BASE_STR = 100.0;
-        public static Integer[] BASE_PERCENTS = {0, 0};
-        public static Array<Integer> DEFAULT_BASE_PERCENTS = new Array<Integer>(BASE_PERCENTS);
+        public static Array<Integer> DEFAULT_BASE_PERCENTS = new Array<Integer>(new Integer[]{0, 0});
         public static Base DEFAULT_BASE = new Base(0, DEFAULT_BASE_STR, DEFAULT_BASE_PERCENTS);
 
         //flavor default - the go-to flavor for user, can change in settings
@@ -181,9 +180,7 @@ public class Constants {
         public static String DEFAULT_FLAV_NAME = "Flavor1"; //name of flavor
         public static Flavor FLAVOR_DEFAULT = new Flavor(0, DEFAULT_FLAV_NAME);
 
-
-        public static Double[] DEFAULT_GOAL_AMOUNTS = {0.0, 0.0, 0.0, 0.0, 0.0}; //default values
-        public static Array<Double> INITLAL_FINAL_MLS = new Array<Double>(DEFAULT_GOAL_AMOUNTS);
+        public static Array<Double> INITLAL_FINAL_MLS = new Array<Double>(new Double[]{0.0, 0.0, 0.0, 0.0, 0.0});
         
     }
     

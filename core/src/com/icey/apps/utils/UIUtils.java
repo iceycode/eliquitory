@@ -2,6 +2,7 @@ package com.icey.apps.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Supply;
 import com.icey.apps.ui.SupplyWindow;
@@ -19,7 +21,8 @@ import com.icey.apps.ui.SupplyWindow;
  */
 public class UIUtils {
 
-
+    
+    //listener for textfields for names - flavor or recipe
     public static TextField.TextFieldListener nameTextFieldListener(){
         TextField.TextFieldListener nameTextFieldListener = new TextField.TextFieldListener() {
             @Override
@@ -28,8 +31,7 @@ public class UIUtils {
                 if ((c == '\r' || c == '\n')){
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-
-                if (textField.getName().contains("flavor")){
+                else if (textField.getName().contains("flavor")){
                     int i = Integer.parseInt(textField.getName().substring(textField.getName().length()-1))-1;
                     CalcUtils.getCalcUtil().setFlavorName(String.valueOf(textField.getText()), i);
                 }
@@ -44,6 +46,12 @@ public class UIUtils {
         return nameTextFieldListener;
     }
 
+
+    /** returns listener for amounts - mg nicotine or ml juice
+     * 
+     * @param type
+     * @return
+     */
     public static TextField.TextFieldListener numTextFieldListener(final int type){
         TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
             @Override
@@ -56,21 +64,32 @@ public class UIUtils {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
                             Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-                
-                if ((c >= '0' && c <= '9') || c == '.'){
-                    if (type == 0){
-                        CalcUtils.getCalcUtil().setAmountDesired(Double.parseDouble(textField.getText()));
-                    }
-                    else if (type == 1){
-                        CalcUtils.getCalcUtil().setStrengthDesired(Double.parseDouble(textField.getText()));
-                    }
+                else if (isDecimalDigit(c)){
+                    setAmountValue(type, textField.getText());
                 }
-
             }
         };
 
         return numTextFieldListener;
     }
+
+
+    /** sets the number value based on type of textfield & its text
+     * 
+     * @param type : type of textfield
+     * @param text : String value from textfield
+     */
+    protected static void setAmountValue(int type, String text){
+        if (type == 0){
+            CalcUtils.getCalcUtil().setAmountDesired(Double.parseDouble(text));
+        }
+        else if (type == 1){
+            CalcUtils.getCalcUtil().setStrengthDesired(Double.parseDouble(text));
+        }
+        
+    }
+    
+    
 
     
     //percent listener for desired or base
@@ -78,12 +97,10 @@ public class UIUtils {
         TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                log("Percentage typed: " + c + ", for " + textField.getName());
                 if ((c == '\r' || c == '\n')) {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-
-                if (c >= '0' && c <= '9'){
+                else if (isInteger(c)){
                     CalcUtils.getCalcUtil().setPercent(Integer.parseInt(textField.getText()), textField.getName());
                 }
             }
@@ -92,21 +109,23 @@ public class UIUtils {
         return percentFieldListener;
     }
 
-    //flavor name listener
+
+    /** listener for flavor name
+     * 
+     * @param id
+     * @return
+     */
     public static TextField.TextFieldListener flavorNameListener(final int id){
 
         TextField.TextFieldListener nameTextFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                log( "Name typed: " + c);
                 if ((c == '\r' || c == '\n')){
-                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
-                            || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
+                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-
-//                int i = Integer.parseInt(textField.getName().substring(textField.getName().length()-1))-1;
-                
-                CalcUtils.getCalcUtil().setFlavorName(String.valueOf(textField.getText()), id);
+                else{
+                    CalcUtils.getCalcUtil().setFlavorName(String.valueOf(textField.getText()), id);
+                }
             }
         };
 
@@ -125,8 +144,7 @@ public class UIUtils {
                 if ((c == '\r' || c == '\n')) {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-
-                if (c >= '0' && c <= '9'){
+                else if (isInteger(c)){
                     //int i = Integer.parseInt(textField.getName().substring(textField.getName().length()-1))-1;
                     CalcUtils.getCalcUtil().setFlavorPercent(textField.getText(), id);
                 }
@@ -135,9 +153,42 @@ public class UIUtils {
 
         return percentFieldListener;
     }
+
+    //this is a customized TextFieldFilter for double values (not just numbers)
+    public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
+
+        @Override
+        public boolean acceptChar(TextField textField, char c) {
+            //((c >= '0' && c <= '9') || c == '.')  && isDecimalDigit(c)
+            if (textField.getText().contains(".") && c == '.')
+                return false;
+
+            return isDecimalDigit(c);
+        }
+
+    }
+
+    public static boolean isDecimalDigit(char c){
+        return c == '.' || (c >= '0' && c <= '9');
+    }
+
+
+    public static boolean isInteger(char c){
+        return c >='0' && c <= '9';
+    }
+    
+    //scales bitmap font to device screen
+    public static void scaleFonts(Skin skin){
+        
+        ObjectMap<String, BitmapFont> fontMap = skin.getAll(BitmapFont.class);
+        
+        for (String key : fontMap.keys())
+            fontMap.get(key).setScale(Gdx.graphics.getDensity());
+    }
     
     
     
+    //contains the listeners for SupplyScreen UI
     public static class SupplyUI{
 
         public static TextField.TextFieldListener flavorNameListener(final Supply supply){
@@ -168,8 +219,7 @@ public class UIUtils {
                         textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
                                 || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                     }
-
-                    if (c >= '0' && c <= '9'){
+                    else if (isInteger(c)){
                         String name = textField.getName();
                         if (name.equals(Constants.PERC_FIELD_NAMES[0]))
                             supply.setPgPercent(Integer.parseInt(textField.getText()));
@@ -183,6 +233,12 @@ public class UIUtils {
         }
 
 
+        /** returns the amount of the supply or strength of base
+         *
+         * @param type : 0 = amount, 1 = strength
+         * @param supply : the supply
+         * @return a listener
+         */
         public static TextField.TextFieldListener amountListener(final int type, final Supply supply){
             TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
                 @Override
@@ -195,9 +251,7 @@ public class UIUtils {
                         textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
                                 Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                     }
-
-
-                    if ((c <= '9' && c >= '0')|| c == '.') {
+                    else if (isDecimalDigit(c)){
                         if (type == 0) {
                             supply.setTotalAmount(Double.parseDouble(textField.getText()));
                         }
@@ -210,7 +264,14 @@ public class UIUtils {
 
             return numTextFieldListener;
         }
-        
+
+
+        /** returns a CheckBox listener
+         * 
+         * @param category : whether it is liquid supply or flavor supply
+         * @param window : window from SupplyScreen
+         * @return a listener
+         */
         public static ChangeListener checkBoxListener(final int category, final SupplyWindow window){
             ChangeListener flavorBoxListener = new ChangeListener(){
                 @Override
@@ -234,7 +295,7 @@ public class UIUtils {
 
     }
 
-    /** a customized inputlistener for keyboard
+    /** a customized inputlistener - not currently in use
      *
      * @param supply
      * @param textField
@@ -249,7 +310,7 @@ public class UIUtils {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
                             Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
-                else if (Character.isDigit(character) || Character.getType(character)==Character.DECIMAL_DIGIT_NUMBER) {
+                else if (isDecimalDigit(character)) {
                     if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
                         if (type == 0) {
                             supply.setTotalAmount(Double.parseDouble(textField.getText()));
@@ -270,57 +331,11 @@ public class UIUtils {
 
 
 
-    //this is a customized TextFieldFilter for double values (not just numbers)
-    public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
-        
-        @Override
-        public boolean acceptChar(TextField textField, char c) {
-            //((c >= '0' && c <= '9') || c == '.')  && isDecimalDigit(c)
-            if (textField.getText().contains(".") && c == '.')
-                return false;
-            
-            return isDecimalDigit(c);
-        }
-        
-        public static boolean isDecimalDigit(char c){
-            return c == '.' || (c >= '0' && c <= '9');
-        }
-    }
-    
-    
-    //custom textfield class
-    public static class DecimalTextField extends TextField{
-        
-        //for default
-        public DecimalTextField(String text, Skin skin) {
-            super(text, skin);
-        }
-
-        //for other types of textfield listeners
-        public DecimalTextField(String text, Skin skin, String styleName) {
-            super(text, skin, styleName);
-        }
-
-        @Override
-        public void setFocusTraversal(boolean focusTraversal) {
-            
-            
-            
-            super.setFocusTraversal(focusTraversal);
-        }
-        
-        
-        
-        
-    }
-    
-    
-    
-    
-    
-    
     
 
+    
+    
+    
     private static void log(String message){
         Gdx.app.log("CalcTable LOG: ", message);
     }

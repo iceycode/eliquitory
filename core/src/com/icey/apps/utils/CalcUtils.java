@@ -168,6 +168,7 @@ public class CalcUtils {
             flavors.get(index).setPercent(percent);
     }
     
+
     
     //flavor type
     public void setFlavorType(CheckBox box, int index){

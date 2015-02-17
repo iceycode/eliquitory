@@ -1,4 +1,5 @@
 #README#
+-
 
 A cross-platform e-cig juice calculator created using libgdx which calculates quantity user needs to create ejuice. The 
 ultimate goal is to market this on the google play marketplace at first, and the appstore later. A free version with
@@ -15,11 +16,13 @@ Features include:
 
 Nearly complete, just tweaking a few things. See [TODO](TODO.md).
 
-----
 
-#DEVELOPMENT NOTES#
+###Changelog###
+- 02-17-15
+    - got the screens to resize for anroid
+    - table layouts completely finished
+    - just nne
 
-##Changelog##
 - 02-12-15
     - table layouts almost all completely finished
     - supply screen & calculator screen saving respective data correctly
@@ -40,68 +43,125 @@ Nearly complete, just tweaking a few things. See [TODO](TODO.md).
 - 1-06-15
 	- began working on the app
 
-----
+##DEVELOPMENT NOTES##
+###*Project setup*###
 
-##Environment setup##
-
-- OSX 10.10.2 64 bit with IntelliJ 14 CE (also can work with Eclipse)
+- OSX Yosemite 10.10.2 64-bit on MacBook Pro 2011 with IntelliJ 14 CE (also can work with Eclipse)
 - SDKs: JDK 1.8, Android API 20.0 (Java 1.7.055)
 - Libraries used (managed with Gradle):
 - libgdx 1.5.3, libgdx tools, gson-2.3.1-beta
 - Testing: Mockito-2.0.3 & JUnit-4.12
+- see end of this section
+
+###*Libgdx Implementation Notes*###
+
+- Since this is an app, not a game, main app uses ApplicationListener.
+- camera not used, since no moving bodies, only UI
+- tables are used to hold elements
+	- these need to be updated during resize
+- Skins contain widget style- labels, textfields, buttons, etc
+	- there configurations set JSON file, uses atlas & packed png
+	- main class (MyTexturePacker) contains method to pack skins
+- For saving, using Json and saving to an ObjectMap
 
 
-
-GradleConnectionException issue: 
-Potential fixes found online:
-
-- If using intellij on OSX and getting Gradle error, set JVM version by going into package contents & editing Info.plist of intellij app
-- Other things I have tried:
-    - Set gradle JDK directory to 1.7, in terminal:
-<code>./gradlew -D JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"<code>
-    - set in gradle.properties: <code>org.gradle.java.home="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"<code>
-
-STILL NO FIX FOR GradleConnectionException issue!!!
-
-----
-
-##Deployment##
 ###Running###
 See <https://github.com/libgdx/libgdx/wiki/Gradle-on-the-Commandline>. For OSX, need to do in root.
 
-Desktop: <code>gradlew desktop:run<code>
+####*Desktop:*####
 
-Android:
-<code> gradlew android:installDebug android:run<code>
+~~~~
+./gradlew desktop:run
+~~~~
 
-HTML: <code> gradlew html:superDev <code>
+####*Android*####
+* make sure that the AVD is running correctly
+* need to clean/rebuild project if predex using old classes
+* making sure android API set in project.properties, AndroidManifest & build.gradle
 
-iOS (need to provision device via XCode)
+~~~~ 
+./gradlew android:installDebug android:run
+~~~~ 
+	
+####*HTML*####
+dependencies in build.gradle need to be in GdxDefinition.gwt.xml & *SuperDev.gwt.xml
 
-<code> gradlew ios:launchIPhoneSimulator <code>
+~~~~
+./gradlew html:superDev
+~~~~
 
-<code>gradlew ios:launchIPadSimulator <code>
+####*iOS (need to provision device via XCode)*####
 
-<code>gradlew ios:launchIOSDevice<code>
-
+~~~~ 
+./gradlew ios:launchIPhoneSimulator
+~~~~
+~~~~ 
+./gradlew ios:launchIPadSimulator
+~~~~
+~~~~ 
+./gradlew ios:launchIOSDevice
+~~~~
 
 ###Packaging:###
 When finished with final product, need to sign Android APK.
 
-Desktop: 
-<code>gradlew desktop:dist<code>
+####*Desktop:*####
 
-Android: 
-<code>gradlew android:assembleRelease<code>
+~~~~
+./gradlew desktop:dist
+~~~~
 
-HTML:
-<code> gradlew html:dist <code>
+####*Android:*####
 
-iOS: <code>gradlew ios:createIPA<code>
+~~~~
+./gradlew android:assembleRelease
+~~~~
+
+####*HTML:*####
+
+~~~~
+./gradlew html:dist
+~~~~
+
+####*iOS:*#### 
+
+~~~~
+./gradlew ios:createIPA
+~~~~
 
 
+###Fixes for Project Issues###
 
-##Contact Info##
+####*GradleConnectionError Issue*####
+
+- PROBLEM: 
+GradleConnectionException and bootstrap classpath not being set while assembling
+- ~~If using intellij on OSX and getting Gradle error, set JVM version by going into package contents & editing Info.plist of intellij app~~
+- Current fix (works!):
+- plugged script into .profile so that just need to run following:
+	- Set Java to 7 & JVM to 1.7 using terminal
+
+		~~~~
+		setjdk 1.7
+		~~~~ 
+	- Set gradle JDK directory to 1.7, in terminal:
+
+		~~~~
+		./gradlew -D JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"
+		~~~~
+	~~OR set in gradle.properties: .~~
+
+		~~~~
+		org.gradle.java.home="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"
+		~~~~
+
+####*Solutions to Other Possible Issues*####
+What works (even temporarily):
+- invalidating caches & restarting IntelliJ
+- rebuilt the project by deleting old bin, build directories (also clean/rebuild)
+- See end of [TODO](TODO.md) for more info on possible solutions - ones I have tried, that did not really succeed but might by useful in future.
+
+###Contact Info###
 ----
 
 My email: 

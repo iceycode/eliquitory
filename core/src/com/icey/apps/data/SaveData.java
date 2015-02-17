@@ -1,7 +1,8 @@
 package com.icey.apps.data;
 
-import com.badlogic.gdx.utils.*;
-import com.icey.apps.utils.SaveManager;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.ObjectMap;
 
 /** Save class & objects which get saved
  * - Save contains maps of objects which get saved
@@ -11,123 +12,44 @@ import com.icey.apps.utils.SaveManager;
  *      - RecipeData - contains users' previous recipe parameters
  *          ie, amount desired, strength, etc
  *
- *
  * Created by Allen on 2/3/15.
  */
-public class SaveData{
-    
-    private ObjectMap<String, SaveManager.RecipeData> recipes = new ObjectMap<String, SaveManager.RecipeData>();
-    
-    private IntMap<Supply> supplies = new IntMap<Supply>();
-    
-    public SaveData(){
+public class SaveData {
+
+    // Save class which becomes serialized into JSON format
+    public static class Save{
+        public ObjectMap<String, Object> recipeData = new ObjectMap<String, Object>();
+        public IntMap<Object> supplyData = new IntMap<Object>();
+        public ObjectMap<String, Object> accountData = new ObjectMap<String, Object>();
     }
 
-    public ObjectMap<String, SaveManager.RecipeData> getRecipes() {
-        return recipes;
+
+    /** Supply Data
+     * - data regarding supply - can be 1 of 3 supplies
+     */
+    public static class SupplyData{
+        public Supply supply; //the supply (liquid: PG, VG, other)
+        public Base base; //the nicotine base
+        public Flavor flavor; //the flavor
     }
 
-    public void setRecipes(ObjectMap<String, SaveManager.RecipeData> recipes) {
-        this.recipes = recipes;
-    }
 
-    public IntMap<Supply> getSupplies() {
-        return supplies;
-    }
+    /** Recipe Data
+     * - contains data relating to the recipe made
+     */
+    public static class RecipeData{
+        public String recipeName;
 
-    public void setSupplies(IntMap<Supply> supplies) {
-        this.supplies = supplies;
-    }
-    
-    
-    public void addSupply(int key, Supply supply){
-        this.supplies.put(key, supply);
-    }
-    
-    public void removeSupply(int key){
-        this.supplies.remove(key);
-        
-    }
-    
-    public void updateSupply(int key, Supply supply){
-        this.supplies.remove(key);
-        this.supplies.put(key, supply);
-    }
-    
-    public void addRecipe(String name, SaveManager.RecipeData recipe){
-        this.recipes.put(name, recipe);
-    }
-    
-    public void removeRecipe(String name){
-        this.recipes.remove(name);
-    }
-    
-    public void updateRecipe(String name, SaveManager.RecipeData recipe){
-        this.recipes.remove(name);
-        this.recipes.put(name, recipe);
-    }
+        public Base base;
+        public double amountDesired;
+        public double strengthDesired;
+        public Array<Integer> desiredPercents;
 
-    //    /** Supply Data
-//     *
-//     * */
-//    public static class SupplyData{
-//        public IntMap<Supply> supplyMap = new IntMap<Supply>();
-//    }
+        public double strengthNic;
+        public Array<Integer> basePercents;
 
+        public Array<Flavor> flavors;
 
-
-    //        public Save(){}
-
-//        public ObjectMap<String, Object> getRecipeData() {
-//            return data;
-//        }
-//
-//        public void setRecipeData(ObjectMap<String, Object> data) {
-//            this.data = data;
-//        }
-//
-//        public IntMap<Object> getSupplyMap() {
-//            return supplyMap;
-//        }
-//
-//        public void setSupplyMap(IntMap<Object> supplyMap) {
-//            this.supplyMap = supplyMap;
-//        }
-
-//implements Json.Serializable
-//        @Override
-//        public void write(Json json) {
-//            json.setIgnoreUnknownFields(true);
-//            json.addClassTag("saveData", SaveData.class);
-//
-//            json.writeValue("recipes", recipes, ObjectMap.class);
-//            json.writeValue("supplies", supplies, IntMap.class);
-//        }
-//
-//        @Override
-//        public void read(Json json, JsonValue jsonData) {
-//            json.setIgnoreUnknownFields(true);
-//            json.addClassTag("save", SaveData.class);
-//
-//            recipes = json.readValue("recipes", ObjectMap.class, jsonData);
-//            supplies = json.readValue("supplies", IntMap.class, jsonData);
-//        }
-//    /** Recipe Data
-//     * - contains data relating to the recipe made
-//     */
-//    public static class RecipeData{
-//        public String recipeName;
-//
-//        public double amountDesired;
-//        public double strengthDesired;
-//        public Array<Integer> desiredPercents;
-//
-//        public Base base;
-//        public double strengthNic;
-//        public Array<Integer> basePercents;
-//
-//        public Array<Flavor> flavors;
-//
-//        public Array<Double> finalMills;
-//    }
+        public Array<Double> finalMills;
+    }
 }

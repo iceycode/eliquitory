@@ -3,6 +3,7 @@
 <module rename-to="html">
 	<inherits name='com.badlogic.gdx.backends.gdx_backends_gwt' />
 
+    <!--<inherits name='Gson' />-->
 	<inherits name='MainApp' />
 	<entry-point class='com.icey.apps.client.HtmlLauncher' />
 	

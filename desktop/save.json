@@ -1,0 +1,51 @@
+{
+"data": {
+	"Supply_0": {
+		"class": "com.icey.apps.data.Supply",
+		"name": "Propylene Glycol",
+		"totalAmount": 100,
+		"supplyType": 0
+	},
+	"Supply_1": {
+		"class": "com.icey.apps.data.Supply",
+		"name": "Vegetable Glycerine",
+		"totalAmount": 100,
+		"supplyType": 1
+	},
+	"Supply_3": {
+		"class": "com.icey.apps.data.Supply",
+		"name": "Nicotine Base",
+		"totalAmount": 100,
+		"supplyType": 3,
+		"basePercents": [ 50, 50 ],
+		"baseStrength": 100
+	},
+	"Supply_4": {
+		"class": "com.icey.apps.data.Supply",
+		"name": "Caramel",
+		"totalAmount": 100,
+		"supplyType": 4,
+		"flavorType": 2
+	},
+	"R1": {
+		"class": "com.icey.apps.utils.SaveManager$RecipeData",
+		"recipeName": "R1",
+		"amountDesired": 12,
+		"strengthDesired": 20,
+		"desiredPercents": [ 30, 70, 0 ],
+		"base": {
+			"basePercents": [ 50, 50 ],
+			"baseStrength": 100
+		},
+		"flavors": [
+			{
+				"name": "Caramel",
+				"type": 1,
+				"percent": 12,
+				"amount": 1.44
+			}
+		],
+		"finalMills": [ 2.4, 5.76, 0, 2.4, 1.44, 0 ]
+	}
+}
+}

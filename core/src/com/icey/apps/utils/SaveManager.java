@@ -3,8 +3,6 @@ package com.icey.apps.utils;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.*;
-import com.google.gson.Gson;
-import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.data.Supply;
@@ -19,8 +17,10 @@ import com.icey.apps.data.Supply;
  *  - tweaked out a bit to fit my own needs
  * - saves into class Save which is encoded into jsonEnable file
  *  - two ObjectMaps - recipe save & supply save 
+ *  - Currently not*
  *  TODO: setup FB account, google plus & email account options to store in Save or Preferences
  *
+    - html:compileGWT: something with FileHandle(String) - changing to Gdx.files.local() fixes
  * Created by Allen on 1/11/15.
  */
 public class SaveManager {
@@ -36,69 +36,47 @@ public class SaveManager {
 
     //local since internal files are read only & want to write to this jsonEnable file
     private FileHandle saveFile;
-    
+
+    //the supply key String modifier
     private final String SUPPLY_KEY = "Supply_"; //modifier for supply key in object map
-
-    //for testing purposes
-    public IntMap<Supply> supplyData;
+    public IntMap<Supply> supplyData; //supply data in map form
     
 
-    public SaveManager(boolean encoded, boolean json){
+    public SaveManager(boolean encoded, FileHandle saveFile){
         this.encoded = encoded;
-        this.jsonEnable = json;
-        
-        if (encoded){
-            this.saveFile = new FileHandle(Constants.SAVE_FILE_ENCODED);
-        }
-        else{
-            this.saveFile = new FileHandle(Constants.SAVE_FILE_NAME);
-        }
-        
+        this.saveFile = saveFile;
+
         this.save = getSave();
-        
-        setSupplyData(); //set supply map, empty if it does not exist
-    }
-    
-    
-    //alterantive constructor, for saving data
-    public SaveManager(boolean encoded, boolean json, FileHandle file){
-        this.encoded = encoded;
-        this.jsonEnable = json;
-        this.saveFile = file;
-        
-        this.save = getSave();
-        
-        setSupplyData();
+
+        //set supply map, empty if it does not exist
+        if (save != null)
+            setSupplyData();
     }
 
-    public Save getSave(){
+
+    public Save getSave() {
         Save save = new Save();
 
-        if(saveFile.exists()){
-            if (jsonEnable){
+        try {
+            if (saveFile.exists()) {
                 Json json = new Json();
 
-                if (encoded) 
+                if (encoded)
                     save = json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString()));
-                else 
+                else
                     save = json.fromJson(Save.class, saveFile.readString());
             }
-            else{
-                Gson gson = new Gson();
-
-                if (encoded) 
-                    save = gson.fromJson(Base64Coder.decodeString(saveFile.readString()), Save.class);
-                else 
-                    save = gson.fromJson(saveFile.readString(), Save.class);
-            }
         }
-
-        if (save == null)
-            return new Save();
+        catch(Throwable e){
+            log("Could not find file. " + e.toString());
+            save = new Save();
+        }
 
         return save;
     }
-    
+
+
+
     //saves to a jsonEnable file
     public void saveToJson(){
         if (this.jsonEnable){
@@ -111,47 +89,9 @@ public class SaveManager {
                 saveFile.writeString(json.prettyPrint(save), false);
             
         }
-        else{
-            Gson gson = new Gson();
-//            Type dataType = new TypeToken<Save>() {}.getType();
-
-            if (encoded) 
-                saveFile.writeString(Base64Coder.encodeString(gson.toJson(save)), false);
-            else 
-                saveFile.writeString(gson.toJson(save), false);
-            
-        }
         
         log("saved with Json : " + jsonEnable + "/ Gson : " + !jsonEnable);
     }
-    
-    
-//    public void saveSupplyToJson(SupplyData data){
-//        if (this.jsonEnable){
-//            Json json = new Json();
-//            json.setOutputType(JsonWriter.OutputType.json);
-//
-//            String jsonAsString = json.prettyPrint(data);
-//            log("Json as string = " + jsonAsString);
-//
-//            if (encoded)
-//                saveFile.writeString(Base64Coder.encodeString(json.prettyPrint(data)), false);
-//            else
-//                saveFile.writeString(json.prettyPrint(data), false);
-//
-//        }
-//        else{
-//            Gson gson = new Gson();
-////            Type dataType = new TypeToken<Save>() {}.getType();
-//
-//            if (encoded)
-//                saveFile.writeString(Base64Coder.encodeString(gson.toJson(data)), false);
-//            else
-//                saveFile.writeString(gson.toJson(data), false);
-//
-//        }
-//
-//    }
 
     
     /** Loads the data from Save class
@@ -159,6 +99,7 @@ public class SaveManager {
      * @param key
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object loadRecipeData(String key) {
         log("Key = " + key);
 
@@ -168,57 +109,26 @@ public class SaveManager {
             return null;   //this if() avoids an exception, but check for null on load.
     }
 
-    /** gets the recipe data into the CalcUtil class
-     *
-     * @param name
-     */
-    public void getRecipeData(String name, CalcUtils calcUtils){
-
-        try {
-            RecipeData data = (RecipeData) loadRecipeData(name);
-            calcUtils.setRecipeName(data.recipeName);
-            calcUtils.setAmountDesired(data.amountDesired);
-            calcUtils.setStrengthDesired(data.strengthDesired);
-            calcUtils.setDesiredPercents(data.desiredPercents);
-
-            //Base
-            calcUtils.setBase(data.base);
-
-            //base strengths
-            calcUtils.setBaseStrength(data.strengthNic);
-            calcUtils.setBasePercents(data.basePercents);
-
-            //flavors
-            calcUtils.setFlavors(data.flavors);
-
-            calcUtils.setFinalMills(data.finalMills); //final amounts
-
-            calcUtils.loaded = true; //calcUtils now loaded with values
-        }
-        catch (NullPointerException e){
-            log("Missing recipe data!" + e.toString());
-        }
-    }
-
     
-    @SuppressWarnings("unchecked") //check classes explicitly
+    @SuppressWarnings("unchecked")
     public Object loadSupplyData(int key){
         log("Key = " + Integer.toString(key));
 
         if (save.data.containsKey(SUPPLY_KEY + key)){
             return save.data.get(SUPPLY_KEY + key);
-//            getSupplyData();
-//            if (supplyData.containsKey(key))
-//                return ((SupplyData)supplyData.get(key)).supply;
         }
  
         return null;
     }
 
 
-    //------------Methods for saving recipes-------------
+    //==============Methods for saving/deleting/updating recipes==============
 
-    //saves using Json as serializer
+    /** saves using Json as serializer
+     *
+     * @param key
+     * @param data
+     */
     public void saveRecipeData(String key, RecipeData data){
         save.data.put(key, data);
 
@@ -235,21 +145,22 @@ public class SaveManager {
 //        if (jsonEnable) saveToJson();
 //        else save_Gson();
 //    }
-    
+
+    /** deletes recipe by name
+     *
+     * @param name : recipe name (aka key)
+     */
     public void deleteRecipe(String name){
         save.data.remove(name);
     }
-    
-    
-    
-    //------------Methods for saving supplies-------------
-    
+
+
+    /** saves the recipe with key
+     *
+     * @param key : key is int, appended to end of String SUPPLY_KEY
+     * @param supply : the supply being saved
+     */
     public void saveSupplyData(int key, Supply supply){
-//        SupplyData supplyData = new SupplyData();
-//        supplyData.supply = supply;
-//        supplyData.key = key;
-        
-        //saveSupplyToJson(supplyData);
         
         if (this.supplyData.containsKey(key)){
             updateSupplyData(key, supply);
@@ -263,6 +174,11 @@ public class SaveManager {
     }
 
 
+    /** updates supply data based on key
+     *
+     * @param key : key in map
+     * @param supply : supply being updated
+     */
     public void updateSupplyData(int key, Supply supply){
         //remove from current supplydata map
         supplyData.remove(key);
@@ -276,8 +192,11 @@ public class SaveManager {
         
         log("updated supplyData");
     }
-    
-    
+
+    /** deletes the supply
+     *
+     * @param key
+     */
     public void deleteSupply(int key){
         this.supplyData.remove(key);
         
@@ -293,10 +212,11 @@ public class SaveManager {
     
     
     public IntMap<Supply> getSupplyData(){
-//        this.supplyData = (IntMap<Object>)save.data.get(SUPPLIES_KEY);
         return supplyData;
     }
-    
+
+
+    //sets the supply data
     public void setSupplyData(){
         this.supplyData = new IntMap<Supply>();
 
@@ -310,10 +230,8 @@ public class SaveManager {
         
     }
 
-    public void setEncoded(boolean encoded) {
-        this.encoded = encoded;
-    }
 
+    //sets the save data - for testing purposes
     public void setSave(Save save){
         this.save = save;
     }
@@ -324,20 +242,10 @@ public class SaveManager {
     }
 
 
-    //==================Nested save classes for accessing data==================
+    //==================Nested save classes for data==================
     // Save class which becomes serialized into JSON format
     public static class Save {
         public ObjectMap<String, Object> data = new ObjectMap<String, Object>();
-//        public Collection<SupplyData> supplies;
-//        public IntMap<Object> supplyMap = new IntMap<Object>();
-    }
-
-    /** Supply Data
-     * - data regarding supply - can be 1 of 3 supplies
-     */
-    public static class SupplyData{
-        public int key = -1;
-        public Supply supply = new Supply();
     }
 
 

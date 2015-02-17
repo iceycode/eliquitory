@@ -38,8 +38,10 @@
     supplyTab: {font: default-font, fontColor: black, background: supplyTabBack}
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-    default: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor,
-      messageFont: light-font, messageFontColor: grey}
+    default: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor, 
+      messageFont: light-font, messageFontColor: grey},
+    editField: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor,
+      messageFont: light-font, messageFontColor: blue} //this is for when editing a supply
     //numTextField: {selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor},
     //nameTextField: { selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor}
   },
@@ -48,7 +50,8 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
     default: { titleFont: default-font, background: addSupplyBack, titleFontColor: black},
-    supplies: { titleFont: default-font, background: supplyWindowBack, titleFontColor: black }
+    base: { titleFont: default-font, background: addBaseBack, titleFontColor: black },
+    flavor: { titleFont: default-font, background: addFlavorBack, titleFontColor: black }
   },
   
   com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {

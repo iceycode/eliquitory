@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -12,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.assets.Constants;
@@ -68,10 +68,13 @@ import com.icey.apps.utils.CalcUtils;
  */
 public class CalculatorScreen implements Screen {
 
-    Skin skin;
+    Skin skin; //skin
     Stage stage; //main stage
-    CalcTable table;
-    FlavorTable flavorTable;
+
+    //Tables which hold UI widgets, get added to stage
+    CalcTable table;  //root table
+    FlavorTable flavorTable; //flavorTable - holds flavors
+    ScrollPane scroll; //ScrollPane for flavorTable
 
     String errorMsg = Constants.ERROR_MAIN;
     String[] errorMsgs = Constants.ERROR_MSGS; //0=flavor, 1=desired percents, 2 = base percents
@@ -81,19 +84,29 @@ public class CalculatorScreen implements Screen {
 
     public Button backButton; //back button
 
+    //scaleX & Y for scaling table
+    //float scaleX = MainApp.scaleX;
+    //float scaleY = MainApp.scaleY;
+
+
     public CalculatorScreen(){
         skin = Assets.manager.get(Constants.CALC_SKIN, Skin.class);
 
-        stage = new Stage();
+        stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
-        stage.addActor(new Image(Assets.manager.get(Constants.CALC_BACKGROUND, Texture.class))); //background as Image
+//        stage.addActor(new Image(Assets.manager.get(Constants.CALC_BACKGROUND, Texture.class))); //background as Image
+
         setCalcTable();
+
     }
 
-    
+
+    /** sets up the main table
+     * - main table should take care of all scaling
+     */
     public void setCalcTable(){
         table = new CalcTable(skin);
-        
+
         setFlavorScrollTable();
 
         setButtons();
@@ -108,9 +121,9 @@ public class CalculatorScreen implements Screen {
         flavorTable = new FlavorTable(skin);
 
         ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
+
         table.add(scroll).width(480).height(200).colspan(6); //add to the outer table
         table.row();
-
     }
 
 
@@ -126,6 +139,7 @@ public class CalculatorScreen implements Screen {
         }
 
     }
+
 
     protected void setButtons(){
         //the flavor button
@@ -213,7 +227,12 @@ public class CalculatorScreen implements Screen {
         table.add(backButton).width(100).align(Align.left);
     }
 
-    
+
+    /** returns an error dialog which gets added to stage
+     *
+     * @param message
+     * @param detail
+     */
     protected void setErrorDialog(String message, String detail){
         Dialog errorDialog = new Dialog("", skin){
             protected void result(Object object) {
@@ -228,6 +247,17 @@ public class CalculatorScreen implements Screen {
         errorDialog.getButtonTable().setHeight(30f);
 
         errorDialog.text(message).show(stage); //, Actions.fadeOut(2f)
+    }
+
+    //scales the stage actors
+    protected void getTableWidgetInfo() throws NullPointerException{
+        for (Actor a : table.getChildren()){
+//            a.setScale(MainApp.scaleX, MainApp.scaleY);
+            log ("Actor name: " + a.getName());
+            log ("Actor class: " + a.getClass().getSimpleName());
+            log("Table Actor position: " + "(" + a.getX() + ", " + a.getY() + ")" + "\n" +
+                    "Actor Actor size: " + a.getWidth() + " x " + a.getHeight());
+        }
     }
 
 
@@ -328,8 +358,24 @@ public class CalculatorScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        //restore the stage's viewport; true updates camera to 0,0 - do not need this
+        stage.getViewport().update(width, height, false);
 
+        table.invalidateHierarchy();
+        table.setSize(width, height);
+
+        log("Resized screen");
     }
+
+
+//    protected void getTableWidgetInfo(){
+//        for (Actor a : table.getChildren()){
+//            log("Positions before scaling:  (" + a.getX()+ ", " + a.getY() + ")");
+//            a.setScale(table.getScaleX(), table.getScaleY());
+//
+//            log("Positions AFTER scaling:  (" + a.getX()+ ", " + a.getY() + ")");
+//        }
+//    }
 
     @Override
     public void pause() {

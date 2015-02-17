@@ -6,7 +6,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.OrderedMap;
+import com.badlogic.gdx.utils.SnapshotArray;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.utils.CalcUtils;
@@ -38,70 +41,95 @@ public class FlavorTable extends Table{
     VerticalGroup vertGroup; //vertical group for insertion/removal of flavor fields
     public Array<Label> calcLabels; //labels for the calculated amounts to add
     public Array<Label> supplyLabels; //flavor supply labels
-    public Array<TextField> flvrPercsTFs;
-    public Array<TextField> flvrTitleTFs;
-    public OrderedMap<Integer, Array<CheckBox>> checkBoxMap; //0=PG, 1=VG, 2 =EtOH/H2O/etc
+    public Array<TextField> flvrPercsTFs = new Array<TextField>();
+    public Array<TextField> flvrTitleTFs = new Array<TextField>();
+
+    //CheckBox map for flavors added (by order); for Array:0=PG, 1=VG, 2 =EtOH/H2O/etc
+    public OrderedMap<Integer, Array<CheckBox>> checkBoxMap  = new OrderedMap<Integer, Array<CheckBox>>();
     
     //these arrays/maps are to help manipulate fields of flavor if it switched to supply one
     SelectBox<TextField> dropDown; //current selectbox
     Array<Flavor> supplyFlavors; //flavors in the users saved supply
-    Array<String> flavorNames; //those flavors name textfields - go into selectbox
+    Array<String> flavorNames = new Array<String>(); //flavor names in supply - go into selectbox;
     ObjectMap<String, Flavor> flavorMap; //to map out flavors in supply to position in flavorTF array
-    
     
     Flavor currFlavor; //current flavor being added
     public int numFlavors = 0; //the number of flavors
     String fieldName = "flavorFieldName_";
 
+
     public FlavorTable(Skin skin){
         instance = FlavorTable.this;
-
         this.skin = skin;
-        
-        defaults().maxWidth(480).maxHeight(200);
-        top();
-        //debug(); //debug this table
-        
-        currFlavor = Constants.NEW_FLAVOR; //a new flavor initially added
-        
-        flavorNames = new Array<String>(); //flavors TFs to go in selectbox
-        flavorNames.add(Constants.NEW_FLAVOR_STRING); //add default value
-        
-        flavorMap = new ObjectMap<String, Flavor>(); //flavors set here (when added & from supply)
-        flavorMap.put(Constants.NEW_FLAVOR_STRING, currFlavor);
 
+        setTableProperties(); //table properties
+
+        initArray_Maps(); //initialize arrays/maps
+
+        setSupplies(); //set the supplies (if any)
+
+        //setTitle(); //set the title of the table
+        initFlavorGroup(); //set the flavor group
+    }
+
+    //sets table properties
+    protected void setTableProperties(){
+        //        defaults().maxWidth(480).maxHeight(200);
+        setFillParent(true);
+        top();
+        setLayoutEnabled(true); //note: default is true
+        setClip(true);
+
+        //debug(); //debug this table
+        //pack();
+    }
+
+    //initializes the arrays & maps used
+    protected void initArray_Maps(){
+        flavorNames = new Array<String>();
+        flvrPercsTFs = new Array<TextField>();
+        flvrTitleTFs = new Array<TextField>();
+        checkBoxMap = new OrderedMap<Integer, Array<CheckBox>>();
+        calcLabels = new Array<Label>();
+        supplyLabels = new Array<Label>();
+        flavorMap = new ObjectMap<String, Flavor>(); //flavors set here (when added & from supply)
+    }
+
+
+
+
+    //sets the supplies
+    protected void setSupplies(){
         //the supllied flavors
         if (calcUtils.flavorSupplied) {
             supplyFlavors = calcUtils.getSupplyFlavors();
             setFlavorSupplyNameFields();
         }
-        
-        flvrPercsTFs = new Array<TextField>();
-        flvrTitleTFs = new Array<TextField>();
-        checkBoxMap = new OrderedMap<Integer, Array<CheckBox>>();
-        
-        calcLabels = new Array<Label>();
-        supplyLabels = new Array<Label>();
+    }
 
-        setTitle(); //set the title of the table
 
-        vertGroup = new VerticalGroup(); //add indiviual flavors here
-        
+    //sets the vertical group which holds the flavors
+    protected void initFlavorGroup(){
+        initFirstFlavor(); //initialize first flavor
+
+
+        vertGroup = new VerticalGroup(); //add indiviual flavors to a VerticalGroup
+
         addNewFlavor(currFlavor); //adds 1 flavor initially
         add(vertGroup).align(Align.center).colspan(6).expandX(); //add this nested table into the root flavor table
     }
-    
-    public void setTitle(){
-        Label flavorLabel = new Label(Constants.FLAVORS_TITLE, skin, "flavorLabel");
-        flavorLabel.setAlignment(Align.center);
-        add(flavorLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).align(Align.center).colspan(6);
 
-        
-        row();
+
+    //adds 1st flavor to the table
+    @SuppressWarnings("unchecked")
+    protected void initFirstFlavor(){
+        flavorNames.add(Constants.NEW_FLAVOR_STRING); //add default value
+        currFlavor = Constants.NEW_FLAVOR; //a new flavor initially added
+
+        flavorMap.put(Constants.NEW_FLAVOR_STRING, currFlavor);
     }
-    
 
-    
+
     public void addNewFlavor(Flavor flavor){
         this.currFlavor = flavor;
         
@@ -127,6 +155,7 @@ public class FlavorTable extends Table{
 
     
     //flavor fields get added to a new table, which in turn is added to vertical group
+    @SuppressWarnings("unchecked")
     protected void addFlavorFields(Table table){
         final int flavorID = numFlavors - 1; //id of flavor added
 
@@ -268,6 +297,7 @@ public class FlavorTable extends Table{
         
 
         CheckBox otherCheck = new CheckBox("EtOH/H2O/etc ", skin);
+//        otherCheck.setScale(scaleX, scaleY);
         otherCheck.setName("flavorCheckBoxOther_"+Integer.toString(id + 1));
         otherCheck.addListener(flavorBoxListener(id));
 
