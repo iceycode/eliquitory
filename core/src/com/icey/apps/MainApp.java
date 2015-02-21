@@ -1,11 +1,7 @@
 package com.icey.apps;
 
 import com.badlogic.gdx.Application.ApplicationType;
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Array;
@@ -13,6 +9,7 @@ import com.icey.apps.assets.Assets;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.screens.CalculatorScreen;
 import com.icey.apps.screens.MenuScreen;
+import com.icey.apps.screens.SettingScreen;
 import com.icey.apps.screens.SupplyScreen;
 import com.icey.apps.utils.SaveManager;
 
@@ -21,6 +18,8 @@ import com.icey.apps.utils.SaveManager;
  * - also responsible to taking "back" events (keyboard back, android back button)
  * - since everything is on a stage, will be using stage viewport/camera
  *
+ * - App states = {0: menu screen, 1: calc screen, 2: supplies screen, 3: settings screen}
+ *
  * Notes on Device Type & settings:
  *  - Android: 
  *     * android:screenOrientation= "sensorLandscape" <-- in MainActivity
@@ -28,9 +27,16 @@ import com.icey.apps.utils.SaveManager;
  *
  * NOTE: DO NOT initalize anything, other then primitives, before create() method
  *
+ * App States:
+ *  - App can have a 3 kinds of states dependent on following:
+ *          adsEnabled; supplyEnabled
+ *          [true; false]
+ *          [false; false]
+ *          [false; true]
+ *
  * * * * * * * * TODOS * * * * * * * * *
  * TODO: add recipe screen (maybe?)
- *
+ * TODO: setup the gdx-pay extension
  *
  * Created by Allen on 01/06.
  */
@@ -41,30 +47,27 @@ public class MainApp implements ApplicationListener{
     boolean screensLoaded = false; //whether screens are loaded or not
     
     //(boolean - encoded, boolean json
-    public static SaveManager saveManager;
+    public static SaveManager saveManager; //handles user save data & preferences
+    private String settingsName;
+    private String saveFileName; //save file location
+
+    public static boolean supplyEnabled = true; //whether supply feature enabled
+    public static boolean adsEnabled = false;
 
     //the apps state & previous state
-    // -1: causes exit; 0: menu, 1: calc, 2: supplies (more to come)
+    // -1: causes exit/pause; 0: menu, 1: calc, 2: supplies, 3: settings
     public static int state;
     public static int prevState; //the previous state
 
     private static boolean screenSet = false; //value determines whether screen is set
-    //this is for mobile devices - screen size is set based on device & does not change
-    boolean screenSizeSet = false;
-    
     ApplicationType appType;
     
     //main fonts used throughout all screens
     Array<BitmapFont> bitmapFonts;
 
-    //scale for X/Y in order to adjust size/position of stage actors
-    public static float scaleX = 1;
-    public static float scaleY = 1;
-
     public static float appWidth;
     public static float appHeight;
 
-    private FileHandle saveFile; //save file location
 
 
 	@Override
@@ -73,11 +76,16 @@ public class MainApp implements ApplicationListener{
         setState(-1); //initial state set
 
         initAppSettings(); //settings (dimensions, save files, etc) based on device
-        initSaveData(false); //initializes save data (True = encoded)
+
+        initSaveManager(true); //initializes save manager (True = encoded)
     }
 
 
-    //get device type to set platform-dependent app settings
+    /** get device & user app settings
+     * - gets type of app by device to set platform-dependent graphics settings
+     *
+     *
+     */
     protected void initAppSettings(){
         appType = Gdx.app.getType();
 
@@ -88,20 +96,48 @@ public class MainApp implements ApplicationListener{
             appWidth = Gdx.graphics.getWidth();
             appHeight = Gdx.graphics.getHeight();
 
-            scaleX = Gdx.graphics.getWidth()/ Constants.SCREEN_WIDTH;
-            scaleY = Gdx.graphics.getHeight()/Constants.SCREEN_HEIGHT;
+            scaleFonts();
         }
 
         log("App Size: " + Gdx.graphics.getWidth() + " x " + Gdx.graphics.getHeight());
+
+
     }
 
-    protected void initSaveData(boolean encoded){
-        if (encoded)
-            saveFile = Gdx.files.local(Constants.SAVE_FILE_ENCODED);
+    /** initializes the SaveManager
+     * - contains user save data for recipes and/or supplies
+     * - sets app state (3 types): Ads, No Ads, Supplies/No supplies
+     *
+     * @param encoded : whether savedata is encoded or not
+     */
+    protected void initSaveManager(boolean encoded){
+        //sets the preferences name based on ApplicationType enum
+        if (appType == ApplicationType.Android)
+            settingsName = Constants.SETTINGS_Android;
+        else if (appType == ApplicationType.WebGL)
+            settingsName = Constants.SETTINGS_Web;
+        else if (appType == ApplicationType.iOS)
+            settingsName = Constants.SETTINGS_iOS;
         else
-            saveFile = Gdx.files.local(Constants.SAVE_FILE);
+            settingsName = Constants.SETTINGS_Desktop;
 
-        saveManager = new SaveManager(false, saveFile);
+
+        if (encoded)
+            saveFileName = Constants.SAVE_FILE_ENCODED;
+        else
+            saveFileName = Constants.SAVE_FILE;
+
+        saveManager = new SaveManager(encoded, saveFileName, settingsName);
+
+        setAppFeatures();
+    }
+
+
+    //returns values related to features enabled/disabled
+    protected void setAppFeatures(){
+        //adsEnabled only works on Android currently as of 02/19
+        adsEnabled = saveManager.getAdState(true);
+        supplyEnabled = !saveManager.getSupplyState(true);
     }
 
 
@@ -112,6 +148,7 @@ public class MainApp implements ApplicationListener{
         screens.add(new MenuScreen());
         screens.add(new CalculatorScreen());
         screens.add(new SupplyScreen());
+        screens.add(new SettingScreen());
 
         scaleFonts();
         setState(0);
@@ -125,8 +162,6 @@ public class MainApp implements ApplicationListener{
         bitmapFonts = Assets.AssetHelper.getAllFonts();
 
         for (BitmapFont font : bitmapFonts){
-            font.setScale(.9f, .9f); //make font a bit smaller for all
-
             if (appType!=ApplicationType.Desktop){
                 font.setScale(Gdx.graphics.getDensity());
             }
@@ -242,15 +277,20 @@ public class MainApp implements ApplicationListener{
 
 
     //exit app methods of disposal
-    //TODO: Set so that Home button disposes completely, back button pauses or something like that
     protected void exitApp(){
 
         for (Screen s : screens){
             s.dispose();
         }
 
-        //on android, will cause dispose/pause in near future (see doc)
-        Gdx.app.exit();
+        if (appType == ApplicationType.Android){
+            pause();
+        }
+        else{
+            //on android, will cause dispose/pause in near future
+            Gdx.app.exit();
+        }
+
         //dispose();
     }
 

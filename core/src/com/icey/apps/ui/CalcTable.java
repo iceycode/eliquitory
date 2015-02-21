@@ -2,20 +2,15 @@ package com.icey.apps.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntMap;
-import com.icey.apps.assets.Assets;
+import com.icey.apps.MainApp;
 import com.icey.apps.assets.Constants;
-import com.icey.apps.data.Supply;
 import com.icey.apps.utils.CalcUtils;
-import com.icey.apps.utils.SupplyUtils;
 import com.icey.apps.utils.UIUtils;
 
 /** Table Widget containg Liquid (PG, VG, Other) & Base labels/textfields
@@ -23,14 +18,15 @@ import com.icey.apps.utils.UIUtils;
  * - holds percent fields
  * - sends updates to CalcUtils on what is going on with data
  *
+ * Table Layout
+ *  Root Table <---Scroll(FlavorTable <--- VertGroup <--- Individual Flavor tables)
+ *
+ * TODO: fix table so that supply labels are not off the screen (occurs in android)
  *
  * Created by Allen on 1/21/15.
  */
 public class CalcTable extends Table{
-    
-    
-    public static CalcTable instance;
-    
+
     Skin skin;
     
     //width & height of the text fields (percents)
@@ -40,40 +36,39 @@ public class CalcTable extends Table{
     //dimensions of title fields
     private final float TITLE_HEIGHT = Constants.TITLE_HEIGHT;
     private final float TITLE_WIDTH = Constants.TITLE_WIDTH;
-    
+
+    public boolean supplyEnabled = MainApp.supplyEnabled; //whether enabled supply or not
 
     //the text fields within this table
     public TextField titleTextField;
     public TextField strTextField;
     public TextField amtDesTextField;
     public TextField baseStrTF;
-    public Array<TextField> percentTextFields; //0-2 Desired; 3-5 base; 6 flavor
 
-    public Array<Label> calcLabels; //index: 0=PG, 1=VG, 2=other, 3=Base, 4=Flavor1, 5=Flavor2...N=FlavorN
+    //percent text fields : 0-2 Desired; 3-5 base
+    //static since need to be manipulated externally
+    public static Array<TextField> percentTextFields = new Array<TextField>();
+
+    public FlavorTable flavorTable;
+
+    //public Array<Label> calcLabels; //index: 0=PG, 1=VG, 2=other, 3=Base, 4=Flavor1, 5=Flavor2...N=FlavorN
     public Array<Label> supplyLabels; //index: same as above
-
-    //default values set initially
-    String recipeName = "Recipe Name Here";
 
     CalcUtils calcUtils = CalcUtils.getCalcUtil(); //stores, calculates amounts & supply changes
 
-//    //scaleX & Y for scaling table
-//    float scaleX = MainApp.scaleX;
-//    float scaleY = MainApp.scaleY;
+    public static int cols = 3; //columns table contains with supplies not enabled
 
-    
     public CalcTable(Skin skin){
-        instance = CalcTable.this;
-        
         this.skin = skin;
 
+        if (supplyEnabled)
+            cols = 4;
 
         //the background
-        setBackground(new TextureRegionDrawable(new TextureRegion(Assets.manager.get(Constants.CALC_BACKGROUND, Texture.class))));
+        setBackground(new TextureRegionDrawable(skin.getRegion("calcBackground")));
 
         setTableProperties(); //table properties
 
-        //setBackground(skin.getDrawable("calcBackground"));
         setTableWidgets(); //table widgets
 
         debug();
@@ -83,64 +78,91 @@ public class CalcTable extends Table{
 
     //table properties
     protected void setTableProperties(){
-//        setScale(scaleX, scaleY);
-        setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_WIDTH);
+        setBounds(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
-        setClip(true);
-        setLayoutEnabled(true);
-        setFillParent(true);
+        //setClip(true); //clips any widget on outside of table bounds
+        setLayoutEnabled(true); //default is true
+        setFillParent(true); //fills parent (stage in this case)
 
-        //center(); //center the table
+        top().left(); //align the table to top left
 //        defaults().padRight(2f);
 
-//        columnDefaults(0).width(150).align(Align.right);
-//        columnDefaults(1).width(50).align(Align.left);
-//        columnDefaults(2).width(105);
+        columnDefaults(0).prefWidth(100).right();
+        columnDefaults(1).prefWidth(50).left();
+        columnDefaults(2).prefWidth(110).center();
+
+        if (cols == 4)
+            columnDefaults(3).prefWidth(60).left();
     }
 
     protected void setTableWidgets(){
-        initCalcLabels(); //initialize labels for supplies & calculated values into arrays
+        if (supplyEnabled)
+            setSupplyLabels(); //initialize labels for supplies only
 
+        setRecipeTitle(); //row 1
+
+        //set user desired value fields
+        setGoalTitle(); //row 2
+        setGoalAmount(); //row 3
+        setGoalStrength(); //row 4
+        setGoalPercents(); //rows 5-7
+
+        //set the nicotine base fields
+        setBaseTitle(); //row 8
+        setBaseStrength(); //rows 9
+        setBaseRatios(); //rows 10-11
+
+
+        //set the flavor fields
+        setFlavorTitle();
+        setFlavorScrollTable();
+    }
+
+    //======ROW 1====Title of Recipe
+    protected void setRecipeTitle(){
         //label for recipe name
-        Label titleTFLabel = new Label("Recipe Name:", skin);
-//        titleTFLabel.setScale(scaleX, scaleY);
-        add(titleTFLabel).width(titleTFLabel.getTextBounds().width + 5).align(Align.right);
+        Label titleTFLabel = new Label("Name:", skin);
+        add(titleTFLabel).width(titleTFLabel.getTextBounds().width).padRight(2).center();
 
         //title text field (recipe name)
-        titleTextField = new TextField("", skin, "titleTextField"); //title of recipe at top
-//        titleTextField.setSize(Constants.SCREEN_WIDTH - 150, 50);
-//        titleTextField.setScale(scaleX, scaleY);
-        titleTextField.setMessageText(recipeName);
+        titleTextField = new TextField("", skin, "recipe"); //title of recipe at top
+        titleTextField.setMessageText("Recipe Name Here");
         titleTextField.setName("recipeTextField");
+        titleTextField.setFocusTraversal(true);
         titleTextField.setTextFieldListener(UIUtils.nameTextFieldListener()); //.width(titleTextField.getWidth())
-        add(titleTextField).width(Constants.SCREEN_WIDTH - 150).height(TITLE_HEIGHT).colspan(5).fillX();
+        add(titleTextField).colspan(cols-1).fill().expand(); //.width(Constants.SCREEN_WIDTH - 150).height(TITLE_HEIGHT)
+    }
+
+    //====ROW 2==== GOAL AMOUNTS (DESIRED)
+    protected void setGoalTitle(){
         row();
 
-
-        //====================DESIRED AMOUNTS & FINAL AMOUNTS================= (1st category)
-        Label goalLabel = new Label(Constants.GOAL_TITLE, skin, "goalLabel");
+        Label goalLabel = new Label(Constants.GOAL_TITLE, skin, "title");
         goalLabel.setAlignment(Align.center);
-        add(goalLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).colspan(3).align(Align.center);
 
-        Label calcsLabelTitle = new Label(Constants.FINAL_CALCS_TITLE, skin, "calcsLabel");
-        add(calcsLabelTitle).width(calcsLabelTitle.getWidth()); //.align(Align.left)
-        
-        Label supplyLabelTitle = new Label(Constants.SUPPLY_AMTS_TITLE, skin, "supplyLabel");
-        supplyLabelTitle.setColor(Color.YELLOW);
-        add(supplyLabelTitle).width(supplyLabelTitle.getWidth());
+        if (supplyEnabled){
+            add(goalLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).colspan(cols-1).center();
+            add(new Label("Supply", skin, "calcsLabel"));
+        }
+        else{
+            add(goalLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).colspan(cols).center();
+        }
+
+    }
+
+
+    //====ROW 3==== Goal Amounts - volume of juice (ml)
+    protected void setGoalAmount(){
+
         row();
 
         //amount desired label
         Label amtLabel = new Label(Constants.AMOUNTS_TITLES[0], skin);
-//        amtLabel.setSize(150, FIELD_HEIGHT);
-//        amtLabel.setScale(scaleX, scaleY);
         amtLabel.setAlignment(Align.right);
         add(amtLabel).align(Align.right);
-        
-        //amount desired textfield 
+
+        //amount desired textfield
         amtDesTextField = new TextField("", skin, "numTextField");
-//        amtDesTextField.setSize(FIELD_WIDTH, FIELD_HEIGHT);
-//        amtDesTextField.setScale(scaleX, scaleY);
         amtDesTextField.setName("amountTextField");
         amtDesTextField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         amtDesTextField.setTextFieldListener(UIUtils.numTextFieldListener(Constants.AMOUNT_LISTENER_TYPE[0]));
@@ -149,18 +171,20 @@ public class CalcTable extends Table{
         amtDesTextField.setMessageText(Double.toString(calcUtils.getAmountDesired()));
         amtDesTextField.setColor(Color.RED);
         add(amtDesTextField).width(FIELD_WIDTH).height(amtDesTextField.getHeight()).align(Align.left);
+
+    }
+
+
+    //====ROW 4==== Goal strength - strength of nicotine (mg)
+    protected void setGoalStrength(){
         row();
-        
+
         Label strLabel = new Label(Constants.AMOUNTS_TITLES[1], skin);
-//        strLabel.setSize(150, 25);
-//        strLabel.setScale(scaleX, scaleY);
         strLabel.getStyle().fontColor = Color.BLACK;
         strLabel.setAlignment(Align.right);
         add(strLabel).align(Align.right);
-        
+
         strTextField = new TextField("", skin, "numTextField");
-//        strTextField.setSize(FIELD_WIDTH, FIELD_HEIGHT);
-//        strTextField.setScale(scaleX, scaleY);
         strTextField.setName("strengthTextField");
         strTextField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         strTextField.setTextFieldListener(UIUtils.numTextFieldListener(Constants.AMOUNT_LISTENER_TYPE[1]));
@@ -168,136 +192,122 @@ public class CalcTable extends Table{
         strTextField.setMessageText(Double.toString(calcUtils.getStrengthDesired()));
         strTextField.setAlignment(Align.center);
         strTextField.setColor(Color.RED);
+
         add(strTextField).width(FIELD_WIDTH).height(strTextField.getHeight()).align(Align.left);
+    }
 
-        percentTextFields = new Array<TextField>();
+    //=====ROWS 5-7===== Goal Percents - PG, VG & Other percents
+    protected void setGoalPercents(){
         row();
-        addPercentFields(true); //add percent fields for desired amounts
 
-        
-        
-        //====================NICOTINE BASE====================2nd category - Nicotine Base
-        Label baseLabel = new Label(Constants.BASE_TITLE, skin, "baseLabel");
-//        baseLabel.setSize(TITLE_WIDTH, TITLE_HEIGHT);
-//        baseLabel.setScale(scaleX, scaleY);
+        int[] types = Constants.GOAL_PERCENT_TYPES;
+        addPercentFields(calcUtils.getDesiredPercents(), types); //add percent fields for desired amounts
+    }
+
+    //====ROW 8==== Nicotine Base title
+    protected void setBaseTitle(){
+
+        Label baseLabel = new Label(Constants.BASE_TITLE, skin, "title");
         baseLabel.setAlignment(Align.center);
         baseLabel.getStyle().fontColor = Color.BLACK;
-        add(baseLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).colspan(3).align(Align.center); //.align(Align.right)
-        
-        add(calcLabels.get(3)); //.width(50f).height(25f).align(Align.right)
-        add(supplyLabels.get(3));
-        
+        add(baseLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).colspan(cols).align(Align.center); //.align(Align.right)
+
+//        add(calcLabels.get(3)); //.width(50f).height(25f).align(Align.right)
+        if (supplyEnabled)
+            add(supplyLabels.get(3));
+    }
+
+    //====ROW 9==== Nicotine Base Strength
+    protected void setBaseStrength(){
         row();
-        
+
         Label baseStrLabel = new Label("Strength (mg): ", skin);
-//        baseStrLabel.setSize(150, FIELD_HEIGHT);
-//        baseStrLabel.setScale(scaleX, scaleY);
         baseStrLabel.setAlignment(Align.right);
         add(baseStrLabel).align(Align.right).fill(); //width(120).height(25f).
 
         baseStrTF = new TextField("", skin, "numTextField");
-//        baseStrTF.setSize(FIELD_WIDTH, FIELD_HEIGHT);
-//        baseStrTF.setScale(scaleX, scaleY);
         baseStrTF.setName("basestrengthTextField");
         baseStrTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
+        baseStrTF.setFocusTraversal(true);
         baseStrTF.setAlignment(Align.center);
         baseStrTF.setMessageText(Double.toString(calcUtils.getBaseStrength()));
         baseStrTF.setColor(Color.RED);
         add(baseStrTF).width(FIELD_WIDTH).fillY().align(Align.left); //.height(FIELD_HEIGHT)
-        
+    }
+
+    //=====ROW 10-11===== base PG/VG percents (ratio)
+    protected void setBaseRatios(){
         row();
-        addPercentFields(false); //add base percent fields
 
-        setSupplyLabels(); //supply labels are set
+        Array<Integer> percents = calcUtils.getBasePercents();
+        log(calcUtils.getBasePercents().toString());
 
-        //====================FLAVOR TITLE==========================
-        Label flavorLabel = new Label(Constants.FLAVORS_TITLE, skin, "flavorLabel");
+        if (percents.size == 0)
+            percents = Constants.ZERO_BASE_PERCENTS;
+
+        int[] types = Constants.BASE_PERCENT_TYPES;
+
+        addPercentFields(percents, types);
+    }
+
+    //=====ROW 12====Flavor title
+    protected void setFlavorTitle(){
+        Label flavorLabel = new Label(Constants.FLAVORS_TITLE, skin, "title");
         flavorLabel.setAlignment(Align.center);
         add(flavorLabel).width(TITLE_WIDTH).height(TITLE_HEIGHT).align(Align.center).colspan(6);
 
+        //====11th Row===(flavorTable goes here)
         row();
-
-        //add flavor table in CalculatorScreen
     }
 
 
-    //sets labels for calculated amounts & before/after supply amounts
-    protected void initCalcLabels(){
-        //create final calculations labels supply labels (start with 4 each)
-        calcLabels = new Array<Label>();
-        supplyLabels = new Array<Label>();
-        for (int labelCount = 0; labelCount < 4; labelCount++){
-            Label calcLabel = new Label("-", skin, "calcsLabel");
-//            calcLabel.setSize(50, 25);
-//            calcLabel.setScale(scaleX, scaleY);
+    //a nested table with a scrollpane in it
+    protected void setFlavorScrollTable(){
 
-            calcLabels.add(calcLabel); //initially set with "-", indicates not calculated
+        flavorTable = new FlavorTable(skin);
 
-            Label supplyLabel = new Label("0", skin, "supplyLabel"); //0 indicates not supplied
-//            supplyLabel.setSize(50, 25);
-//            supplyLabel.setScale(scaleX, scaleY);
-            supplyLabel.setColor(Color.YELLOW);
-            supplyLabel.getColor().a = .8f;
-            supplyLabel.getStyle().fontColor = Color.RED; //if supply 0, set as red
-            supplyLabels.add(supplyLabel);
-        }
+        ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
+
+        add(scroll).width(480).height(200).colspan(cols); //add to the outer table
+        row();
     }
-    
+
 
     /** adds percentage fields to the
      *
      * //@param percentFieldLabels //String[] percentFieldLabels,
-     * @param desired
      */
-    protected void addPercentFields(boolean desired){
-        String[] fieldNames;
-        Array<Integer> percents;
-        int numFields = 2;
-        if (desired){
-            numFields = 3;
-            percents = calcUtils.getDesiredPercents();
-            fieldNames = Constants.DESIRED_PERC_LABELS;
-        }
-        else{
-            percents = calcUtils.getBasePercents();
-            
-            log(calcUtils.getBasePercents().toString());
-            
-            if (percents.size == 0)
-                percents = Constants.ZERO_BASE_PERCENTS;
-            fieldNames = Constants.BASE_PERC_LABELS;
-        }
-            
+
+    protected void addPercentFields(Array<Integer> percents, int[] types){
+
+        int numFields = types.length - 1;
 
         for (int i = 0; i < numFields; i++){
-            Label percLabel = new Label(fieldNames[i], skin);
-//            percLabel.setSize(150, 25);
-//            percLabel.setScale(scaleX, scaleY);
+            Label percLabel = new Label(Constants.TYPE_NAMES[i], skin);
             percLabel.setAlignment(Align.right);
-            add(percLabel); //.width(width+10).align(Align.right)
+            add(percLabel).right(); //.width(width+10).align(Align.right)
 
             TextField percentField = new TextField("", skin, "numTextField");
-//            percentField.setSize(FIELD_WIDTH, FIELD_HEIGHT);
             percentField.setColor(Color.DARK_GRAY);
             percentField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
             percentField.setAlignment(Align.center);
-            percentField.setName(fieldNames[i]);
+//            percentField.setName(Constants.TYPE_NAMES[i]);
             percentField.setMessageText(Integer.toString(percents.get(i)));
             percentField.setMaxLength(2);
-            percentField.setTextFieldListener(UIUtils.percentListener());
+            percentField.setTextFieldListener(UIUtils.percentListener(types[i]));
             
 //            float width = percLabel.getTextBounds().width;
-            if (i == 0)
-                add(percentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).align(Align.left);
-            else
-                add(percentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).align(Align.left).colspan(2);
-
-            //add a slider
-            if (i == 0) addSlider(desired); 
+            if (i == 0){
+                add(percentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).left();
+                addSlider(types[types.length-1]);
+            }
+            else {
+                add(percentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).left().colspan(2);
+            }
             
-            //add labels if desired
-            if (desired){
-                add(calcLabels.get(i));
+            //add labels if goal percents
+            if (numFields == 3 && supplyEnabled){
+                //add(calcLabels.get(i));
                 add(supplyLabels.get(i));
             }
 
@@ -305,44 +315,42 @@ public class CalcTable extends Table{
             
             percentTextFields.add(percentField);
         }
-
+        log("SIze of percentTextField array = " + percentTextFields.size);
     }
     
     
     //sets slider with max min 0, max 100, step size of 1
     //TODO: fix slider at 50 percent - rounding down from 0 to 101
-    protected void addSlider(boolean desired){
+    protected void addSlider(final int type){
         final Slider slider = new Slider(0, 100, 1, false, skin);
-//        slider.setSize(150, 25);
-//        slider.setScale(scaleX, scaleY);
 
-        if (desired) slider.setName(Constants.SLIDER_NAMES[0]);
-        else slider.setName(Constants.SLIDER_NAMES[1]);
-        
         slider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 int percent = (int)slider.getValue(); //returns a percent value of slider
-                calcUtils.setPercent(percent, slider.getName());
+                calcUtils.setRatio(percent, type);
             }
         });
         
-        add(slider).width(125);
+        add(slider).width(110);
         
     }
     
     
     //sets the supply labels with amounts previously stored
     public void setSupplyLabels(){
+        supplyLabels = new Array<Label>();
 
-        IntMap<Supply> supplyMap = SupplyUtils.getSupplyUtils().getSupplyMap();
-        
         for (int i = 0; i < 4; i++){
             double amt = 0;
-            if (supplyMap.containsKey(i))
-                amt = (supplyMap.get(i)).getTotalAmount();
+
+            if (calcUtils.supplied){
+                if (calcUtils.getSupplyAmounts().containsKey(i))
+                    amt = calcUtils.getSupplyAmounts().get(i);
+            }
+
             
-            Label l = supplyLabels.get(i);
+            Label l = new Label("-", skin, "supply");
             
             //different colors for how much user has
             if (amt > 30)
@@ -353,37 +361,11 @@ public class CalcTable extends Table{
                 l.getStyle().fontColor = Color.RED;
             
             l.setText(Double.toString(amt));
-        }
-    }
-    
-    
-    public void setEmptySupplyLabels(){
-        for (int i = 0; i < 4; i++){
-            
+
+            supplyLabels.add(l);
         }
     }
 
-    
-    public void updateCalcLabels(){
-        Array<Double> finalMills = calcUtils.getFinalMills();
-        
-        for (int i = 0; i < 4; i++){
-            //put the values into "ml (drops)" String format
-            String text = finalMills.get(i) + " (" + (int)(finalMills.get(i).doubleValue()*20)+")";
-            calcLabels.get(i).setText(text); //show liquid & base amounts
-        }
-    }
-
-    //update supply labels
-    public void updateSupplyLabels(){
-        IntMap<Double> supplyMap = calcUtils.getSupplyAmounts();
-        
-        for (int i = 0; i < 4; i++){
-            supplyLabels.get(i).setText(supplyMap.get(i).toString());
-        }
-    }
-    
-    
     public void updateSupply(int type, double amount){
         supplyLabels.get(type).setText(Double.toString(amount));
     }
@@ -413,3 +395,45 @@ public class CalcTable extends Table{
     
     
 }
+
+
+//TODO: get rid of these if not using
+//    //sets labels for supply amounts - lets user know how much they have
+//    protected void initSupplyLabels(){
+//        //create final calculations labels supply labels (start with 4 each)
+//        calcLabels = new Array<Label>();
+//        supplyLabels = new Array<Label>();
+//        for (int labelCount = 0; labelCount < 4; labelCount++){
+////            Label calcLabel = new Label("-", skin, "calcsLabel");
+////
+////            calcLabels.add(calcLabel); //initially set with "-", indicates not calculated
+//
+//            Label supplyLabel = new Label("0", skin, "supplyLabel"); //0 indicates not supplied
+////            //supplyLabel.setColor(Color.YELLOW);
+////            supplyLabel.getColor().a = .8f;
+////            supplyLabel.getStyle().fontColor = Color.RED; //if supply 0, set as red
+//            supplyLabels.add(supplyLabel);
+//        }
+//    }
+
+
+
+
+//    public void updateCalcLabels(){
+//        Array<Double> finalMills = calcUtils.getFinalMills();
+//
+//        for (int i = 0; i < 4; i++){
+//            //put the values into "ml (drops)" String format
+//            String text = finalMills.get(i) + " (" + (int)(finalMills.get(i).doubleValue()*20)+")";
+//            calcLabels.get(i).setText(text); //show liquid & base amounts
+//        }
+//    }
+//
+//    //update supply labels
+//    public void updateSupplyLabels(){
+//        IntMap<Double> supplyMap = calcUtils.getSupplyAmounts();
+//
+//        for (int i = 0; i < 4; i++){
+//            supplyLabels.get(i).setText(supplyMap.get(i).toString());
+//        }
+//    }

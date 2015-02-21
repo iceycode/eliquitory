@@ -27,7 +27,6 @@ public class Assets {
         manager = new AssetManager();
 
         loadSkins();
-        loadTextures();
     }
 
     //loads the skins of screens
@@ -35,15 +34,13 @@ public class Assets {
         manager.load(Constants.CALC_SKIN, Skin.class);
         manager.load(Constants.MENU_SKIN, Skin.class);
         manager.load(Constants.SUPPLY_MENU_SKIN, Skin.class);
+        manager.load(Constants.SETTING_SKIN, Skin.class);
     }
 
 
-    private static void loadTextures(){
-        manager.load(Constants.MENU_BACKGROUND_FILE, Texture.class);
-
-        manager.load(Constants.CALC_BACKGROUND, Texture.class);
-        manager.load(Constants.SUPPLY_MENU_BACKGROUND, Texture.class);
-        manager.load(Constants.SUPPLY_TABLE_BACK, Texture.class);
+    //returns true if manager is done loading
+    public boolean isLoaded(){
+        return manager.update();
     }
 
     

@@ -14,14 +14,31 @@ Features include:
 - A database of flavors will also be included.
 - The option to share recipes will eventually exist as well.
 
-Nearly complete, just tweaking a few things. See [TODO](TODO.md).
+App Market States:
+- 3 states that the app can be in depending on what user selects
+- Rely on 2 boolean variables in code:
+- Costs TBD. Still need to figure out ads, marketing strategy, etc.
+
+| State        |   Description       | $ Cost |
+| ------------ | --------------------|--------|
+| Ads Enabled, Supply Features Disabled | Ads are on and user cannot store supplies | Free  |
+| Ads Disabled, Supply Disabled |  User has ads disabled but no access to supply storage feature. | .99 |
+| Ads Disabled, Supply Feature Enabled | User has access to supply storage feature. | 1.99? |
+
 
 
 ###Changelog###
+Nearly complete, just tweaking a few things. See [TODO](TODO.md).
+- 02-20-15
+    - changed final calculated amounts display to seperate dialog
+    - still need get a couple things done before being finished:
+        - set up payment interface using gdx-pay
+        - create an icon
+        - create a splash screen
+        - run final tests on ads, play services
 - 02-17-15
     - got the screens to resize for anroid
     - table layouts completely finished
-    - just nne
 
 - 02-12-15
     - table layouts almost all completely finished
@@ -53,6 +70,10 @@ Nearly complete, just tweaking a few things. See [TODO](TODO.md).
 - Testing: Mockito-2.0.3 & JUnit-4.12
 - see end of this section
 
+##Adding Mobile Services##
+
+Details on adding services such as Google Play are found [here](MobileServices.md)
+
 ###*Libgdx Implementation Notes*###
 
 - Since this is an app, not a game, main app uses ApplicationListener.
@@ -64,6 +85,14 @@ Nearly complete, just tweaking a few things. See [TODO](TODO.md).
 	- main class (MyTexturePacker) contains method to pack skins
 - For saving, using Json and saving to an ObjectMap
 
+- App State default values: supply disabled, ads enabled
+    `boolean supplyEnabled = false; boolean adsEnabled = true`
+- These are stored in libgdx Preferences class (SharedPreferences on Android); which can have multiple names
+    Location of Preferences (OSX):
+
+    ~~~~
+    ~/.prefs/My Preferences
+    ~~~~
 
 ###Running###
 See <https://github.com/libgdx/libgdx/wiki/Gradle-on-the-Commandline>. For OSX, need to do in root.
@@ -133,32 +162,20 @@ When finished with final product, need to sign Android APK.
 ###Fixes for Project Issues###
 
 ####*GradleConnectionError Issue*####
-
-- PROBLEM: 
-GradleConnectionException and bootstrap classpath not being set while assembling
-- ~~If using intellij on OSX and getting Gradle error, set JVM version by going into package contents & editing Info.plist of intellij app~~
+- GradleConnectionException and bootstrap classpath not being set during Gradle build
 - Current fix (works!):
 - plugged script into .profile so that just need to run following:
 	- Set Java to 7 & JVM to 1.7 using terminal
 
 		~~~~
 		setjdk 1.7
-		~~~~ 
-	- Set gradle JDK directory to 1.7, in terminal:
-
-		~~~~
-		./gradlew -D JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"
-		~~~~
-	~~OR set in gradle.properties: .~~
-
-		~~~~
-		org.gradle.java.home="/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home"
 		~~~~
 
 ####*Solutions to Other Possible Issues*####
-What works (even temporarily):
+Quick solutions to potential issues:
 - invalidating caches & restarting IntelliJ
-- rebuilt the project by deleting old bin, build directories (also clean/rebuild)
+- in IntelliJ: Build | Clean Project or Build | Rebuild Project
+- rebuild the project by deleting old bin, build directories
 - See end of [TODO](TODO.md) for more info on possible solutions - ones I have tried, that did not really succeed but might by useful in future.
 
 ###Contact Info###

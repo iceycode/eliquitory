@@ -4,7 +4,6 @@
 	<inherits name='com.badlogic.gdx.backends.gdx_backends_gwt' />
 
     <inherits name='com.icey.apps.GdxDefinition' />
-    <inherits name='Gson' />
     
     <collapse-all-properties />
     

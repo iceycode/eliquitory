@@ -2,12 +2,19 @@
 
 ##*Code*##
 
-###*Libgdx*###
-
 Market Services - deployment
 
-- add google ads, google play services
-- add a larger database into the mix (possibly in future release)
+- get a developer license
+- create an application
+- add AdMob ads via google play services
+    - see https://github.com/libgdx/libgdx/wiki/Google-Mobile-Ads-in-Libgdx-%28replaces-deprecated-AdMob%29
+    - more detailed tutorial at https://github.com/libgdx/libgdx/wiki/Admob-in-libgdx
+
+- Get an AdMob unit ID https://support.google.com/admob/v2/answer/3052638
+- https://developers.google.com/mobile-ads-sdk/docs/admob/android/quick-start
+
+- In-App Purchases
+    - set up gdx-pay
 
 TABLE RESIZING NOTE:
 
@@ -16,13 +23,20 @@ TABLE RESIZING NOTE:
 
 MenuScreen
 
--  fonts need to be bit bigger
+-  fonts need to be bit bigger for titles
 -  ~~fix table widget positions/size - listeners not aligned~~
 
+Options Screen
+- ~~create it~~
+- ~~add drops/ml setting to it~~
+- ability to connect with FB/G+
+- add to it unlocking features
+    - ~~disable Ads~~
+    - ~~unlock supply keeping feature~~
 
 SupplyScreen
 
-- make fonts smaller & table larger
+- ~~make fonts smaller & table larger~~
 - make the messageFontColor more bold
 -  ~~regular supplies checkboxes not checked when opening edit window~~
 - ~~make the window more opaque, it is now too transparent~~ 
@@ -43,7 +57,6 @@ FlavorTable
 	~~~~
 	Note: /Users/Allen/MEGA/Workspaces/app workspace/eliquitory/core/src/com/icey/apps/ui/FlavorTable.java uses unchecked or unsafe operations.
 	~~~~
-
 
 
 ###*Platform-Dependent*###
@@ -93,10 +106,9 @@ SaveManager
 
 - add splash when loading
 - make graphics look a bit nicer
-- ~~Set opaque background for adding/editing supplies in supplywindow~~ 
+- ~~Set opaque background for adding/editing supplies in supplywindow~~
 
 ##FEATURES TO ADD##
-
 
 - ability to save files to external SD card (for android)
 - ability to send recipe/supply data to email, text, etc
@@ -107,10 +119,25 @@ SaveManager
 
 
 
-##Gradle-IntelliJ ISSUES##
+##Gradle-IntelliJ Issues##
+
+###SOLVED Gradle-Java version issue! ###
+- Added a script to .profile so that setjdk 1.7 command will make use of java 7 & set global JVM to 1.7.0_55
+    To change java/jvm enter following into terminal:
+
+    ~~~~
+    setjdk 1.7
+    ~~~~
+
+Thanks to this blog post!
+<http://www.jayway.com/2014/01/15/how-to-switch-jdk-version-on-mac-os-x-maverick/>
 
 
-- Set system JAVA_HOME path & check:
+Other solutions for future:
+
+- ~~If using Intellij on OSX and getting Gradle error, set JVM version by going into package contents & editing Info.plist of intellij app~~
+
+- ~~Set system JAVA_HOME path & check:~~
 
 	~~~~
 	export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
@@ -132,11 +159,11 @@ SaveManager
     sudo rm CurrentJDK
     sudo ln -s /Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/ CurrentJDK
     ~~~~
-- add to ~./mavenrc
+- ~~add to ~./mavenrc~~
 
-~~~~
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home
-~~~~
+    ~~~~
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home
+    ~~~~
 
 
 - IntelliJ forces change in gradle properties, even after changing gradle-wrapper.properties
@@ -145,8 +172,3 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_55.jdk/Contents/Home
 	- Need to make sure to set JVM everytime
 	- check using javac -version in IntelliJ terminal
 
-###SOLVED Java/JVM issue! ###
-- Added a script to .profile so that setjdk 1.7 command will make use of java 7 & set global JVM to 1.7.0_55
-
-Thanks to this blog post!
-<http://www.jayway.com/2014/01/15/how-to-switch-jdk-version-on-mac-os-x-maverick/>

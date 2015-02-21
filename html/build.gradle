@@ -15,7 +15,7 @@ gwt {
         strict = true;
         enableClosureCompiler = true;
         disableCastChecking = true;
-        sourceCompatibility = 1.7;
+        //sourceCompatibility = 1.7;
     }
 }
 

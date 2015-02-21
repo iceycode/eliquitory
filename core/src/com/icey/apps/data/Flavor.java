@@ -97,11 +97,12 @@ public class Flavor {
     }
 
     /** checks to see if flavor values are set as supply
+     *- TODO: may or maybe check to see if flavor name is set
      *
      * @return true if meets criteria to being set, false otherwise
      */
     public boolean isFlavorSet(){
-        if (type == -1 || name==null || amount==-1)
+        if (type == -1 || amount==0)
             return false;
 
         return true;
@@ -136,9 +137,6 @@ public class Flavor {
     }
 
     public int getPercent() {
-
-        log("Flavor percent = " + percent);
-
         return percent;
     }
 
@@ -166,6 +164,11 @@ public class Flavor {
 
     public void setKey(int key) {
         this.key = key;
+    }
+
+    @Override
+    public String toString(){
+        return "Flavor name: " + name + "\nFlavor Percent: " + percent + "\nFlavor type: " + type;
     }
 
     public void log(String message){

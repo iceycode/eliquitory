@@ -1,7 +1,7 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    neometric-font: { file: fonts/neometric-med.fnt },
-    default-font: { file: fonts/opensans_bold_med.fnt },
+    default-font: { file: fonts/opensans_bold_reg.fnt },
+    medium-font: { file: fonts/opensans_bold_med.fnt },
     light-font: { file: fonts/opensans_light_med.fnt }
   } ,
   com.badlogic.gdx.graphics.Color: {
@@ -42,8 +42,6 @@
       messageFont: light-font, messageFontColor: grey},
     editField: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue} //this is for when editing a supply
-    //numTextField: {selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor},
-    //nameTextField: { selection: defaultSelection, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor}
   },
   com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
     default: { checkboxOn: check-on, checkboxOff: check-off, font: default-font, fontColor: black }
@@ -53,11 +51,14 @@
     base: { titleFont: default-font, background: addBaseBack, titleFontColor: black },
     flavor: { titleFont: default-font, background: addFlavorBack, titleFontColor: black }
   },
-  
   com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
     default: { fontColorUnselected: grey, selection: defaultSelection, fontColorSelected: black, font: default-font }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
     default-horizontal: { background: slider, knob: sliderKnob } //need to put -horizontal or -vertical identifier
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+    default: { font: default-font, fontColor: black, background: selectBox-back, scrollStyle: default,
+      listStyle: { font: default-font, selection: selectBox-selection}}
   }
 }

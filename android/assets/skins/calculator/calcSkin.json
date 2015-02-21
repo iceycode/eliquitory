@@ -2,8 +2,13 @@
 // contains skin for table widgets for calculator
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    light-font: { file: fonts/opensans_light_med.fnt },
-    default-font: { file: fonts/opensans_bold_med.fnt }
+    default-font: { file: fonts/opensans_bold_reg.fnt },
+    medium-font: { file: fonts/opensans_bold_med.fnt},
+    light-font: { file: fonts/opensans_light_med.fnt }
+    roboto-font_14: {file: fonts/roboto-reg14.fnt},
+    roboto-font_16: {file: fonts/roboto-reg16.fnt},
+    roboto-slap_14L: {file: fonts/roboto-slap-light14.fnt},
+    roboto-slap_12: {file: fonts/roboto-slap12.fnt}
   },
   com.badlogic.gdx.graphics.Color: {
     green: { a: 1, b: 0, g: 1, r: 0 },
@@ -19,7 +24,8 @@
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
     default: {down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black},
     flavor: { down: flavButtonDown, up: flavButtonUp, font: default-font, fontColor: black },
-    menu: { down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black }
+    menu: { down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black },
+    dialog: {down: dialogBtn-down, up: dialogBtn-up, font: default-font, fontColor: black}
   },
   com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 //background: default-rect, hScroll: default-scroll, hScrollKnob: default-round-large
@@ -27,16 +33,19 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
     default: { font: default-font, fontColor: black },
-    goalLabel: {font: default-font, fontColor: black, background: goalTitleBkgrnd},
-    baseLabel: {font: default-font, fontColor: black, background: baseTitleBkgrnd},
+    title: {font: roboto-font_16, fontColor: black, background: goalTitleBkgrnd},
+//    baseLabel: {font: default-font, fontColor: black, background: baseTitleBkgrnd},
+//    flavTitle: {font: default-font, fontColor: black, background: flavorTitleBkgrnd},
     flavorLabel: {font: default-font, fontColor: black, background: flavorBckgrnd},
     calcsLabel: {font: default-font, fontColor: black, background: calcsBckgrnd},
-    supplyLabel: {font: default-font, fontColor: red, background: calcsBckgrnd}
+    supply: {font: default-font, fontColor: red, background: calcsBckgrnd}
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-    titleTextField: {selection: selectionName, background: titleBackground, font: default-font, fontColor: black, cursor: cursor,
+    recipe: {selection: selectionName, background: titleBackground, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue},
     numTextField: {selection: selectionNum, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor,
+      messageFont: light-font, messageFontColor: blue},
+    percentTextField:{selection: selectionNum, background: percentTextField, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue},
     nameTextField: { selection: selectionNum, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue}
@@ -54,11 +63,10 @@
   com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
     default: { font: default-font, fontColor: black, background: selectBox-back, scrollStyle: default,
       listStyle: { font: default-font, selection: selectBox-selection}}
-  }
+  },
   com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
     default: { fontColorUnselected: blue, selection: selectBox-selection, fontColorSelected: black, font: default-font }
   }
-  
 //  com.badlogic.gdx.scenes.scene2d.ui.TextArea$TextAreaStyle: {
 //  titleTextArea: {selection: selectionName, background: titleBackground, font: default-font, cursor: cursor},
 //  numTextArea: {selection: selectionNum, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor},

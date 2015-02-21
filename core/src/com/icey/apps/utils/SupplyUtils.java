@@ -32,15 +32,12 @@ public class SupplyUtils {
 
     IntMap<Supply> supplyMap; //supplies loaded/saved into supplyMap
     IntMap<Supply> emptyMap; //an empty map of supplies, if none is present
-    
+
     IntMap<Double> supplyAmounts; //amount of supplies
-    IntMap<Double> flavorAmounts; //amount of flavors
     public boolean supplied = false; //whether user is supplied or not
-    public boolean supplyChange = false; //whether supply changed
-    
+
     public Supply supply; //current supply being saved in window
-    public Supply supplyPrev; //previous supply
-    
+
     public int lastFlavorKey = 4;
 
     public SupplyUtils(){
@@ -144,7 +141,6 @@ public class SupplyUtils {
 
         if (saveManager.supplyData.containsKey(key)){
             updateSupply(key, supply);
-
         }
         else{
             saveNewSupply(key, supply);
@@ -174,7 +170,7 @@ public class SupplyUtils {
      * @param supply
      * @return
      */
-    public Object updateSupply(int key, Supply supply){
+    public Supply updateSupply(int key, Supply supply){
         //save into supply utils map
         supplyMap.remove(key);
         supplyMap.put(key, supply);
@@ -184,6 +180,26 @@ public class SupplyUtils {
         
         SupplyScreen.instance.updateSupplyTable(key, supply);
         return supply;
+    }
+
+
+    /** updates supply amount only
+     * - used in CalcUtils when calculating amounts
+     *
+     * @param key
+     * @param newAmount
+     */
+    public void updateSupply(int key, double newAmount){
+        //get supply
+        Supply supply = getSupplyByType(key);
+        supply.setTotalAmount(newAmount);
+
+        //save into supply utils map
+        supplyMap.remove(key);
+        supplyMap.put(key, supply);
+
+        //save into save data
+        saveManager.updateSupplyData(key, supply);
     }
 
     
@@ -200,7 +216,7 @@ public class SupplyUtils {
             supplyAmounts.put(s.getSupplyType(), s.getTotalAmount());
         }
     }
-    
+
 
     public IntMap<Supply> emptySupplyMap(){
         IntMap<Supply>  data = new IntMap<Supply> ();
@@ -216,7 +232,7 @@ public class SupplyUtils {
     }
     
     
-    //TODO: fix this so that empty map not returned, but requested
+    //TODO: fix so that empty map not returned, but requested
     public IntMap<Supply> getSupplyMap(){
         this.supplyMap = saveManager.getSupplyData();
         

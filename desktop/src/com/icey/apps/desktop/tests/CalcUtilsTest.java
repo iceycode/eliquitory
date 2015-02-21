@@ -182,14 +182,14 @@ public class CalcUtilsTest {
 //    //================test to see if percents updating correclty===================== PASSED
 //    @Test
 //    public void testDesiredPGChange() throws Exception {
-//        calcUtils.setPercent("10", Constants.DESIRED_PERC_LABELS[0]);
+//        calcUtils.setPercent("10", Constants.TYPE_NAMES[0]);
 //        assertSame("Check to see PG value changed", 10, calcUtils.getDesiredPercents().get(0));
 //        assertSame("Check to see that changing PG changed VG.", 90, calcUtils.getDesiredPercents().get(1));
 //    }
 //
 //    @Test //PASSED
 //    public void testDesiredVGChange() throws Exception{
-//        calcUtils.setPercent("10", Constants.DESIRED_PERC_LABELS[1]);
+//        calcUtils.setPercent("10", Constants.TYPE_NAMES[1]);
 //        assertSame("Check to see VG value changed", 10, calcUtils.getDesiredPercents().get(1));
 //        assertSame("Check to see that changing VG changed PG.", 90, calcUtils.getDesiredPercents().get(0));
 //    }

@@ -18,7 +18,8 @@ import com.icey.apps.utils.UIUtils;
  *
  * NOTE: fix for supply table tab - had to remove padding from the rows - this did not effect other tables
  *
- * TODO: fix supplywindow children appearance to placement in table
+ * TODO: add a selectbox to table if "Other" is chosen to give it a name
+ *
  * Created by Allen on 1/28/15.
  */
 public class SupplyWindow extends Dialog{
@@ -34,9 +35,9 @@ public class SupplyWindow extends Dialog{
     
     boolean edit = false;
     public static Array<TextField> percentTextFields;
-    public Array<CheckBox> checkBoxes;
+    ButtonGroup<CheckBox> buttonGroup; //group for textboxes
 
-    
+
     /** constructor for supplywindow - editing or adding
      *
      * @param skin : skin from supplyScreen
@@ -54,7 +55,6 @@ public class SupplyWindow extends Dialog{
         //center(); //center the supplyWindow
         setModal(true);
         setKeepWithinStage(true);
-
 
         table = getContentTable(); //the main table
         table.setClip(true);
@@ -304,7 +304,9 @@ public class SupplyWindow extends Dialog{
      * @param checkedBox : the checkbox which will be checked
      */
     private void setCheckBoxes(int category, int checkedBox){
-        checkBoxes = new Array<CheckBox>();
+        //checkBox button group - for setting max buttons checked
+        buttonGroup = new ButtonGroup<CheckBox>();
+        buttonGroup.setMaxCheckCount(1); //sets max check count to 1
         
         for (int i = 0; i < 3; i++){
             String name = Constants.SUPPLY_CHECKBOX_TITLES[i];
@@ -316,27 +318,63 @@ public class SupplyWindow extends Dialog{
             
             typeCheckBox.addListener(UIUtils.SupplyUI.checkBoxListener(category, this));
 
-            checkBoxes.add(typeCheckBox);
+            buttonGroup.add(typeCheckBox); //add to button group
             
-            table.add(typeCheckBox).width(100).height(20f).padTop(10);
+            table.add(buttonGroup.getButtons().get(i)).width(100).height(20f).padTop(10);
         }
     }
+
+
+    //adds a select field if "Other" is checked when adding Supply (not flavor)
+    //allows user to select which kind of "Other" it is; even giving it a name
+    protected void setOtherSelectBox(){
+
+        final SelectBox<String> selectBox = new SelectBox<String>(skin);
+        selectBox.setItems(Constants.OTHER_NAMES);
+        selectBox.setSelected(selectBox.getItems().get(selectBox.getItems().size -1));
+
+        selectBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                supply.setName(selectBox.getSelected().toString());
+
+                if (selectBox.getSelected().equals("Other")){
+                    setOtherNameField();
+                }
+            }
+        });
+
+        table.row();
+        table.add(selectBox).height(25).width(75); //adds to index 6; right after checkBox "Other"
+
+    }
+
+
+    //adds yet another field - a textfield for user to specify "Other" name
+    protected void setOtherNameField(){
+        Label label = new Label("Name: ", skin);
+        table.add(label).height(25).width(50);
+
+        TextField nameField = new TextField("", skin);
+        //TODO: add a listener to this
+        nameField.setMessageText("Name of supply");
+        nameField.setTextFieldListener(UIUtils.SupplyUI.supplyNameListener(supply));
+
+        table.add(nameField).width(100).height(25).right().padLeft(2);
+    }
+
     
     public void setLiquidType(String name){
-        int boxChecked = 0; //the box index in array who was checked
         if (name.contains("PG")){
             supply.setSupplyType(0);
         }
         else if (name.contains("VG")){
             supply.setSupplyType(1);
-            boxChecked=1;
         }
         else{
             supply.setSupplyType(2);
-            boxChecked = 2;
+            setOtherSelectBox();
         }
-
-        uncheckBoxes(boxChecked); //uncheck the boxes
     }
 
 
@@ -345,30 +383,18 @@ public class SupplyWindow extends Dialog{
      * @param name : PG, VG or Other
      */
     public void setFlavorType(String name){
-        int boxChecked = 0; //the box index in array who was checked
         if (name.contains("PG")){
             supply.setFlavorType(0);
         }
         else if (name.contains("VG")){
             supply.setFlavorType(1);
-            boxChecked=1;
         }
         else{
             supply.setFlavorType(2);
-            boxChecked = 2;
-        }
-        uncheckBoxes(boxChecked); //uncheck the boxes
-    }
-    
-    //uncheck any boxes if they where checked
-    public void uncheckBoxes(int boxChecked){
-        for (int i = 0; i < checkBoxes.size; i++){
-            CheckBox box = checkBoxes.get(i);
-            if (box.isChecked() && i != boxChecked){
-                box.setChecked(false);
-            }
+            setOtherSelectBox();
         }
     }
+
 
     //save button
     protected void setSaveButton(){

@@ -17,7 +17,7 @@ import com.icey.apps.assets.Assets;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.ui.CalcTable;
-import com.icey.apps.ui.FlavorTable;
+import com.icey.apps.ui.CalcWindow;
 import com.icey.apps.ui.LoadWindow;
 import com.icey.apps.utils.CalcUtils;
 
@@ -55,14 +55,16 @@ import com.icey.apps.utils.CalcUtils;
  *
  * --------TODOs for Calculator------- 
  * * see CalcTable/FlavorTable for details
- *  TODO: fix supply amount labels (VG works properly)
- *      TODO: center messageText labels - figure out how to do this
- *      TODO: expand recipe title name
+ *  TODO: center messageText labels - figure out how to do this
+ * TODO: expand recipe title name
  *
+ * TODO: create a popup window for final amounts instead of keeping in table
  *            
  *  TODO: menu buttons need to be offset a little
  *     TODO: load needs to be cenetered, back button goes to left side
  *
+ * TODO: increase size of percent fields a bit
+ * TODO; set a selectbox for selecting "Other"
  * TODO: specify error (which flavor or percent) in popup
  *
  */
@@ -73,20 +75,16 @@ public class CalculatorScreen implements Screen {
 
     //Tables which hold UI widgets, get added to stage
     CalcTable table;  //root table
-    FlavorTable flavorTable; //flavorTable - holds flavors
+    //FlavorTable flavorTable; //flavorTable - holds flavors
     ScrollPane scroll; //ScrollPane for flavorTable
 
     String errorMsg = Constants.ERROR_MAIN;
     String[] errorMsgs = Constants.ERROR_MSGS; //0=flavor, 1=desired percents, 2 = base percents
-    
+
     LoadWindow loadWindow;
     CalcUtils calcUtils = CalcUtils.getCalcUtil(); //tool used for calculations, loading, saving
 
     public Button backButton; //back button
-
-    //scaleX & Y for scaling table
-    //float scaleX = MainApp.scaleX;
-    //float scaleY = MainApp.scaleY;
 
 
     public CalculatorScreen(){
@@ -94,10 +92,9 @@ public class CalculatorScreen implements Screen {
 
         stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
-//        stage.addActor(new Image(Assets.manager.get(Constants.CALC_BACKGROUND, Texture.class))); //background as Image
-
         setCalcTable();
 
+        setAmountsWindow();
     }
 
 
@@ -107,7 +104,7 @@ public class CalculatorScreen implements Screen {
     public void setCalcTable(){
         table = new CalcTable(skin);
 
-        setFlavorScrollTable();
+//        setFlavorScrollTable();
 
         setButtons();
         setLoadWindow();
@@ -115,16 +112,16 @@ public class CalculatorScreen implements Screen {
         stage.addActor(table);
     }
 
-    //a nested table with a scrollpane in it
-    protected void setFlavorScrollTable(){
-
-        flavorTable = new FlavorTable(skin);
-
-        ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
-
-        table.add(scroll).width(480).height(200).colspan(6); //add to the outer table
-        table.row();
-    }
+//    //a nested table with a scrollpane in it
+//    protected void setFlavorScrollTable(){
+//
+//        flavorTable = new FlavorTable(skin);
+//
+//        ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
+//
+//        table.add(scroll).width(480).height(200).colspan(6); //add to the outer table
+//        table.row();
+//    }
 
 
     boolean loadWindowSetup = false;
@@ -141,6 +138,18 @@ public class CalculatorScreen implements Screen {
     }
 
 
+    //the of of each liquid &
+    protected void setAmountsWindow(){
+
+    }
+
+
+    //shows the amounts window
+    protected void showFinalAmounts(){
+
+    }
+
+
     protected void setButtons(){
         //the flavor button
         final TextButton flavorButton = new TextButton("Add flavor", skin, "flavor");
@@ -148,7 +157,7 @@ public class CalculatorScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (flavorButton.isPressed()) 
-                    flavorTable.addNewFlavor(new Flavor("Flavor " + flavorTable.numFlavors));//add new flavor
+                    table.flavorTable.addNewFlavor(new Flavor("Flavor " + table.flavorTable.numFlavors));//add new flavor
             }
         });
 
@@ -249,16 +258,17 @@ public class CalculatorScreen implements Screen {
         errorDialog.text(message).show(stage); //, Actions.fadeOut(2f)
     }
 
-    //scales the stage actors
-    protected void getTableWidgetInfo() throws NullPointerException{
-        for (Actor a : table.getChildren()){
-//            a.setScale(MainApp.scaleX, MainApp.scaleY);
-            log ("Actor name: " + a.getName());
-            log ("Actor class: " + a.getClass().getSimpleName());
-            log("Table Actor position: " + "(" + a.getX() + ", " + a.getY() + ")" + "\n" +
-                    "Actor Actor size: " + a.getWidth() + " x " + a.getHeight());
-        }
-    }
+//
+//    //info about widgets
+//    protected void getTableWidgetInfo() throws NullPointerException{
+//        for (Actor a : table.getChildren()){
+////            a.setScale(MainApp.scaleX, MainApp.scaleY);
+//            log ("Actor name: " + a.getName());
+//            log ("Actor class: " + a.getClass().getSimpleName());
+//            log("Table Actor position: " + "(" + a.getX() + ", " + a.getY() + ")" + "\n" +
+//                    "Actor Actor size: " + a.getWidth() + " x " + a.getHeight());
+//        }
+//    }
 
 
     public void calculate(){
@@ -285,13 +295,14 @@ public class CalculatorScreen implements Screen {
     
     //display the calculated results
     protected void displayResults(){
-        table.updateCalcLabels();
-        flavorTable.updateCalcLabels();
+        //table.updateCalcLabels();
+        //flavorTable.updateCalcLabels();
         
-        if (calcUtils.updatedSupply){
-            table.updateSupplyLabels();
-            flavorTable.updateSupplyLabels();
-        }
+//        if (calcUtils.updatedSupply){
+//            table.updateSupplyLabels();
+//            flavorTable.updateSupplyLabels();
+//        }
+        new CalcWindow(skin, calcUtils.getFinalMills(), calcUtils.getFlavors()).show(stage);
     }
     
     
@@ -302,13 +313,13 @@ public class CalculatorScreen implements Screen {
         
         //set up the flavors
         for (Flavor f : calcUtils.getFlavors()){
-            if (calcUtils.getFlavors().size > flavorTable.numFlavors)
-                flavorTable.addNewFlavor(new Flavor("Flavor " + flavorTable.numFlavors));
+            if (calcUtils.getFlavors().size > table.flavorTable.numFlavors)
+                table.flavorTable.addNewFlavor(new Flavor("Flavor " + table.flavorTable.numFlavors));
             
-            for (TextField tf: flavorTable.flvrTitleTFs)
+            for (TextField tf: table.flavorTable.flvrTitleTFs)
                 tf.setMessageText(f.getName());
             
-            for (TextField tf : flavorTable.flvrPercsTFs)
+            for (TextField tf : table.flavorTable.flvrPercsTFs)
                 tf.setMessageText(Double.toString(f.getPercent()));
         }
 
@@ -338,7 +349,6 @@ public class CalculatorScreen implements Screen {
         Gdx.gl.glClearColor(.2f, .4f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.input.setInputProcessor(stage);
-
 
         //if a recipe is chosen in loadwindow, hide it, display results
         if (loadWindow.recipeChosen) {

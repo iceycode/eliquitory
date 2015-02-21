@@ -2,15 +2,14 @@ package com.icey.apps.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.icey.apps.MainApp;
 import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Supply;
 import com.icey.apps.ui.SupplyWindow;
@@ -21,13 +20,18 @@ import com.icey.apps.ui.SupplyWindow;
  */
 public class UIUtils {
 
-    
+
     //listener for textfields for names - flavor or recipe
+
+    /** Returns a TextField listener for RecipeName field or Flavor name field
+     *
+     * @return : a listener for name TextField
+     */
     public static TextField.TextFieldListener nameTextFieldListener(){
         TextField.TextFieldListener nameTextFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                log("Name typed: " + c);
+
                 if ((c == '\r' || c == '\n')){
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
@@ -49,14 +53,13 @@ public class UIUtils {
 
     /** returns listener for amounts - mg nicotine or ml juice
      * 
-     * @param type
-     * @return
+     * @param type : the listener either for volume of liquid in ml (0) or strength nic in mg (1)
+     * @return : a listener for amount TextField
      */
     public static TextField.TextFieldListener numTextFieldListener(final int type){
         TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c){
-                log( "Amount typed: " + c);
 
 //                if (c == '\n') textField.getOnscreenKeyboard().show(false);
 
@@ -89,11 +92,14 @@ public class UIUtils {
         
     }
     
-    
 
-    
-    //percent listener for desired or base
-    public static TextField.TextFieldListener percentListener(){
+
+    /** a percent field listener method
+     *
+     * @param type : the type of percent (0-PG, 1=VG, 2=other, 3=base pg, 4=base vg)
+     * @return textfield listener
+     */
+    public static TextField.TextFieldListener percentListener(final int type){
         TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
@@ -101,7 +107,7 @@ public class UIUtils {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
                 else if (isInteger(c)){
-                    CalcUtils.getCalcUtil().setPercent(Integer.parseInt(textField.getText()), textField.getName());
+                    CalcUtils.getCalcUtil().setPercent(Integer.parseInt(textField.getText()), type);
                 }
             }
         };
@@ -110,10 +116,10 @@ public class UIUtils {
     }
 
 
-    /** listener for flavor name
+    /** listener for flavor name TextField on calculator screen
      * 
-     * @param id
-     * @return
+     * @param id : flavor ID (also position in arrays & table row)
+     * @return : listener for flavor name
      */
     public static TextField.TextFieldListener flavorNameListener(final int id){
 
@@ -132,9 +138,12 @@ public class UIUtils {
         return nameTextFieldListener;
     }
 
-    
-    
-    //flavor percent listener
+
+    /** Flavor percent TextField listener for calculator screen
+     *
+     * @param id : flavor ID - position in arrays & table row
+     * @return : listener for flavor percent TextField
+     */
     public static TextField.TextFieldListener flavorPercentListener(final int id){
 
         TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
@@ -154,12 +163,36 @@ public class UIUtils {
         return percentFieldListener;
     }
 
+
+    /** return listener for flavor type checkboxes
+     *
+     * @param type : listener for specific type that the flavor is
+     * @param id : flavor ID - position in arrays & table row
+     * @return : listener for flavor type CheckBox
+     */
+    public static ChangeListener checkBoxListener(final int type, final int id){
+        ChangeListener flavorBoxListener = new ChangeListener(){
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                CheckBox box = ((CheckBox)actor);
+                if (box.isChecked()){
+                    //int i = Integer.parseInt(box.getName().substring(box.getName().length()-1))-1;
+                    log( "Flavor whose type changed, index = " + id);
+
+                    CalcUtils.getCalcUtil().setFlavorType(type, id);
+                }
+            }
+        };
+
+        return flavorBoxListener;
+    }
+
     //this is a customized TextFieldFilter for double values (not just numbers)
     public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
 
         @Override
         public boolean acceptChar(TextField textField, char c) {
-            //((c >= '0' && c <= '9') || c == '.')  && isDecimalDigit(c)
+            //checks to see whetehr textField already contains a decimal point
             if (textField.getText().contains(".") && c == '.')
                 return false;
 
@@ -168,26 +201,54 @@ public class UIUtils {
 
     }
 
-    public static boolean isDecimalDigit(char c){
+
+    /** a customized inputlistener - not currently in use
+     *
+     * @param supply : supply being added
+     * @param textField :
+     * @param type
+     * @return
+     */
+    public static InputListener amountValueListener(final Supply supply, final TextField textField, final int type){
+        InputListener listener = new InputListener(){
+            @Override
+            public boolean keyTyped(InputEvent event, char character) {
+                if ((character == '\r' || character == '\n')) {
+                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+                            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
+                }
+                else if (isDecimalDigit(character)) {
+                    if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
+                        if (type == 0) {
+                            supply.setTotalAmount(Double.parseDouble(textField.getText()));
+                        }
+                        else {
+                            supply.setBaseStrength(Double.parseDouble(textField.getText()));
+                        }
+                    }
+                }
+
+                return false;
+            }
+        };
+
+
+        return listener;
+    }
+
+
+
+    protected static boolean isDecimalDigit(char c){
         return c == '.' || (c >= '0' && c <= '9');
     }
 
 
-    public static boolean isInteger(char c){
+    protected static boolean isInteger(char c){
         return c >='0' && c <= '9';
     }
-    
-    //scales bitmap font to device screen
-    public static void scaleFonts(Skin skin){
-        
-        ObjectMap<String, BitmapFont> fontMap = skin.getAll(BitmapFont.class);
-        
-        for (String key : fontMap.keys())
-            fontMap.get(key).setScale(Gdx.graphics.getDensity());
-    }
-    
-    
-    
+
+
+
     //contains the listeners for SupplyScreen UI
     public static class SupplyUI{
 
@@ -210,6 +271,37 @@ public class UIUtils {
             return nameTextFieldListener;
         }
 
+
+        /** a supply name listener
+         *
+         * @param supply : the supply being added
+         * @return : a listener for the supply
+         */
+        public static TextField.TextFieldListener supplyNameListener(final Supply supply){
+            TextField.TextFieldListener nameTextFieldListener = new TextField.TextFieldListener() {
+                @Override
+                public void keyTyped(TextField textField, char c) {
+                    if ((c == '\r' || c == '\n')){
+                        textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
+                                || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
+                    }
+                    else{
+//                    if (c >= 'a' && c <='9')
+                        supply.setName(textField.getText());
+                    }
+
+                }
+            };
+
+            return nameTextFieldListener;
+        }
+
+
+        /** percent of the base
+         *
+         * @param supply: supply being added (will be base)
+         * @return : the listener
+         */
         public static TextField.TextFieldListener percentListener(final Supply supply){
             TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
                 @Override
@@ -295,49 +387,53 @@ public class UIUtils {
 
     }
 
-    /** a customized inputlistener - not currently in use
-     *
-     * @param supply
-     * @param textField
-     * @param type
-     * @return
-     */
-    public static InputListener amountValueListener(final Supply supply, final TextField textField, final int type){
-        InputListener listener = new InputListener(){
-            @Override
-            public boolean keyTyped(InputEvent event, char character) {
-                if ((character == '\r' || character == '\n')) {
-                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
-                            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
-                }
-                else if (isDecimalDigit(character)) {
-                    if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
-                        if (type == 0) {
-                            supply.setTotalAmount(Double.parseDouble(textField.getText()));
-                        }
-                        else {
-                            supply.setBaseStrength(Double.parseDouble(textField.getText()));
-                        }
+
+
+
+    //UI listeners for settings UI
+    public static class SettingsUI{
+
+        /** listener for textfield in settings which sets drops per ml
+         *
+         * @return : TexFieldListener for drops/ml TextField in Settings
+         */
+        public static TextField.TextFieldListener dropsListener(){
+            return new TextField.TextFieldListener() {
+                @Override
+                public void keyTyped(TextField textField, char c) {
+                    if (isDecimalDigit(c)){
+                        Constants.DROPS_PER_ML = Double.parseDouble(textField.getText());
+                        MainApp.saveManager.saveDropsPerML(Float.parseFloat(textField.getText()));
                     }
                 }
-
-                return true;
-            }
-        };
+            };
+        }
 
 
-        return listener;
+        /** Listener for slider which sets drops/ml
+         *
+         * @param slider : slider which sets drops/ml
+         * @return : ChangeListener for slider which sets drops/ml
+         */
+        public static ChangeListener dropsSliderListener(final Slider slider, final TextField textField){
+            return new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    Constants.DROPS_PER_ML = (double)slider.getValue();
+                    textField.setText(Double.toString(Constants.DROPS_PER_ML));
+                    MainApp.saveManager.saveDropsPerML(slider.getValue());
+                }
+            };
+        }
+
+
     }
 
 
 
-    
 
-    
-    
-    
     private static void log(String message){
-        Gdx.app.log("CalcTable LOG: ", message);
+        Gdx.app.log("UIUtils LOG: ", message);
     }
 
 

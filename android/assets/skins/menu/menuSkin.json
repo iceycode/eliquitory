@@ -1,19 +1,23 @@
 //the menu skin json file - uses menuSkin.png & menuSkin.atlas files
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    default-font: { file: fonts/opensans_bold_med.fnt }
+    default-font: { file: fonts/roboto-reg14.fnt },
+    medium-font: { file: fonts/opensans_bold_med.fnt },
+    medium-font2: { file: fonts/roboto-reg16.fnt }
   },
   com.badlogic.gdx.graphics.Color: {
-    green: { a: 1, b: 0, g: 1, r: 0 },
     white: { a: 1, b: 1, g: 1, r: 1 },
-    red: { a: 1, b: 0, g: 0, r: 1 },
-    black: { a: 1, b: 0, g: 0, r: 0 }
-  },
+    black: { a: 1, b: 0, g: 0, r: 0 },
+    grey: { a: 1, b: .5, g: .5, r: .5}, //divide by 255 to get the float value
+},
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
-    calc: { up: calc, font: default-font, fontColor: black},
-    supply: {up: supplies, font: default-font, fontColor: black}
+    default: {up: settings, down: settings-down, font: default-font, fontColor: black},
+    calc: { up: calc, down: calc-down, font: default-font, fontColor: black},
+    supply: {up: supplies, down: supplies-down, font: default-font, fontColor: black},
+    supplyOff: {up: supplies-disabled, down: supplies-disabled-down, font: default-font, fontColor: grey},
+    settings: {up: settings, down: settings-down, font: default-font, fontColor: black}
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
-    default: { font: default-font, fontColor: white, background: title }
+    default: { font: medium-font2, fontColor: white, background: title }
   }
 }

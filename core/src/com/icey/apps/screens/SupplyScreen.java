@@ -2,7 +2,6 @@ package com.icey.apps.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -41,17 +40,11 @@ public class SupplyScreen implements Screen{
     Skin skin = Assets.manager.get(Constants.SUPPLY_MENU_SKIN, Skin.class);
     SupplyUtils supplyUtils = SupplyUtils.getSupplyUtils();
 
-    //background textures
-    Texture supplyTableBack = Assets.manager.get(Constants.SUPPLY_TABLE_BACK, Texture.class);
-    Texture screenBackground = Assets.manager.get(Constants.SUPPLY_MENU_BACKGROUND, Texture.class);
-
     Stage stage; //the stage, holds ui - table & supply Table
     Table table; //the root table
     Table supplyTable; //the supply table (goes under add buttons)
 
-    float scaleX = MainApp.scaleX;
-    float scaleY = MainApp.scaleY;
-    
+
     //constructor for supply screen
     public SupplyScreen(){
         instance = SupplyScreen.this;
@@ -74,7 +67,7 @@ public class SupplyScreen implements Screen{
         table.setClip(true);
         table.setLayoutEnabled(true); //need this for invalidating hierarchy
         
-        table.setBackground(new TextureRegionDrawable(new TextureRegion(screenBackground))); //set background
+        table.setBackground(new TextureRegionDrawable(skin.getRegion("background"))); //set background
         
         table.debug();
 
@@ -144,7 +137,7 @@ public class SupplyScreen implements Screen{
         supplyTable = new Table(); //current supply table
         supplyTable.top().left().pad(10); //set properties of table
 
-        supplyTable.setBackground(new TextureRegionDrawable(new TextureRegion(supplyTableBack)));
+        supplyTable.setBackground(new TextureRegionDrawable(new TextureRegion(skin.getRegion("supplyTableBack"))));
         supplyTable.defaults().pad(2); //set all cells to pad 5 all ways
         
         supplyTable.debug();

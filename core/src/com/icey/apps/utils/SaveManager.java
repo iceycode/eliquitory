@@ -1,5 +1,6 @@
 package com.icey.apps.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.*;
@@ -32,7 +33,9 @@ public class SaveManager {
 
     private Save save;
 
-    private Preferences userPrefs; //user preferences store basic info (name, email, etc)
+    //user preferences store basic info (name, email, etc)
+    //also stores the 'app state' - boolean value for ads disabled/supplies enabled
+    private Preferences userPrefs;
 
     //local since internal files are read only & want to write to this jsonEnable file
     private FileHandle saveFile;
@@ -42,11 +45,12 @@ public class SaveManager {
     public IntMap<Supply> supplyData; //supply data in map form
     
 
-    public SaveManager(boolean encoded, FileHandle saveFile){
+    public SaveManager(boolean encoded, String saveFileName, String prefsName){
         this.encoded = encoded;
-        this.saveFile = saveFile;
+        this.saveFile = Gdx.files.local(saveFileName);
 
         this.save = getSave();
+        this.userPrefs = Gdx.app.getPreferences(prefsName);
 
         //set supply map, empty if it does not exist
         if (save != null)
@@ -54,7 +58,7 @@ public class SaveManager {
     }
 
 
-    public Save getSave() {
+    protected Save getSave() {
         Save save = new Save();
 
         try {
@@ -67,14 +71,13 @@ public class SaveManager {
                     save = json.fromJson(Save.class, saveFile.readString());
             }
         }
-        catch(Throwable e){
-            log("Could not find file. " + e.toString());
+        catch(Exception e){
+            log("Could not find file. Will create a new one when saving." + e.toString());
             save = new Save();
         }
 
         return save;
     }
-
 
 
     //saves to a jsonEnable file
@@ -126,17 +129,29 @@ public class SaveManager {
 
     /** saves using Json as serializer
      *
-     * @param key
-     * @param data
+     * @param key : the name of the recipe
      */
-    public void saveRecipeData(String key, RecipeData data){
-        save.data.put(key, data);
+    public void saveRecipeData(String key){
+        SaveManager.RecipeData recipeData = new SaveManager.RecipeData();
+        recipeData.recipeName = key;
+
+        recipeData.base = CalcUtils.getCalcUtil().base;
+
+        recipeData.amountDesired = CalcUtils.getCalcUtil().amountDesired;
+        recipeData.strengthDesired = CalcUtils.getCalcUtil().strengthDesired;
+        recipeData.desiredPercents = CalcUtils.getCalcUtil().desiredPercents;
+
+        recipeData.flavors = CalcUtils.getCalcUtil().flavors;
+
+        recipeData.finalMills = CalcUtils.getCalcUtil().finalMills;
+
+
+        save.data.put(key, recipeData);
 
         saveToJson();
     }
 
 
-//
 //    public void renameSavedRecipe(String newName, String oldName){
 //        Object data = save.data.get(oldName);
 //        save.data.remove(oldName);
@@ -145,6 +160,7 @@ public class SaveManager {
 //        if (jsonEnable) saveToJson();
 //        else save_Gson();
 //    }
+
 
     /** deletes recipe by name
      *
@@ -204,16 +220,65 @@ public class SaveManager {
 
         saveToJson();
     }
-    
-    
-    public ObjectMap<String, Object> getRecipeData(){
-        return save.data;
+
+
+    /** turns ads off (or on)
+     *
+     * @param value : false if ads disabled
+     */
+    public void saveAdState(boolean value){
+        userPrefs.putBoolean("adsEnabled", value);
+
+        userPrefs.flush();
     }
-    
-    
-    public IntMap<Supply> getSupplyData(){
-        return supplyData;
+
+
+
+    /** saves supply feature - turns it on (or off)
+     *
+     * @param value : false means supply enabled
+     */
+    public void saveSupplyState(boolean value){
+        userPrefs.putBoolean("supplyDisabled", value);
+
+        userPrefs.flush();
     }
+
+
+    /** save drops per milliter setting
+     *
+     * @param value :
+     */
+    public void saveDropsPerML(float value){
+        userPrefs.putFloat("dropsPerML", value);
+
+        userPrefs.flush();
+    }
+
+
+    /** initializes app features & settings
+     *
+     * @param adsDisabled : the default value is true (ads are enabled)
+     * @param supplyDisabled : the default value is true (supply feature not enabled)
+     * @param dropsPerML : the default drops per ml
+     */
+    public void initSettings(boolean adsDisabled, boolean supplyDisabled, float dropsPerML){
+        //sets default states
+        userPrefs.putBoolean("adsEnabled", adsDisabled); //default is true
+        userPrefs.putBoolean("supplyDisabled", supplyDisabled); //default is true
+        userPrefs.putFloat("dropsPerML", 20);
+
+        userPrefs.flush(); //need to call this after updating Preferences
+    }
+
+
+//    //saves the user defaults
+//    public void saveUserDefaults(UserDefaultData defaults){
+//        save.data.put("Defaults", defaults);
+//
+//        saveToJson();
+//    }
+
 
 
     //sets the supply data
@@ -231,9 +296,33 @@ public class SaveManager {
     }
 
 
-    //sets the save data - for testing purposes
-    public void setSave(Save save){
-        this.save = save;
+    public ObjectMap<String, Object> getRecipeData(){
+        return save.data;
+    }
+
+
+    public IntMap<Supply> getSupplyData(){
+        return supplyData;
+    }
+
+
+    public boolean getAdState(boolean defValue){
+
+        return userPrefs.getBoolean("adsEnabled", defValue);
+    }
+
+    public boolean getSupplyState(boolean defValue){
+        return userPrefs.getBoolean("supplyDisabled", defValue);
+    }
+
+
+    public double getDropsPerML(){
+        return (double)userPrefs.getFloat("dropsPerML", 20); //default is 20
+    }
+
+
+    public Preferences getPrefs(){
+        return userPrefs;
     }
 
 
@@ -266,5 +355,27 @@ public class SaveManager {
         public Array<Flavor> flavors;
 
         public Array<Double> finalMills;
+    }
+
+    //----User defaults---these can be altered by user in settings
+    public static class UserDefaultData {
+
+        //a value between 20 & 40
+        // scientific standard is 20 drops per milliter (~.02 ml per drop)
+        //  though this value can vary based on measuring device & liquid density
+        public static double dropsPerMl; //default is about 20 drops per ml
+
+        //default base strength & percents - user can change in settings
+        public static double defaultDesiredAmt;
+        public static Array<Integer> defaultDesiredPercents;
+        public static double desiredStr; //desired strength (medium)
+
+        //base defaults - user will be able to change in settings
+        public static Base defaultBase ;
+
+        //flavor default - the go-to flavor for user, can change in settings
+        public static double defaultFlavPercent; //amount of the flavor supply
+        public static String defaultFlavorName = "Flavor1"; //name of flavor
+        public static Flavor defaultFlavor ;
     }
 }
