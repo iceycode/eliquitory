@@ -18,8 +18,7 @@ Market Services - deployment
 
 TABLE RESIZING NOTE:
 
-- make sure table resizes widgets & cells - setting layoutEnabled(true) & invalidateHierarchy() during resize
-- do not set actor size & rely on it, set size using tables
+- make sure table resizes widgets & cells during resize method by calling invalidateHierarchy() on root table
 
 MenuScreen
 
@@ -50,13 +49,7 @@ SupplyScreen & CalculatorScreen
 - when going from Calcscreen to SupplyScreen, nicotine base supply is set to settings in calcscreen
 - ~~set a custom textfieldfilter~~ 
 
-FlavorTable
-
-- unchecked FlavorTable operations;mfollowing error occurs during compile:
-
-	~~~~
-	Note: /Users/Allen/MEGA/Workspaces/app workspace/eliquitory/core/src/com/icey/apps/ui/FlavorTable.java uses unchecked or unsafe operations.
-	~~~~
+ 
 
 
 ###*Platform-Dependent*###
@@ -86,9 +79,14 @@ Android:
 	- adjust window position
 - MenuScreen
 	- make fonts bigger
-	- listeners are not aligned - (worked before) 	
+	- listeners are not aligned - (worked before) 
+- Google Play
+	- set up app in Google Play Dev Console
+	- Monetize App with AdMob
+	- create tests for ads
 
-HTML:
+
+HTML - NOTE: this is low on list of TODOs since:
 
 -  figure out exactly what is causing this error:
 	
@@ -98,14 +96,11 @@ HTML:
 	~~~~
 	- Base64Coder error occurs
 
-SaveManager
-
-- set platform specific filehandle paths
 
 ##*Graphics*##
 
 - add splash when loading
-- make graphics look a bit nicer
+- ~~make UI look a bit nicer~~
 - ~~Set opaque background for adding/editing supplies in supplywindow~~
 
 ##FEATURES TO ADD##
@@ -116,7 +111,7 @@ SaveManager
 - websites that user can buy refills
     - ability to auto-order supplies when running low
 - sync up with other user recipes, similar to <e-liquid-recipes.com>
-
+- add ability to add custom names to liquids
 
 
 ##Gradle-IntelliJ Issues##

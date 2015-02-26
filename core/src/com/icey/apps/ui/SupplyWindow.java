@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
-import com.icey.apps.assets.Constants;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.data.Supply;
 import com.icey.apps.screens.SupplyScreen;
 import com.icey.apps.utils.SupplyUtils;
@@ -22,21 +22,23 @@ import com.icey.apps.utils.UIUtils;
  *
  * Created by Allen on 1/28/15.
  */
-public class SupplyWindow extends Dialog{
+public class SupplyWindow extends Dialog {
 
     public Supply supply; //the current supply being set up
-    
-    SupplyUtils supplyUtils = SupplyUtils.getSupplyUtils();
 
     Skin skin;
     Table table;
 
-    int flavorCount = supplyUtils.lastFlavorKey; //number of flavors - used to set the key
+    int flavorCount = SupplyUtils.getSupplyUtils().lastFlavorKey; //number of flavors - used to set the key
+
+    int type; //type of supply being added
     
     boolean edit = false;
     public static Array<TextField> percentTextFields;
     ButtonGroup<CheckBox> buttonGroup; //group for textboxes
 
+    SelectBox<String> selectBox; //select box for other
+    VerticalGroup verticalGroup; //group for checkboxes to add to table
 
     /** constructor for supplywindow - editing or adding
      *
@@ -44,11 +46,13 @@ public class SupplyWindow extends Dialog{
      * @param style : String, style name
      * @param supply : the supply being manipulated
      * @param edit : whether edit supply or not
+     * @param type : type of supply
      */
-    public SupplyWindow(Skin skin, String style, Supply supply, boolean edit) {
+    public SupplyWindow(Skin skin, String style, Supply supply, boolean edit, int type) {
         super("", skin, style); //no title, label added instead
         this.skin = skin;
         this.edit = edit; //for editing
+        this.type = type;
 
         //setSize(400, 300); //sets the size of window
 
@@ -63,8 +67,9 @@ public class SupplyWindow extends Dialog{
         
         this.supply = supply;
 
-        if (style.equals("default")) setSupplyTable();
-        else if (style.equals("base")) setBaseTable();
+
+        if (type == 0) setSupplyTable();
+        else if (type == 1) setBaseTable();
         else setFlavorTable();
     }
 
@@ -73,22 +78,21 @@ public class SupplyWindow extends Dialog{
     //the widgets set if user is adding/editing a supply
     public void setSupplyTable(){
         int checkBox = -1; //checkbox to check
-
-        log(supply.toString());
         
-        Label titleLabel = new Label("", skin, "supplyTab");
+        Label titleLabel = new Label("", skin, "tab");
         titleLabel.setAlignment(Align.center);
         Label amtLabel = new Label("Amount (ml): ", skin);
         
         TextField amountTF = new TextField("", skin);
         amountTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         amountTF.setTextFieldListener(UIUtils.SupplyUI.amountListener(0, supply));
+        amountTF.setAlignment(Align.center);
 
         if (edit){
             titleLabel.setText("Edit Liquid Supply");
-            amountTF.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
+            amountTF.setStyle(skin.get("green-digit", TextField.TextFieldStyle.class));
             
-            amountTF.setMessageText(Double.toString(supply.getTotalAmount()));
+            amountTF.setMessageText("  "+Double.toString(supply.getTotalAmount()));
             
             checkBox = supply.getSupplyType();
         }
@@ -98,7 +102,7 @@ public class SupplyWindow extends Dialog{
         }
         
         //ROW 1 - title 
-        table.add(titleLabel).expandX().fillX().colspan(6).top().padBottom(5);
+        table.add(titleLabel).expandX().fillX().colspan(3).top().padBottom(5);
 
         // ROW 2 - amount of supply
         table.row(); //.padTop(5)
@@ -124,36 +128,37 @@ public class SupplyWindow extends Dialog{
         log(supply.toString());
 
         //2 columns, 7 rows total
-        Label titleLabel = new Label("", skin, "supplyTab");
+        Label titleLabel = new Label("", skin, "tab");
         titleLabel.setAlignment(Align.center);
         Label amtLabel = new Label("Amount (ml): ", skin);
 
         TextField amountTF = new TextField("", skin);
-        amountTF.setName("amount");
         amountTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         amountTF.setTextFieldListener(UIUtils.SupplyUI.amountListener(0, supply));
+        amountTF.setAlignment(Align.center);
 
         Label strengthLabel = new Label("Strength (mg): ", skin);
         TextField strengthTF = new TextField("", skin);
         strengthTF.setName("strength");
         strengthTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         strengthTF.setTextFieldListener(UIUtils.SupplyUI.amountListener(1, supply));
+        strengthTF.setAlignment(Align.center);
 
         //set the fields if editable or not
         if (edit){
             titleLabel.setText("Edit Nicotine Base");
             
             //widget font colors are blue if editable
-            amountTF.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
-            strengthTF.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
+            amountTF.setStyle(skin.get("green-digit", TextField.TextFieldStyle.class));
+            strengthTF.setStyle(skin.get("green-digit", TextField.TextFieldStyle.class));
             
-            amountTF.setMessageText(Double.toString(supply.getTotalAmount()));
-            strengthTF.setMessageText(Double.toString(supply.getBaseStrength()));
+            amountTF.setMessageText("  "+Double.toString(supply.getTotalAmount()));
+            strengthTF.setMessageText("  "+Double.toString(supply.getBaseStrength()));
         }
         else{
             titleLabel.setText("Add Nicotine Base");
-            amountTF.setMessageText("0.0");
-            strengthTF.setMessageText("0.0");
+            amountTF.setMessageText("  0.0");
+            strengthTF.setMessageText("  0.0");
             supply.setBasePercents(Constants.ZERO_BASE_PERCENTS); //set empty percents
         }
         
@@ -185,26 +190,28 @@ public class SupplyWindow extends Dialog{
         
         int checkBox = -1; //checkbox to check
         
-        Label titleLabel = new Label("", skin, "supplyTab");
+        Label titleLabel = new Label("", skin, "tab");
         titleLabel.setAlignment(Align.center);
 
         Label flavLabel = new Label("Flavor Name: ", skin);
         TextField nameField = new TextField("", skin);
         nameField.setTextFieldListener(UIUtils.SupplyUI.flavorNameListener(supply));
+        nameField.setAlignment(Align.center);
 
         Label amtLabel = new Label("Amount (ml): ", skin); //label for amount
         TextField amountTF = new TextField("", skin); //textfield for amount
         amountTF.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         amountTF.setTextFieldListener(UIUtils.SupplyUI.amountListener(0, supply));
+        amountTF.setAlignment(Align.center);
         
         //if flavor exists, set field texts & also checkBoxes
         if (edit) {
             titleLabel.setText("Edit Flavor");
-            nameField.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
-            amountTF.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
+            nameField.setStyle(skin.get("green-text", TextField.TextFieldStyle.class));
+            amountTF.setStyle(skin.get("green-digit", TextField.TextFieldStyle.class));
             
             nameField.setMessageText(supply.getName());
-            amountTF.setMessageText(Double.toString(supply.getTotalAmount()));
+            amountTF.setMessageText("  "+Double.toString(supply.getTotalAmount()));
             checkBox = supply.getFlavorType();
         }
         else {
@@ -213,7 +220,7 @@ public class SupplyWindow extends Dialog{
         }
 
         //ROW 1 - title
-        table.add(titleLabel).expandX().fillX().colspan(6).top();
+        table.add(titleLabel).expandX().fillX().colspan(3).top();
 
         //ROW 2 - flavor name
         table.row().padTop(5); 
@@ -243,27 +250,22 @@ public class SupplyWindow extends Dialog{
      * @param percents : the base percents
      */
     protected void addPercentFields(Array<Integer> percents){
-
-
         Array<Label> percentLabels = new Array<Label>();
         //set up the percent text fields & labels
         for (int i = 0; i < 2; i++){
             Label pgLabel = new Label(Constants.PERC_FIELD_NAMES[i], skin);
             pgLabel.setAlignment(Align.right);
 
-            TextField percentField = new TextField("", skin);
+            TextField percentField = new TextField("", skin, "digit");
             percentField.setColor(Color.RED);
             percentField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
             percentField.setMaxLength(2);
+            percentField.setAlignment(Align.center);
             percentField.setName(Constants.PERC_FIELD_NAMES[i]);
             percentField.setTextFieldListener(UIUtils.SupplyUI.percentListener(supply));
 
-            if (edit) {
-                percentField.setStyle(skin.get("editField", TextField.TextFieldStyle.class));
 
-            }
-
-            percentField.setMessageText(percents.get(i).toString());
+            percentField.setMessageText("  "+percents.get(i).toString());
 
             percentTextFields.add(percentField);
             percentLabels.add(pgLabel);
@@ -304,6 +306,7 @@ public class SupplyWindow extends Dialog{
      * @param checkedBox : the checkbox which will be checked
      */
     private void setCheckBoxes(int category, int checkedBox){
+        verticalGroup = new VerticalGroup();
         //checkBox button group - for setting max buttons checked
         buttonGroup = new ButtonGroup<CheckBox>();
         buttonGroup.setMaxCheckCount(1); //sets max check count to 1
@@ -312,16 +315,19 @@ public class SupplyWindow extends Dialog{
             String name = Constants.SUPPLY_CHECKBOX_TITLES[i];
             CheckBox typeCheckBox = new CheckBox(name, skin);
             typeCheckBox.setName(name);
+
             //whether this is checked or not
             if (i == checkedBox)
                 typeCheckBox.setChecked(true);
             
-            typeCheckBox.addListener(UIUtils.SupplyUI.checkBoxListener(category, this));
+            typeCheckBox.addListener(UIUtils.SupplyUI.checkBoxListener(supply, category, i));
 
             buttonGroup.add(typeCheckBox); //add to button group
-            
+
             table.add(buttonGroup.getButtons().get(i)).width(100).height(20f).padTop(10);
         }
+
+        setOtherSelectBox();
     }
 
 
@@ -329,7 +335,7 @@ public class SupplyWindow extends Dialog{
     //allows user to select which kind of "Other" it is; even giving it a name
     protected void setOtherSelectBox(){
 
-        final SelectBox<String> selectBox = new SelectBox<String>(skin);
+        selectBox = new SelectBox<String>(skin);
         selectBox.setItems(Constants.OTHER_NAMES);
         selectBox.setSelected(selectBox.getItems().get(selectBox.getItems().size -1));
 
@@ -338,73 +344,65 @@ public class SupplyWindow extends Dialog{
             public void changed(ChangeEvent event, Actor actor) {
                 supply.setName(selectBox.getSelected().toString());
 
-                if (selectBox.getSelected().equals("Other")){
-                    setOtherNameField();
+                if (selectBox.getSelected().contains("Other")){
+                    otherLabel.setVisible(true);
+                    otherTextField.setVisible(true);
+                    otherTextField.setDisabled(false);
+                }
+                else{
+                    if (otherLabel.isVisible() && otherTextField.isVisible()){
+                        otherLabel.setVisible(false);
+                        otherTextField.setVisible(false);
+                        otherTextField.setDisabled(true);
+                    }
                 }
             }
         });
 
+        selectBox.setVisible(false);
+        selectBox.setDisabled(true);
+
         table.row();
         table.add(selectBox).height(25).width(75); //adds to index 6; right after checkBox "Other"
 
+
+
+        setOtherNameField();
     }
 
-
+    Label otherLabel;
+    TextField otherTextField;
     //adds yet another field - a textfield for user to specify "Other" name
     protected void setOtherNameField(){
-        Label label = new Label("Name: ", skin);
-        table.add(label).height(25).width(50);
+        otherLabel = new Label("Name: ", skin);
+        table.add(otherLabel).height(25).width(50);
 
-        TextField nameField = new TextField("", skin);
+        otherLabel.setVisible(false);
+
+        otherTextField = new TextField("", skin);
         //TODO: add a listener to this
-        nameField.setMessageText("Name of supply");
-        nameField.setTextFieldListener(UIUtils.SupplyUI.supplyNameListener(supply));
+        otherTextField.setMessageText("Name of supply");
+        otherTextField.setTextFieldListener(UIUtils.SupplyUI.supplyNameListener(supply));
+        otherTextField.setAlignment(Align.center);
 
-        table.add(nameField).width(100).height(25).right().padLeft(2);
-    }
+        otherTextField.setDisabled(true);
+        otherTextField.setVisible(false);
 
-    
-    public void setLiquidType(String name){
-        if (name.contains("PG")){
-            supply.setSupplyType(0);
-        }
-        else if (name.contains("VG")){
-            supply.setSupplyType(1);
-        }
-        else{
-            supply.setSupplyType(2);
-            setOtherSelectBox();
-        }
-    }
+        table.add(otherTextField).width(100).height(25).right().padLeft(2);
 
 
-    /** the type of flavor based on name
-     * 
-     * @param name : PG, VG or Other
-     */
-    public void setFlavorType(String name){
-        if (name.contains("PG")){
-            supply.setFlavorType(0);
-        }
-        else if (name.contains("VG")){
-            supply.setFlavorType(1);
-        }
-        else{
-            supply.setFlavorType(2);
-            setOtherSelectBox();
-        }
     }
 
 
     //save button
     protected void setSaveButton(){
-        final TextButton saveButton = new TextButton("Save", skin, "save");
+        final TextButton saveButton = new TextButton("Save", skin, "small");
         saveButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (saveButton.isPressed()){
                     if (supply.isSupplySet()) {
-                        supplyUtils.saveSupply(supply.getSupplyType(), supply);
+                        SupplyUtils.getSupplyUtils().saveSupply(supply.getSupplyType(), supply);
                         remove(); //removes it from stage
                     }
                     else{
@@ -422,7 +420,7 @@ public class SupplyWindow extends Dialog{
 
     //cancels user's entering of supply value
     protected void setCancelButton(){
-        final TextButton cancelButton = new TextButton("Cancel", skin, "save"); //same as save style
+        final TextButton cancelButton = new TextButton("Cancel", skin, "small"); //same as save style
         cancelButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -442,23 +440,43 @@ public class SupplyWindow extends Dialog{
                 .text(errorMsg).button("Fix").show(SupplyScreen.instance.getStage());
     }
 
-    
-//    @Override
-//    public void act(float delta) {
-//        super.act(delta);
-//
-////        //dismisses if click anywhere on outside of dialog box
-////        if (Gdx.input.isTouched()){
-////            if (Gdx.input.getX() > (getX() + getWidth()) || Gdx.input.getX() < getX()) {
-////                hide();
-////                remove();
-////            }
-////            if (Gdx.input.getY() < getY() || Gdx.input.getY() > (getY() + getHeight())) {
-////                hide();
-////                remove();
-////            }
-////        }
-//    }
+    boolean isOtherChecked = false;
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+
+
+        if (type != 1){
+            if (!isOtherChecked){
+                if (buttonGroup.getButtons().get(2).isChecked()) {
+                    selectBox.setVisible(true);
+                    selectBox.setDisabled(false);
+
+                    isOtherChecked = true;
+                }
+            }
+            else{
+                if (!buttonGroup.getButtons().get(2).isChecked()){
+                    selectBox.setDisabled(true);
+                    selectBox.setVisible(false);
+
+                    isOtherChecked = false;
+                }
+            }
+        }
+
+//        //dismisses if click anywhere on outside of dialog box
+//        if (Gdx.input.isTouched()){
+//            if (Gdx.input.getX() > (getX() + getWidth()) || Gdx.input.getX() < getX()) {
+//                hide();
+//                remove();
+//            }
+//            if (Gdx.input.getY() < getY() || Gdx.input.getY() > (getY() + getHeight())) {
+//                hide();
+//                remove();
+//            }
+//        }
+    }
  
     
     

@@ -1,0 +1,18 @@
+{
+  com.badlogic.gdx.graphics.g2d.BitmapFont: {
+  default-font: { file: fonts/roboto/roboto-reg14.fnt },
+  medium-font: { file: fonts/roboto/roboto-reg20.fnt },
+  medium-font2: { file: fonts/roboto/roboto-reg16.fnt }
+  },
+  com.badlogic.gdx.graphics.Color: {
+  white: { a: 1, b: 1, g: 1, r: 1 },
+  black: { a: 1, b: 0, g: 0, r: 0 },
+  grey: { a: 1, b: .5, g: .5, r: .5}, //divide by 255 to get the float value
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: {up: settings, down: settings-down, font: default-font, fontColor: black},
+  },
+    com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+    default: { font: medium-font2, fontColor: white, background: title }
+  }
+}

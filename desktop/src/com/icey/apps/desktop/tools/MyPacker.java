@@ -11,7 +11,8 @@ import java.util.Scanner;
  */
 public class MyPacker {
     private static String choiceMessage = "Choose which textures to pack: \n 1: Calculator textures \n 2: Main Menu textures " +
-            "\n 3: Supply Menu textures \n 4: Setting Menu textures \nENTER NUMBER HERE: ";
+            "\n 3: Supply Menu textures \n 4: Setting Menu textures \n 5: Recipe Menu textures " +
+            "\n 6: Dark Theme textures \nENTER NUMBER HERE: ";
     private static String errorMsg = "Wrong value entered, try again";
 
     //input & output directories and packfile names
@@ -30,6 +31,14 @@ public class MyPacker {
     private static String inputDir_settings = "textures/settings";
     private static String outputDir_settings = "skins/settings";
     private static String packFileName_settings = "skins/settings/settingSkin";
+
+    private static String inputDir_recipes = "textures/recipes";
+    private static String outputDir_recipes = "skins/recipes";
+    private static String packFileName_recipes = "skins/recipes/recipeSkin";
+
+    private static String inputDir_darkTheme = "textures/theme-dark";
+    private static String outputDir_darkTheme = "skins/dark";
+    private static String packFileName_darkTheme = "skins/dark/darkSkin";
 
 
     //texture packer
@@ -68,6 +77,12 @@ public class MyPacker {
             case 4:
                 TexturePacker.process(settings, inputDir_settings, outputDir_settings, packFileName_settings);
                 break;
+            case 5:
+                TexturePacker.process(settings, inputDir_recipes, outputDir_recipes, packFileName_recipes);
+                break;
+            case 6:
+                TexturePacker.process(settings, inputDir_darkTheme, outputDir_darkTheme, packFileName_darkTheme);
+                break;
             default:
                 getUserInput(errorMsg); //error, try again
                 break;
@@ -77,7 +92,7 @@ public class MyPacker {
     }
 
     protected static void packAgain(){
-        System.out.println("Press Q to quit or another key, then enter, to pack more textures. \nEnter Number: ");
+        System.out.println("Press Q to quit or another key, then enter, to pack more textures: ");
         Scanner reader = new Scanner(System.in);
 
         if (reader.next().equals("q") || reader.next().equals("Q"))

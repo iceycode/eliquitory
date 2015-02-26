@@ -3,7 +3,6 @@ package com.icey.apps.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -13,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.assets.Constants;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.utils.SaveManager;
 import com.icey.apps.utils.UIUtils;
 
@@ -33,7 +32,7 @@ public class SettingScreen implements Screen {
     Stage stage;
     Table table; //main table for buttons/settings
 
-    Skin skin = Assets.manager.get(Constants.SETTING_SKIN, Skin.class);
+    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
 
     SaveManager saveManager = MainApp.saveManager;
     Preferences settings;
@@ -52,6 +51,7 @@ public class SettingScreen implements Screen {
     public void setTable(){
         table = new Table();
         table.setBounds(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        table.top();
         table.setClip(true);
         table.setFillParent(true);
 
@@ -59,9 +59,8 @@ public class SettingScreen implements Screen {
 
         Label title = new Label("SETTINGS", skin, "title");
         title.setAlignment(Align.center);
-        table.add(title).width(480).height(100).padBottom(50).colspan(3);
+        table.add(title).width(300).height(100).padBottom(50).colspan(3).padTop(25);
 
-        table.row();
         setDrops();
         setButtons();
 
@@ -70,14 +69,17 @@ public class SettingScreen implements Screen {
 
     protected void setDrops(){
 
+        //ROW 2 : drops per ml
         table.row().padBottom(100);
 
-        table.add(new Label("Drops per ml: ", skin));
+        Label label = new Label("Drops per ml: ", skin);
+        table.add(label).right();
 
-        TextField textField = new TextField("", skin);
+        TextField textField = new TextField("", skin, "digit");
         textField.setMaxLength(2);
         textField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
         textField.setTextFieldListener(UIUtils.SettingsUI.dropsListener());
+        textField.setAlignment(Align.center);
 
         table.add(textField).left().width(50).height(25).padLeft(2);
 
@@ -92,63 +94,63 @@ public class SettingScreen implements Screen {
 
     //sets the buttons on table
     public void setButtons(){
+        //ROW 3 disable ads button
         table.row().padTop(100);
 
+        setFeatureButton(!MainApp.adsEnabled, 0);
 
-        final TextButton adsButton = new TextButton("Disable Ads", skin);
-        adsButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (adsButton.isPressed()){
-                    saveManager.saveAdState(false);
-                }
-            }
-        });
-
-        //disable button & set checked if ads are disabled
-        if (!MainApp.adsEnabled){
-            adsButton.setChecked(true);
-            adsButton.setDisabled(true);
-            adsButton.setColor(Color.LIGHT_GRAY);
-        }
-
-
-        table.add(adsButton).width(150).height(75);
-
+        //ROW 4 : enable supply button
         table.row().pad(10);
 
-        final TextButton supplyButton = new TextButton("Enable Supply Feature", skin);
-        supplyButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (supplyButton.isPressed()){
-                    saveManager.saveSupplyState(false);
-                }
-            }
-        });
-
-        if (MainApp.supplyEnabled){
-            supplyButton.setChecked(true);
-            supplyButton.setDisabled(true);
-            supplyButton.setColor(Color.LIGHT_GRAY);
-        }
-
-        table.add(supplyButton).width(150).height(75).colspan(3);
+        setFeatureButton(MainApp.supplyEnabled, 1);
 
 
-
+        //ROW 5 - back button (last rows)
         table.row().padTop(100);
-        final Button backButton = new Button(skin);
-        backButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (backButton.isPressed()){
-                    MainApp.setState(0);
-                }
-            }
-        });
+//        final Button backButton = new Button(skin);
+        final TextButton backButton = UIUtils.Buttons.textButton("Back", skin, "default");
+        backButton.addListener(UIUtils.backTextButtonListener(backButton));
+
 
         table.add(backButton).width(100).right().colspan(3);
+    }
+
+    /** sets up the feature button - enabled or disabled
+     *
+     * @param feature : if true, button is disabled (ads off or supply enabled)
+     * @param type : the type of feature (ad or supply)
+     */
+    protected void setFeatureButton(boolean feature, final int type){
+        final TextButton featureButton;
+
+        if (feature){
+            featureButton = new TextButton("Disable Ads", skin, "disabled-med");
+            featureButton.setDisabled(true);
+            table.add(featureButton).width(150).height(75).colspan(3).center();
+        }
+        else{
+            featureButton = new TextButton("Disable Ads", skin, "medium");
+            featureButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    if (featureButton.isPressed()){
+                        if (type == 0)
+                            saveManager.saveAdState(false);
+                        else
+                            saveManager.saveSupplyState(false);
+                    }
+                }
+            });
+        }
+
+        table.add(featureButton).width(150).height(75).colspan(3).center();
+    }
+
+
+    //updates features buttons to disabled
+    public void updateFeatureButtons(){
+
+
     }
 
 

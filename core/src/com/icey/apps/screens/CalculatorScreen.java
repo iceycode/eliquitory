@@ -11,15 +11,16 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.ui.CalcTable;
 import com.icey.apps.ui.CalcWindow;
 import com.icey.apps.ui.LoadWindow;
 import com.icey.apps.utils.CalcUtils;
+import com.icey.apps.utils.Constants;
+import com.icey.apps.utils.UIUtils;
 
 /** the main calculator app
  *
@@ -70,7 +71,7 @@ import com.icey.apps.utils.CalcUtils;
  */
 public class CalculatorScreen implements Screen {
 
-    Skin skin; //skin
+    Skin skin= Assets.manager.get(Constants.DARK_SKIN, Skin.class); //skin
     Stage stage; //main stage
 
     //Tables which hold UI widgets, get added to stage
@@ -78,7 +79,7 @@ public class CalculatorScreen implements Screen {
     //FlavorTable flavorTable; //flavorTable - holds flavors
     ScrollPane scroll; //ScrollPane for flavorTable
 
-    String errorMsg = Constants.ERROR_MAIN;
+    Label errorTitle;
     String[] errorMsgs = Constants.ERROR_MSGS; //0=flavor, 1=desired percents, 2 = base percents
 
     LoadWindow loadWindow;
@@ -88,13 +89,12 @@ public class CalculatorScreen implements Screen {
 
 
     public CalculatorScreen(){
-        skin = Assets.manager.get(Constants.CALC_SKIN, Skin.class);
-
         stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
         setCalcTable();
 
-        setAmountsWindow();
+        errorTitle = new Label(Constants.ERROR_MAIN, skin, "tab");
+        errorTitle.setAlignment(Align.center);
     }
 
 
@@ -112,23 +112,11 @@ public class CalculatorScreen implements Screen {
         stage.addActor(table);
     }
 
-//    //a nested table with a scrollpane in it
-//    protected void setFlavorScrollTable(){
-//
-//        flavorTable = new FlavorTable(skin);
-//
-//        ScrollPane scroll = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
-//
-//        table.add(scroll).width(480).height(200).colspan(6); //add to the outer table
-//        table.row();
-//    }
-
-
     boolean loadWindowSetup = false;
     protected void setLoadWindow(){
 
         if (!loadWindowSetup){
-            loadWindow = new LoadWindow("Saved Recipes", skin, "load");
+            loadWindow = new LoadWindow("Saved Recipes", skin, "default");
             stage.addActor(loadWindow);
         }
         else{
@@ -138,21 +126,9 @@ public class CalculatorScreen implements Screen {
     }
 
 
-    //the of of each liquid &
-    protected void setAmountsWindow(){
-
-    }
-
-
-    //shows the amounts window
-    protected void showFinalAmounts(){
-
-    }
-
-
     protected void setButtons(){
         //the flavor button
-        final TextButton flavorButton = new TextButton("Add flavor", skin, "flavor");
+        final TextButton flavorButton = new TextButton("Add Flavor", skin, "rounded");
         flavorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -161,11 +137,12 @@ public class CalculatorScreen implements Screen {
             }
         });
 
-        table.add(flavorButton).width(200).height(50).colspan(6).align(Align.center);
+        table.add(flavorButton).width(200).height(50).colspan(table.cols).center().padBottom(5);
         table.row();
 
         //the calculator button
-        final TextButton calcButton = new TextButton("Calculate!", skin);
+//        final TextButton calcButton = new TextButton("Calculate!", skin);
+        final TextButton calcButton = new TextButton("Calculate!", skin, "medium");
         calcButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -174,7 +151,7 @@ public class CalculatorScreen implements Screen {
             }
         });
 
-        table.add(calcButton).width(200).height(50).colspan(6).align(Align.center);
+        table.add(calcButton).width(200).height(50).colspan(table.cols).center().padBottom(5);
         
 
         setMenuButtons();
@@ -186,7 +163,7 @@ public class CalculatorScreen implements Screen {
         table.row().pad(5);
         
         //the save button
-        TextButton saveButton = new TextButton("Save", skin, "menu");
+        TextButton saveButton = new TextButton("Save", skin, "medium");
         saveButton.addListener(new InputListener(){
 
             @Override
@@ -194,11 +171,7 @@ public class CalculatorScreen implements Screen {
                 calcUtils.saveData();
                 if (calcUtils.saved = true){
                     log("wrong values!");
-                    new Dialog("", skin){
-                        protected void result(Object object) {
-                            outsideDialog(this);
-                        }
-                    }.text("ERROR SAVING:\n").text("Wrong Values Entered or lacking values!")
+                    new Dialog("", skin).text("ERROR SAVING:\n").text("Wrong Values Entered or lacking values!")
                             .button("Fix it!").key(Input.Keys.ESCAPE, false).key(Input.Keys.ENTER, true).
                             show(stage); //, Actions.fadeOut(2f)
                 }
@@ -210,7 +183,8 @@ public class CalculatorScreen implements Screen {
 
 
         //the load button
-        final TextButton loadButton = new TextButton("Load", skin, "menu");
+//        final TextButton loadButton = new TextButton("Load", skin, "menu");
+        final TextButton loadButton = new TextButton("Load", skin, "medium");
         loadButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -220,20 +194,15 @@ public class CalculatorScreen implements Screen {
                 }
             }
         });
-        table.add(loadButton).width(100).align(Align.center);
+        table.add(loadButton).width(100).colspan(2).align(Align.center);
 
 
         //the back button
-        final Button backButton = new Button(skin);
-        backButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (backButton.isPressed()){
-                    MainApp.setState(MainApp.prevState);
-                }
-            }
-        });
-        table.add(backButton).width(100).align(Align.left);
+//        final Button backButton = new Button(skin);
+//        final TextButton backButton = UIUtils.Buttons.textButton("BACK", skin, "menu");
+        final TextButton backButton = UIUtils.Buttons.textButton("Back", skin, "medium");
+        backButton.addListener(UIUtils.backTextButtonListener(backButton));
+                table.add(backButton).width(100).align(Align.left);
     }
 
 
@@ -242,67 +211,51 @@ public class CalculatorScreen implements Screen {
      * @param message
      * @param detail
      */
-    protected void setErrorDialog(String message, String detail){
-        Dialog errorDialog = new Dialog("", skin){
-            protected void result(Object object) {
-                outsideDialog(this);
-            }
-        };
-        errorDialog.getContentTable().add(new Label(errorMsg, skin)).align(Align.center);
+    protected void showErrorDialog(String message, String detail){
+        Dialog errorDialog = new Dialog("", skin);
+        errorDialog.getContentTable().top();
+        errorDialog.getContentTable().add(errorTitle).fillX().expandX().center();
+
         errorDialog.getContentTable().row();
+        errorDialog.getContentTable().add(new Label(message, skin)).center();
+
+        errorDialog.getContentTable().row();
+        errorDialog.getContentTable().add(new Label(detail, skin)).center();
+
         errorDialog.setMovable(true);
 
+        errorDialog.getButtonTable().setHeight(40);
         errorDialog.button("Fix it");
-        errorDialog.getButtonTable().setHeight(30f);
 
-        errorDialog.text(message).show(stage); //, Actions.fadeOut(2f)
+        errorDialog.show(stage); //, Actions.fadeOut(2f)
     }
 
-//
-//    //info about widgets
-//    protected void getTableWidgetInfo() throws NullPointerException{
-//        for (Actor a : table.getChildren()){
-////            a.setScale(MainApp.scaleX, MainApp.scaleY);
-//            log ("Actor name: " + a.getName());
-//            log ("Actor class: " + a.getClass().getSimpleName());
-//            log("Table Actor position: " + "(" + a.getX() + ", " + a.getY() + ")" + "\n" +
-//                    "Actor Actor size: " + a.getWidth() + " x " + a.getHeight());
-//        }
-//    }
 
 
     public void calculate(){
         //calculate amounts if touchdown
         if (!calcUtils.areFlavorsSet()){
             log("flavors not set!");
-            setErrorDialog(errorMsgs[0], calcUtils.getError());
+            showErrorDialog(errorMsgs[0], calcUtils.getError());
         }
-        else if (!calcUtils.areDesiredAt100()){
-            log("desired percents do not add up to 100");
-            setErrorDialog(errorMsgs[1], calcUtils.getError());
-        }
-        else if (!calcUtils.areBaseAt100()){
-            log("base percents do not add up to 100");
-            setErrorDialog(errorMsgs[2], calcUtils.getError());
+        else if (!calcUtils.isGoalSet()){
+            showErrorDialog(errorMsgs[3], "");
         }
         else{
             log("calculating now...");
-            calcUtils.calcAmounts();
-            displayResults();
+            Array<Double> finalMills = calcUtils.calcAmounts();
+            displayResults(finalMills);
         }
     }
     
-    
-    //display the calculated results
-    protected void displayResults(){
-        //table.updateCalcLabels();
-        //flavorTable.updateCalcLabels();
-        
-//        if (calcUtils.updatedSupply){
-//            table.updateSupplyLabels();
-//            flavorTable.updateSupplyLabels();
-//        }
-        new CalcWindow(skin, calcUtils.getFinalMills(), calcUtils.getFlavors()).show(stage);
+
+    /** display the calculated results
+     *
+     * @param finalMills - calculated amounts
+     */
+    protected void displayResults(Array<Double> finalMills){
+
+        new CalcWindow(skin, "default", finalMills, calcUtils.getFlavors()).show(stage);
     }
     
     
@@ -310,38 +263,26 @@ public class CalculatorScreen implements Screen {
     private void displayLoadedData(){
         
         table.setLoadedRecipe();
-        
-        //set up the flavors
-        for (Flavor f : calcUtils.getFlavors()){
-            if (calcUtils.getFlavors().size > table.flavorTable.numFlavors)
-                table.flavorTable.addNewFlavor(new Flavor("Flavor " + table.flavorTable.numFlavors));
-            
-            for (TextField tf: table.flavorTable.flvrTitleTFs)
-                tf.setMessageText(f.getName());
-            
-            for (TextField tf : table.flavorTable.flvrPercsTFs)
-                tf.setMessageText(Double.toString(f.getPercent()));
-        }
+        table.flavorTable.setLoadedData();
 
-        displayResults(); //display the loaded recipe results
+        //displayResults(); //display the loaded recipe results
     }
 
 
-    //if clicked outside of dialog
-    public void outsideDialog(Dialog dialog){
-        //dismisses if click anywhere on outside of dialog box
-        if (Gdx.input.isTouched()){
-            if (Gdx.input.getX() > (dialog.getX() + dialog.getWidth()) || Gdx.input.getX() < dialog.getX()) {
-                dialog.hide();
-                dialog.remove();
-            }
-            if (Gdx.input.getY() < dialog.getY() || Gdx.input.getY() > (dialog.getY() + dialog.getHeight())) {
-                dialog.hide();
-                dialog.remove();
-            }
-        }
-    }
-
+//    //if clicked outside of dialog
+//    public void outsideDialog(Dialog dialog){
+//        //dismisses if click anywhere on outside of dialog box
+//        if (Gdx.input.isTouched()){
+//            if (Gdx.input.getX() > (dialog.getX() + dialog.getWidth()) || Gdx.input.getX() < dialog.getX()) {
+//                dialog.hide();
+//                dialog.remove();
+//            }
+//            if (Gdx.input.getY() < dialog.getY() || Gdx.input.getY() > (dialog.getY() + dialog.getHeight())) {
+//                dialog.hide();
+//                dialog.remove();
+//            }
+//        }
+//    }
 
 
     @Override
@@ -376,16 +317,6 @@ public class CalculatorScreen implements Screen {
 
         log("Resized screen");
     }
-
-
-//    protected void getTableWidgetInfo(){
-//        for (Actor a : table.getChildren()){
-//            log("Positions before scaling:  (" + a.getX()+ ", " + a.getY() + ")");
-//            a.setScale(table.getScaleX(), table.getScaleY());
-//
-//            log("Positions AFTER scaling:  (" + a.getX()+ ", " + a.getY() + ")");
-//        }
-//    }
 
     @Override
     public void pause() {

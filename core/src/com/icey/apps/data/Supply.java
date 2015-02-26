@@ -1,7 +1,7 @@
 package com.icey.apps.data;
 
 import com.badlogic.gdx.utils.Array;
-import com.icey.apps.assets.Constants;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.ui.SupplyWindow;
 
 /** the types of supply (type of liquid)
@@ -18,7 +18,7 @@ public class Supply {
     
     String name = ""; //the name of the supply
     double totalAmount = -1; //amount total
-    int supplyType = -1; //the type of supply (pg, vg, other)
+    int supplyType = -1; //the type of supply (pg, vg, other) - also the key
     int flavorType = -1; //for flavors
 
     Array<Integer> basePercents = new Array<Integer>(); //if this is a base type, then percents are set
@@ -84,8 +84,6 @@ public class Supply {
                 this.errorMsg = "Error saving nicotine base.";
                 return false;
             }
-                
-            
             for (Integer i : basePercents){
                 if (i == null) {
                     this.errorMsg = "Error saving flavor.";
@@ -129,8 +127,6 @@ public class Supply {
             name = "EtOH/H2O/other";
         else if (supplyType == 3)
             name = "Nicotine Base";
-        else
-            name = "Flavor: ";
     }
 
     public void setPgPercent(int pgPercent) {
@@ -150,13 +146,25 @@ public class Supply {
     }
 
 
-    public String getTypeName(){
-        if (supplyType == 0)
+    public String getTypeName(int type){
+        if (type == 0)
             return "PG";
-        else if (supplyType == 1)
+        else if (type == 1)
             return "VG";
+        else if (type == 2)
+            return "Other";
+        else
+            return getFlavorTypeName();
 
-        return "Other";
+    }
+
+    public String getFlavorTypeName(){
+        if (flavorType == 0)
+            return "PG";
+        else if (flavorType == 1)
+            return "VG";
+        else
+            return "Other";
     }
     
     public void setName(String name) {
@@ -240,10 +248,10 @@ public class Supply {
                     "Base Strength: " + getBaseStrength();
         }
         else if (supplyType > 4){
-            type = "Flavor type:" + getFlavorType() ;
+            type = "Flavor type:" + getTypeName(flavorType);
         }
         else{
-            type = "Type: " + getTypeName();
+            type = "Type: " + getTypeName(supplyType);
         }
 
         return "Supply name : " + getName() + "\n" +

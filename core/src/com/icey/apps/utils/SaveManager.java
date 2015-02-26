@@ -29,7 +29,6 @@ public class SaveManager {
 //    private static SaveManager instance;
     
     private boolean encoded = true; //Bas64Encoder enabled by default
-    private boolean jsonEnable = false; //the type of serializer used - Json vs Gson
 
     private Save save;
 
@@ -53,28 +52,24 @@ public class SaveManager {
         this.userPrefs = Gdx.app.getPreferences(prefsName);
 
         //set supply map, empty if it does not exist
-        if (save != null)
-            setSupplyData();
+        setSupplyData();
     }
 
 
     protected Save getSave() {
         Save save = new Save();
 
-        try {
-            if (saveFile.exists()) {
-                Json json = new Json();
+        if (saveFile.exists()) {
+            Json json = new Json();
 
-                if (encoded)
-                    save = json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString()));
-                else
-                    save = json.fromJson(Save.class, saveFile.readString());
-            }
+            if (encoded)
+                save = json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString()));
+            else
+                save = json.fromJson(Save.class, saveFile.readString());
         }
-        catch(Exception e){
-            log("Could not find file. Will create a new one when saving." + e.toString());
-            save = new Save();
-        }
+
+        if (save == null)
+            return new Save();
 
         return save;
     }
@@ -82,18 +77,16 @@ public class SaveManager {
 
     //saves to a jsonEnable file
     public void saveToJson(){
-        if (this.jsonEnable){
-            Json json = new Json();
-            json.setOutputType(JsonWriter.OutputType.json);
-            
-            if (encoded) 
-                saveFile.writeString(Base64Coder.encodeString(json.prettyPrint(save)), false);
-            else 
-                saveFile.writeString(json.prettyPrint(save), false);
-            
-        }
-        
-        log("saved with Json : " + jsonEnable + "/ Gson : " + !jsonEnable);
+        Json json = new Json();
+        json.setOutputType(JsonWriter.OutputType.json);
+
+
+        if (encoded)
+            saveFile.writeString(Base64Coder.encodeString(json.prettyPrint(save)), false);
+        else
+            saveFile.writeString(json.prettyPrint(save), false);
+
+        log(json.fromJson(Save.class, Base64Coder.decodeString(saveFile.readString())).toString());
     }
 
     
@@ -177,37 +170,13 @@ public class SaveManager {
      * @param supply : the supply being saved
      */
     public void saveSupplyData(int key, Supply supply){
-        
-        if (this.supplyData.containsKey(key)){
-            updateSupplyData(key, supply);
-        }
-        else{
-            save.data.put(SUPPLY_KEY + key, supply);
-        }
+
+        save.data.put(SUPPLY_KEY + key, supply);
 
         saveToJson();
         log("saved supply data");
     }
 
-
-    /** updates supply data based on key
-     *
-     * @param key : key in map
-     * @param supply : supply being updated
-     */
-    public void updateSupplyData(int key, Supply supply){
-        //remove from current supplydata map
-        supplyData.remove(key);
-        supplyData.put(key, supply);
-        
-        //remove from the save file
-        save.data.remove(SUPPLY_KEY + key);
-        save.data.put(SUPPLY_KEY + key, supply);
-
-        saveToJson();
-        
-        log("updated supplyData");
-    }
 
     /** deletes the supply
      *
@@ -302,6 +271,8 @@ public class SaveManager {
 
 
     public IntMap<Supply> getSupplyData(){
+        if (supplyData == null)
+            supplyData = new IntMap<Supply>();
         return supplyData;
     }
 

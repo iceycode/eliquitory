@@ -102,7 +102,7 @@ public class Flavor {
      * @return true if meets criteria to being set, false otherwise
      */
     public boolean isFlavorSet(){
-        if (type == -1 || amount==0)
+        if (type == -1 || percent <= 0)
             return false;
 
         return true;

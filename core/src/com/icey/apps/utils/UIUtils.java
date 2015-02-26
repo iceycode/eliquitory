@@ -5,14 +5,11 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Clipboard;
 import com.icey.apps.MainApp;
-import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Supply;
-import com.icey.apps.ui.SupplyWindow;
 
 /** Class holds listeners & common elements for UI
  *  
@@ -41,7 +38,6 @@ public class UIUtils {
                 }
                 else if (textField.getName().contains("recipe")){
                     CalcUtils.getCalcUtil().setRecipeName(textField.getText());
-                    log("recipe name: " + textField.getText());
                 }
 
             }
@@ -149,12 +145,10 @@ public class UIUtils {
         TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
             @Override
             public void keyTyped(TextField textField, char c) {
-                log( "Percentage typed: " + c + ", for " + textField.getName());
                 if ((c == '\r' || c == '\n')) {
                     textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
                 }
                 else if (isInteger(c)){
-                    //int i = Integer.parseInt(textField.getName().substring(textField.getName().length()-1))-1;
                     CalcUtils.getCalcUtil().setFlavorPercent(textField.getText(), id);
                 }
             }
@@ -176,7 +170,6 @@ public class UIUtils {
             public void changed(ChangeEvent event, Actor actor) {
                 CheckBox box = ((CheckBox)actor);
                 if (box.isChecked()){
-                    //int i = Integer.parseInt(box.getName().substring(box.getName().length()-1))-1;
                     log( "Flavor whose type changed, index = " + id);
 
                     CalcUtils.getCalcUtil().setFlavorType(type, id);
@@ -187,18 +180,28 @@ public class UIUtils {
         return flavorBoxListener;
     }
 
-    //this is a customized TextFieldFilter for double values (not just numbers)
-    public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
 
-        @Override
-        public boolean acceptChar(TextField textField, char c) {
-            //checks to see whetehr textField already contains a decimal point
-            if (textField.getText().contains(".") && c == '.')
-                return false;
+    public static ChangeListener backTextButtonListener(final TextButton button){
+        return new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (button.isPressed()){
+                    MainApp.setState(MainApp.prevState);
+                }
+            }
+        };
+    }
 
-            return isDecimalDigit(c);
-        }
 
+    public static ChangeListener backButtonListener(final Button button){
+        return new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (button.isPressed()){
+                    MainApp.setState(MainApp.prevState);
+                }
+            }
+        };
     }
 
 
@@ -247,6 +250,44 @@ public class UIUtils {
         return c >='0' && c <= '9';
     }
 
+
+
+    //this is a customized TextFieldFilter for double values (not just numbers)
+    public static class MyTextFieldFilter extends TextField.TextFieldFilter.DigitsOnlyFilter {
+
+        @Override
+        public boolean acceptChar(TextField textField, char c) {
+            //checks to see whetehr textField already contains a decimal point
+            if (textField.getText().contains(".") && c == '.')
+                return false;
+
+            return isDecimalDigit(c);
+        }
+
+    }
+
+
+    public static class ClipboardText implements Clipboard{
+
+        @Override
+        public String getContents() {
+            return null;
+        }
+
+        @Override
+        public void setContents(String content) {
+
+        }
+    }
+
+
+    //methods for creating common buttons
+    public static class Buttons{
+
+        public static TextButton textButton(String title, Skin skin, String style){
+            return new TextButton(title, skin, style);
+        }
+    }
 
 
     //contains the listeners for SupplyScreen UI
@@ -306,7 +347,6 @@ public class UIUtils {
             TextField.TextFieldListener percentFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c) {
-                    log("Percentage typed: " + c + ", for " + textField.getName());
                     if ((c == '\r' || c == '\n')) {
                         textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
                                 || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
@@ -335,8 +375,6 @@ public class UIUtils {
             TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c){
-                    log( "Amount typed: " + c);
-
 //                if (c == '\n') textField.getOnscreenKeyboard().show(false);
 
                     if ((c == '\r' || c == '\n')) {
@@ -359,24 +397,23 @@ public class UIUtils {
 
 
         /** returns a CheckBox listener
-         * 
+         *
+         * @param supply : window from SupplyScreen
          * @param category : whether it is liquid supply or flavor supply
-         * @param window : window from SupplyScreen
+         * @param type : specific type of liquid - PG, VG or Other
          * @return a listener
          */
-        public static ChangeListener checkBoxListener(final int category, final SupplyWindow window){
+        public static ChangeListener checkBoxListener(final Supply supply, final int category, final int type){
             ChangeListener flavorBoxListener = new ChangeListener(){
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     CheckBox box = ((CheckBox)actor);
                     if (box.isChecked()){
-                        log("category checkbox belongs to is ");
-
                         if (category == 0){
-                            window.setLiquidType(box.getName());
+                            supply.setSupplyType(type);
                         }
                         else {
-                            window.setFlavorType(box.getName());
+                            supply.setFlavorType(type);
                         }
                     }
                 }
@@ -384,6 +421,22 @@ public class UIUtils {
 
             return flavorBoxListener;
         }
+
+
+        /** Changes label (mainly color) depending on amount user has left
+         *
+         * @param label : label being altered
+         * @param amount : amount use has in supply
+         * @param skin : the skin
+         * @return : the altered label or unaltered label
+         */
+        public static Label flavorLabel(Label label, double amount, Skin skin){
+            if (amount > 15) label = new Label("", skin, "default-green");
+            else if (amount < 5)  label = new Label("", skin, "default-red");
+
+            return label;
+        }
+
 
     }
 
@@ -435,6 +488,7 @@ public class UIUtils {
     private static void log(String message){
         Gdx.app.log("UIUtils LOG: ", message);
     }
+
 
 
 }

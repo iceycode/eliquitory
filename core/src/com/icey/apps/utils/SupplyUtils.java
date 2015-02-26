@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.icey.apps.MainApp;
-import com.icey.apps.assets.Constants;
 import com.icey.apps.data.Base;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.data.Supply;
@@ -122,10 +121,12 @@ public class SupplyUtils {
         int largestKey = 4;
 
         //iterates through keys & compares to 4 (smallest key for flavors)
-        for (int i = 0; i < supplyMap.size; i++){
-            int key = supplyMap.keys().next(); //get next key
-            if (key > largestKey)
-                largestKey = key;
+        if (supplyMap.size > 0) {
+            for (int i = 0; i < supplyMap.size; i++) {
+                int key = supplyMap.keys().next(); //get next key
+                if (key > largestKey)
+                    largestKey = key;
+            }
         }
 
         return largestKey;
@@ -138,6 +139,11 @@ public class SupplyUtils {
      * @param supply : current supply
      */
     public void saveSupply(int key, Supply supply){
+
+        if (key == 4){
+            key = getLastFlavorKey();
+        }
+
 
         if (saveManager.supplyData.containsKey(key)){
             updateSupply(key, supply);
@@ -160,6 +166,7 @@ public class SupplyUtils {
         
         supplyMap.put(key, supply);
         saveManager.saveSupplyData(key, supply);
+
         SupplyScreen.instance.addToSupplyTable(supply);
     }
 
@@ -171,12 +178,12 @@ public class SupplyUtils {
      * @return
      */
     public Supply updateSupply(int key, Supply supply){
-        //save into supply utils map
-        supplyMap.remove(key);
-        supplyMap.put(key, supply);
+//        //save into supply utils map
+//        supplyMap.remove(key);
+//        supplyMap.put(key, supply);
 
         //save into save data
-        saveManager.updateSupplyData(key, supply);
+        saveManager.saveSupplyData(key, supply);
         
         SupplyScreen.instance.updateSupplyTable(key, supply);
         return supply;
@@ -199,7 +206,7 @@ public class SupplyUtils {
         supplyMap.put(key, supply);
 
         //save into save data
-        saveManager.updateSupplyData(key, supply);
+        saveManager.saveSupplyData(key, supply);
     }
 
     

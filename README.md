@@ -25,10 +25,53 @@ App Market States:
 | Ads Disabled, Supply Disabled |  User has ads disabled but no access to supply storage feature. | .99 |
 | Ads Disabled, Supply Feature Enabled | User has access to supply storage feature. | 1.99? |
 
+Google Dev:
+    Project Number: 1019753713442
+    Project ID: handy-digit-860
 
+##Google Play Description##
+
+This is an app designed for calculating liquid ratios to make "ejuice" or "eliquid" for electronic cigarettes. The ejuice
+recipes created can be saved and loaded as well. This app also includes the ability to track quantities of individual liquids (VG, PG, etc),
+flavors and nicotine base solution.
+
+Features:
+
+- User can save recipes and supplies.
+- Supplies are kept track of when entering values for calculation and indicates to user when running low on a supply.
+
+Features to come:
+
+- User will be able to text, email or upload recipe as note to the cloud.
+- User will be able to search databases of stores for supplies - flavors, liquids & nicotine base.
+- A database of flavors will also be included.
+- The option to share recipes will eventually exist as well.
+
+
+
+    
+###Names###
+I still have yet to figure out an official name for this app. A few things to note when naming - keep it simple & descriptive. 
+
+Potential names:
+
+- Eliquitory (current name of the project and repo)
+- EJuice Toolkit
+- EJuice Lab
+- EJuice Mate
+- ELiquid Maker
+- EJuice Tracker
 
 ###Changelog###
 Nearly complete, just tweaking a few things. See [TODO](TODO.md).
+
+- 02-24-15
+	- completed the skin that will be the main theme
+
+- 02-21-15
+    - created a decent icon
+    - changed up the fonts a bit
+
 - 02-20-15
     - changed final calculated amounts display to seperate dialog
     - still need get a couple things done before being finished:

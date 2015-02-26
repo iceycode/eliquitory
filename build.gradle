@@ -63,9 +63,16 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
- //       compile fileTree(dir: 'libs', include: '*.jar') //for google play services
-//        compile 'com.android.support:appcompat-v7:21.0.3'
+        compile fileTree(dir: 'libs', include: '*.jar') //for ouya.jar (gdx-pay dependency)
+
+        //google play services
+//        compile 'com.android.support:appcompat-v7:21.0.3' //not needed; see SERVICES.md
         compile 'com.google.android.gms:play-services:6.5.87'
+
+        //gdx-pay services
+//        compile "com.badlogicgames.gdxpay:gdx-pay-android:0.3.0"
+//        compile "com.badlogicgames.gdxpay:gdx-pay-android-openiab:0.3.0"
+//        compile "com.badlogicgames.gdxpay:gdx-pay-android-ouya:0.3.0"
 
     }
 }
@@ -107,7 +114,9 @@ project(":core") {
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "com.badlogicgames.gdxpay:gdx-pay:0.3.0"
 
+        compile fileTree(dir: 'libs', include: '*.jar') //for gdx-pay jars
 //        compile "com.google.code.gson:gson:2.3.1"
 
         //putting these in core, might be cause of errors in modules dependent on it

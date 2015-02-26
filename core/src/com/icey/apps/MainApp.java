@@ -5,8 +5,9 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Array;
+import com.icey.apps.assets.AssetHelper;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.assets.Constants;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.screens.CalculatorScreen;
 import com.icey.apps.screens.MenuScreen;
 import com.icey.apps.screens.SettingScreen;
@@ -159,7 +160,7 @@ public class MainApp implements ApplicationListener{
     //scaling factor for the Density Independent Pixel unit
     // scales fonts to appropriate proportions (see the javadoc)
     protected void scaleFonts(){
-        bitmapFonts = Assets.AssetHelper.getAllFonts();
+        bitmapFonts = AssetHelper.getAllFonts();
 
         for (BitmapFont font : bitmapFonts){
             if (appType!=ApplicationType.Desktop){

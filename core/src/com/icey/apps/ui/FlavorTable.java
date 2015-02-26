@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.icey.apps.MainApp;
-import com.icey.apps.assets.Constants;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.utils.CalcUtils;
 import com.icey.apps.utils.UIUtils;
@@ -25,7 +25,7 @@ import com.icey.apps.utils.UIUtils;
 public class FlavorTable extends Table{
 
     Skin skin;
-    CalcUtils calcUtils = CalcUtils.getCalcUtil();
+    CalcUtils calcUtils;
 
     boolean supplyEnabled = MainApp.supplyEnabled;
 
@@ -42,13 +42,11 @@ public class FlavorTable extends Table{
     
     Array<Flavor> supplyFlavors; //flavors in the users saved supply
     Array<String> flavorNames = new Array<String>(); //flavor names in supply - go into selectbox;
-    ObjectMap<String, Flavor> flavorMap; //to map out flavors in supply to position in flavorTF array
+    public static ObjectMap<String, Flavor> flavorMap; //to map out flavors in supply to position in flavorTF array
     
     Flavor currFlavor; //current flavor being added
     public int numFlavors = 0; //the number of flavors
-    String fieldName = "flavorFieldName_";
 
-//    int cols = CalcTable.cols;
 
 
     public FlavorTable(Skin skin){
@@ -92,9 +90,9 @@ public class FlavorTable extends Table{
         supplyLabels = new Array<Label>();
 
         //the supllied flavors
-        if (calcUtils.flavorSupplied) {
-            supplyFlavors = calcUtils.getSupplyFlavors();
-            setFlavorSupplyNameFields();
+        if (CalcUtils.getCalcUtil().flavorSupplied) {
+            supplyFlavors = CalcUtils.getCalcUtil().getSupplyFlavors();
+            setFlavorSupplyNames();
         }
     }
 
@@ -132,13 +130,13 @@ public class FlavorTable extends Table{
         }
 
         Table table = new Table(); //new table added to vertGroup
-        table.debug();
+//        table.debug();
         table.center();
         //table.defaults().colspan(4); //spans 4 columns across nested FlavorTable within root table
         numFlavors++; //increment num of flavors
 
         //add into calc utility
-        calcUtils.addFlavor(currFlavor);
+        CalcUtils.getCalcUtil().addFlavor(currFlavor);
 
         addFlavorFields(table); //new flavor input fields
 
@@ -150,21 +148,23 @@ public class FlavorTable extends Table{
     protected void addFlavorFields(Table table){
         final int flavorID = numFlavors - 1; //id of flavor added
 
-        //add select box
+        //add select box storing names of flavors (or new flavor)
+        // the name, when selected will be added to the textfield
         addSelectBox(flavorID, table);
 
-        TextField flavorTextField = new TextField("", skin, "nameTextField");
-        //flavorTextField.setName(fieldName);
+//        TextField flavorTextField = new TextField("", skin, "nameTextField");
+        TextField flavorTextField = new TextField("", skin, "digit");
+        flavorTextField.setAlignment(Align.center);
         flavorTextField.setTextFieldListener(UIUtils.flavorNameListener(flavorID));
-        flavorTextField.setMessageText("Flavor " + Integer.toString(numFlavors));
-        flavorTextField.setColor(Color.RED);
+        flavorTextField.setText("Flavor " + Integer.toString(numFlavors));
+//        flavorTextField.setColor(Color.RED);
         flvrTitleTFs.add(flavorTextField);
 
         table.add(flavorTextField).width(100).height(FIELD_HEIGHT).align(Align.left).padLeft(2f);
 
         if (supplyEnabled){
             setFlavorSupply();
-            table.add(supplyLabels.peek()).width(70).left().padLeft(70);
+            table.add(supplyLabels.peek()).width(70).left().padLeft(15);  //.padLeft(145);
         }
         
         table.row();
@@ -172,7 +172,8 @@ public class FlavorTable extends Table{
 
 
         //the delete button will delete flavor from the table
-        final Button deleteButton = new Button(skin, "delete");
+//        final Button deleteButton = new Button(skin, "delete");
+        final TextButton deleteButton = new TextButton("Remove", skin, "small");
         deleteButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -181,8 +182,7 @@ public class FlavorTable extends Table{
                 }
             }
         });
-        add();
-        table.add(deleteButton).right().padLeft(120);
+        table.add(deleteButton).right().padLeft(11);
         
         //add checkboxes
         table.row();
@@ -192,36 +192,36 @@ public class FlavorTable extends Table{
 
     public void setFlavorSupply(){
         //supply amount. if any
-        Label supplyLabel = new Label("x", skin, "supply");
+        Label supplyLabel = new Label("0.0", skin);
         supplyLabel.setAlignment(Align.center);
-        supplyLabel.getStyle().fontColor = Color.RED;
-        supplyLabels.add(supplyLabel);
 
-        setSupplyLabel(currFlavor.getTotalAmount(), currFlavor.getKey(), supplyLabels.peek());
+        setSupplyLabel(currFlavor.getTotalAmount(), currFlavor.getKey(), supplyLabel);
     }
 
 
     //sets the supply labels with amounts previously stored (if it was)
     public void setSupplyLabel(double amount, int flavKey, Label label){
-        if (calcUtils.supplied){
-            if (calcUtils.getSupplyAmounts().containsKey(flavKey)){
-                amount = calcUtils.getSupplyAmounts().get(flavKey);  //get the amount
+        if (CalcUtils.getCalcUtil().supplied){
+            if (CalcUtils.getCalcUtil().getSupplyAmounts().containsKey(flavKey)){
+                amount = CalcUtils.getCalcUtil().getSupplyAmounts().get(flavKey);  //get the amount
             }
         }
 
         //different colors for how much user has
-        if (amount > 30) label.getStyle().fontColor = Color.BLACK;
-        else if (amount > 15) label.getStyle().fontColor = Color.BLUE;
-        else  label.getStyle().fontColor = Color.RED;
+        label = UIUtils.SupplyUI.flavorLabel(label, amount, skin);
 
         label.setText(Double.toString(amount));
+
+        supplyLabels.add(label);
     }
     
-    
-    protected void setFlavorSupplyNameFields(){
+
+    //this sets up an object map containing flavor and amount
+    //also adds to String Array, flavor names which go in a drop down SelectBox
+    protected void setFlavorSupplyNames(){
         flavorNames.add("New Flavor");
 
-        if (calcUtils.flavorSupplied){
+        if (CalcUtils.getCalcUtil().flavorSupplied){
             for (int i = 0; i < supplyFlavors.size; i++){
                 Flavor f = supplyFlavors.get(i);
                 flavorNames.add(f.getName());
@@ -256,21 +256,21 @@ public class FlavorTable extends Table{
         //adding the flavor percent label & textfield
         Label flavPercLabel = new Label("Flavor %: ", skin);
 //        flavPercLabel.setAlignment(Align.right);
-        table.add(flavPercLabel).align(Align.right).colspan(2).padRight(2);
+        table.add(flavPercLabel).right().padRight(2);
         
-        TextField flavorPercentField = new TextField("", skin, "numTextField");
-        flavorPercentField.setName(fieldName);
+        TextField flavorPercentField = new TextField("", skin, "digit");
+        flavorPercentField.setAlignment(Align.center);
         flavorPercentField.setTextFieldListener(UIUtils.flavorPercentListener(id));
         flavorPercentField.setMaxLength(2);
         flavorPercentField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
         flavorPercentField.setColor(Color.GRAY);
         
         if (currFlavor.getPercent() > 0)
-            flavorPercentField.setText(Integer.toString(currFlavor.getPercent()));
+            flavorPercentField.setMessageText("  " + Integer.toString(currFlavor.getPercent()));
         
         flvrPercsTFs.add(flavorPercentField);
         
-        table.add(flavorPercentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).align(Align.left).padLeft(2f);
+        table.add(flavorPercentField).width(FIELD_WIDTH).height(FIELD_HEIGHT).left().padLeft(2f);
         
     }
 
@@ -289,7 +289,7 @@ public class FlavorTable extends Table{
             //add to button group
             buttonGroup.add(checkBox);
 
-            table.add(buttonGroup.getButtons().get(i)).width(80f).height(20f);
+            table.add(checkBox).width(80f).height(22f);
         }
 
         checkBoxes.add(buttonGroup);
@@ -305,8 +305,7 @@ public class FlavorTable extends Table{
 
         SnapshotArray<Actor> children = vertGroup.getChildren(); //remove the table from this array
 
-        //children.removeIndex(flavID); //remove from children of group
-        calcUtils.removeFlavor(flavID); //remove from calcutil flavors array
+        CalcUtils.getCalcUtil().removeFlavor(flavID); //remove from calcutil flavors array
 
         if (children.size > 1){
             for (int i = flavID; i < children.size - 1; i++) {
@@ -331,7 +330,7 @@ public class FlavorTable extends Table{
 
         flvrTitleTFs.get(index).setText(name);
 
-        calcUtils.switchFlavor(index, currFlavor);
+        CalcUtils.getCalcUtil().switchFlavor(index, currFlavor);
 
         if (supplyEnabled)
             supplyLabels.get(index).setText(Double.toString(currFlavor.getTotalAmount()));
@@ -339,7 +338,7 @@ public class FlavorTable extends Table{
         //only set checkboxes if the flavor type is 0-2
         if (currFlavor.getType() > 0) {
             checkBoxes.get(index).getButtons().get(currFlavor.getType()).setChecked(true);
-            calcUtils.setFlavorType(currFlavor.getType(), index);
+            CalcUtils.getCalcUtil().setFlavorType(currFlavor.getType(), index);
         }
     }
 
@@ -354,28 +353,16 @@ public class FlavorTable extends Table{
 //        }
 //    }
 
-
-
-//    public void updateSupplyLabels(){
-//        if (calcUtils.flavorSupplied){
-//            for (int i = 0; i < calcUtils.getSupplyFlavors().size; i++){
-//                setSupplyLabel(0, calcUtils.getSupplyFlavors().get(i).getKey(), supplyLabels.get(i));
-//            }
-//        }
-//
-//    }
-
     
     public void setLoadedData(){
         //set up the flavors
-        for (Flavor f : calcUtils.getFlavors()){
-            if (calcUtils.getFlavors().size > numFlavors){
+        for (Flavor f : CalcUtils.getCalcUtil().getFlavors()){
+            if (CalcUtils.getCalcUtil().getFlavors().size > numFlavors){
                 if (flavorMap.containsKey(f.getName()))
                     addNewFlavor(flavorMap.get(f.getName()));
                 else
                     addNewFlavor(new Flavor("Flavor " + numFlavors));
             }
-
 
             for (TextField tf: flvrTitleTFs)
                 tf.setMessageText(f.getName());

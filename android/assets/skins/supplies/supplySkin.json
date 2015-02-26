@@ -1,8 +1,10 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    default-font: { file: fonts/opensans_bold_reg.fnt },
-    medium-font: { file: fonts/opensans_bold_med.fnt },
-    light-font: { file: fonts/opensans_light_med.fnt }
+    default-font: { file: fonts/roboto/roboto-reg14.fnt },
+    medium-font: { file: fonts/roboto/roboto-reg20.fnt },
+    light-font: {file: fonts/roboto/roboto-light14.fnt},
+    bold-font: {file: fonts/roboto/roboto-bold14.fnt},
+    bold-small-font: {file: fonts/roboto/roboto-bold12.fnt}
   } ,
   com.badlogic.gdx.graphics.Color: {
     green: { a: 1, b: 0, g: 1, r: 0 },
@@ -12,7 +14,6 @@
     grey: { a: 1, b: .5, g: .5, r: .5}, //divide by 255 to get the float value
     blue : { a: .8, b: 1, g: 0, r : 0}
   },
-
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
     default: { up: back-up, down: back-down},
     delete: {up: deleteButton, down: deleteButton}

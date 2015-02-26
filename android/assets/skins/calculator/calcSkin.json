@@ -1,15 +1,6 @@
 //note: libgdx json differs from regular since it does not use identifiers (therefore lots of errors shown in IDE)
 // contains skin for table widgets for calculator
 {
-  com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    default-font: { file: fonts/opensans_bold_reg.fnt },
-    medium-font: { file: fonts/opensans_bold_med.fnt},
-    light-font: { file: fonts/opensans_light_med.fnt }
-    roboto-font_14: {file: fonts/roboto-reg14.fnt},
-    roboto-font_16: {file: fonts/roboto-reg16.fnt},
-    roboto-slap_14L: {file: fonts/roboto-slap-light14.fnt},
-    roboto-slap_12: {file: fonts/roboto-slap12.fnt}
-  },
   com.badlogic.gdx.graphics.Color: {
     green: { a: 1, b: 0, g: 1, r: 0 },
     white: { a: 1, b: 1, g: 1, r: 1 },
@@ -17,15 +8,22 @@
     black: { a: 1, b: 0, g: 0, r: 0 },
     blue : { a: .8, b: 1, g: 0, r : 0} //for textfield messageFontColor
   },
+  com.badlogic.gdx.graphics.g2d.BitmapFont: {
+    default-font: { file: fonts/roboto/roboto-reg14.fnt},
+    medium-font: { file: fonts/roboto/roboto-bold16.fnt },
+    roboto_reg20: {file: fonts/roboto/roboto-reg20.fnt },
+    roboto_bold16: {file: fonts/roboto/roboto-bold16.fnt },
+    light-font: {file: fonts/roboto/roboto-light14.fnt }
+  },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
     default: { up: back-up, down: back-down},
     delete: {up: deleteButton, down: deleteButton}
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
     default: {down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black},
-    flavor: { down: flavButtonDown, up: flavButtonUp, font: default-font, fontColor: black },
-    menu: { down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black },
-    dialog: {down: dialogBtn-down, up: dialogBtn-up, font: default-font, fontColor: black}
+    rounded: { down: flavButtonDown, up: flavButtonUp, font: default-font, fontColor: black },
+    medium: { down: menuButtonDown, up: menuButtonUp, font: default-font, fontColor: black },
+    small: {down: dialogBtn-down, up: dialogBtn-up, font: default-font, fontColor: black}
   },
   com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 //background: default-rect, hScroll: default-scroll, hScrollKnob: default-round-large
@@ -33,7 +31,7 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
     default: { font: default-font, fontColor: black },
-    title: {font: roboto-font_16, fontColor: black, background: goalTitleBkgrnd},
+    title: {font: roboto_reg20, fontColor: black, background: goalTitleBkgrnd},
 //    baseLabel: {font: default-font, fontColor: black, background: baseTitleBkgrnd},
 //    flavTitle: {font: default-font, fontColor: black, background: flavorTitleBkgrnd},
     flavorLabel: {font: default-font, fontColor: black, background: flavorBckgrnd},
@@ -43,7 +41,7 @@
   com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
     recipe: {selection: selectionName, background: titleBackground, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue},
-    numTextField: {selection: selectionNum, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor,
+    digit: {selection: selectionNum, background: numFieldBckgrnd, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue},
     percentTextField:{selection: selectionNum, background: percentTextField, font: default-font, fontColor: black, cursor: cursor,
       messageFont: light-font, messageFontColor: blue},
