@@ -3,9 +3,22 @@
 
 A cross-platform e-cig juice calculator created using libgdx which calculates quantity user needs to create ejuice. The 
 ultimate goal is to market this on the google play marketplace at first, and the appstore later. A free version with
-adds will be exist that will not keep track of supplies.
+ads will be exist that will not keep track of supplies.
 
-Features include:
+Free Version Features:
+- Just a simple calculator - no menu screen necessary
+- Calculator allows user input for following:
+    - Name of Recipe
+    - Goal amount and strength
+    - The goal PG:VG ratios
+    - Percentage of "other" liquid (such as alcohol or water) to add to the mix
+    - The base strength and PG:VG ratio
+    - Drops per ml
+    - Flavors - any amount can be added
+        - percentage of flavor and liquid type of flavor (PG, VG or other)
+- Recipes can be saved and viewed at a later time
+
+Paid Version Features:
 
 - User can save recipes and supplies. 
 - Supplies are kept track of when entering values for calculation and indicates to user when running low on a supply (within app currently). 

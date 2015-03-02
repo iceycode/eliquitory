@@ -1,17 +1,18 @@
 package com.icey.apps;
 
 import com.badlogic.gdx.Application.ApplicationType;
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Array;
 import com.icey.apps.assets.AssetHelper;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.utils.Constants;
 import com.icey.apps.screens.CalculatorScreen;
 import com.icey.apps.screens.MenuScreen;
-import com.icey.apps.screens.SettingScreen;
-import com.icey.apps.screens.SupplyScreen;
+import com.icey.apps.utils.Constants;
 import com.icey.apps.utils.SaveManager;
 
 /** Main application class
@@ -37,7 +38,6 @@ import com.icey.apps.utils.SaveManager;
  *
  * * * * * * * * TODOS * * * * * * * * *
  * TODO: add recipe screen (maybe?)
- * TODO: setup the gdx-pay extension
  *
  * Created by Allen on 01/06.
  */
@@ -52,8 +52,8 @@ public class MainApp implements ApplicationListener{
     private String settingsName;
     private String saveFileName; //save file location
 
-    public static boolean supplyEnabled = true; //whether supply feature enabled
-    public static boolean adsEnabled = false;
+    public static boolean supplyEnabled = false; //whether supply feature enabled
+    public static boolean adsEnabled = true;
 
     //the apps state & previous state
     // -1: causes exit/pause; 0: menu, 1: calc, 2: supplies, 3: settings
@@ -79,6 +79,7 @@ public class MainApp implements ApplicationListener{
         initAppSettings(); //settings (dimensions, save files, etc) based on device
 
         initSaveManager(true); //initializes save manager (True = encoded)
+
     }
 
 
@@ -130,16 +131,16 @@ public class MainApp implements ApplicationListener{
 
         saveManager = new SaveManager(encoded, saveFileName, settingsName);
 
-        setAppFeatures();
+        //setAppFeatures();
     }
 
 
-    //returns values related to features enabled/disabled
-    protected void setAppFeatures(){
-        //adsEnabled only works on Android currently as of 02/19
-        adsEnabled = saveManager.getAdState(true);
-        supplyEnabled = !saveManager.getSupplyState(true);
-    }
+//    //returns values related to features enabled/disabled
+//    protected void setAppFeatures(){
+//        //adsEnabled only works on Android currently as of 02/19
+//        adsEnabled = saveManager.getAdState(true);
+//        supplyEnabled = !saveManager.getSupplyState(true);
+//    }
 
 
     protected void initScreens(){
@@ -148,12 +149,12 @@ public class MainApp implements ApplicationListener{
         //add all the screens to an Array for switching
         screens.add(new MenuScreen());
         screens.add(new CalculatorScreen());
-        screens.add(new SupplyScreen());
-        screens.add(new SettingScreen());
+//        screens.add(new SupplyScreen());
+//        screens.add(new SettingScreen());
 
         scaleFonts();
         setState(0);
-        screensLoaded = true;
+//        screensLoaded = true;
     }
 
 
@@ -164,7 +165,7 @@ public class MainApp implements ApplicationListener{
 
         for (BitmapFont font : bitmapFonts){
             if (appType!=ApplicationType.Desktop){
-                font.setScale(Gdx.graphics.getDensity());
+                font.setScale(Gdx.graphics.getDensity()*.9f);
             }
 
         }
@@ -183,7 +184,7 @@ public class MainApp implements ApplicationListener{
             updateState(); //updates state if back hit
         }
 
-        if(Assets.manager.update()) {
+        if (Assets.manager.update()) {
             if (!screensLoaded){
                 initScreens();
             }

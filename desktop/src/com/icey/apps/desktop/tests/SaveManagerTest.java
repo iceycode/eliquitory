@@ -57,7 +57,7 @@ public class SaveManagerTest {
 //            saveManager.saveRecipeData("Recipe" + Integer.toString(i), (SaveManager.RecipeData) recipeMap.get("Recipe1"));
 //            saveManager.saveSupplyData(i, (Supply)supplyMap.get(i));
 //
-//            assertNotNull(saveManager.getRecipeData());
+//            assertNotNull(saveManager.getData());
 //            assertNotNull(saveManager.getSupplyData());
 //
 //            assertSame(recipeMap.get("Recipe"+Integer.toString(i)), saveManager.loadRecipeData("Recipe"+ Integer.toString(i)));
@@ -77,7 +77,7 @@ public class SaveManagerTest {
 //            saveManager.saveRecipeData("Recipe" + Integer.toString(i), (SaveManager.RecipeData) recipeMap.get("Recipe1"));
 //            saveManager.saveSupplyData(i, (Supply)supplyMap.get(i));
 //
-//            assertNotNull(saveManager.getRecipeData());
+//            assertNotNull(saveManager.getData());
 //            assertNotNull(saveManager.getSupplyData());
 //
 //            assertSame(recipeMap.get("Recipe"+Integer.toString(i)), saveManager.loadRecipeData("Recipe"+ Integer.toString(i)));
@@ -96,7 +96,7 @@ public class SaveManagerTest {
 //            saveManager.saveRecipeData("Recipe" + Integer.toString(i), (SaveManager.RecipeData) recipeMap.get("Recipe1"));
 //            saveManager.saveSupplyData(i, (Supply)supplyMap.get(i));
 //
-//            assertNotNull(saveManager.getRecipeData());
+//            assertNotNull(saveManager.getData());
 //            assertNotNull(saveManager.getSupplyData());
 //
 //            assertSame(recipeMap.get("Recipe"+Integer.toString(i)), saveManager.loadRecipeData("Recipe"+ Integer.toString(i)));
@@ -116,7 +116,7 @@ public class SaveManagerTest {
 //            saveManager.saveRecipeData("Recipe" + Integer.toString(i), (SaveManager.RecipeData) recipeMap.get("Recipe1"));
 //            saveManager.saveSupplyData(i, (Supply)supplyMap.get(i));
 //
-//            assertNotNull(saveManager.getRecipeData());
+//            assertNotNull(saveManager.getData());
 //            assertNotNull(saveManager.getSupplyData());
 //
 //            assertSame(recipeMap.get("Recipe"+Integer.toString(i)), saveManager.loadRecipeData("Recipe"+ Integer.toString(i)));

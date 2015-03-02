@@ -49,37 +49,37 @@ public class Flavor {
         this.type = type;
     }
 
-
-    /** returns the amount of this flavor for recipe, or -1 if cannot
-     * - based on percent of flavor & end amount desired
-     *
-     * @param amountDesired
-     * @return amount required b
-     */
-    public double calcRecipeAmount(double amountDesired){
-        if (percent == -1 || type == -1)
-            return -1;
-
-        this.amount = amountDesired*((double)percent/100);
-        return amount;
-    }
-
-
-    /** sets values in the CalcUtils for finalMills
-     * based on index of flavor, number of flavors in list
-     *
-     * @param finalMills : the final calculations
-     */
-    public double recalcAmount(double amountDesired, Array<Double> finalMills ){
-        if (type == 2){
-            amountDesired -= amount;
-        }
-        else{
-            finalMills.set(type, finalMills.get(type).doubleValue() - amount);
-        }
-
-        return amountDesired;
-    }
+//
+//    /** returns the amount of this flavor for recipe, or -1 if cannot
+//     * - based on percent of flavor & end amount desired
+//     *
+//     * @param amountDesired
+//     * @return amount required b
+//     */
+//    public double calcRecipeAmount(double amountDesired){
+//        if (percent == -1 || type == -1)
+//            return -1;
+//
+//        this.amount = amountDesired*((double)percent/100);
+//        return amount;
+//    }
+//
+//
+//    /** sets values in the CalcUtils for finalMills
+//     * based on index of flavor, number of flavors in list
+//     *
+//     * @param finalMills : the final calculations
+//     */
+//    public double recalcAmount(double amountDesired, Array<Double> finalMills ){
+//        if (type == 2){
+//            amountDesired -= amount;
+//        }
+//        else{
+//            finalMills.set(type, finalMills.get(type).doubleValue() - amount);
+//        }
+//
+//        return amountDesired;
+//    }
 
 
     public double recalcAmount_Alt(double amountDesired, Array<Double> finalMills, double otherAmt){
@@ -144,6 +144,9 @@ public class Flavor {
         this.percent = percent;
     }
 
+    public void setAmount(double amount){
+        this.amount = amount;
+    }
 
     public double getAmount(){
         return amount;

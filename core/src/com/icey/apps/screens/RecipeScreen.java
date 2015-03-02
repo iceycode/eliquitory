@@ -22,7 +22,9 @@ import com.icey.apps.utils.SaveManager;
  */
 public class RecipeScreen implements Screen {
 
-    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+//    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+    Skin skin = Assets.getSkin();
+
     Stage stage;
     Table table;
 

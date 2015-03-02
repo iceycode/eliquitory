@@ -26,6 +26,8 @@ I have now had to import 3 times, each time after closing and reopening project.
 not having the module in the build. Might have to add a build stub to the google-play.. module to make gradle recognize
 that it is being used.
 
+
+
 Solutions to importing google play services library into project:
 Links:
 [Bug fix for IntelliJ 12](https://youtrack.jetbrains.com/issue/IDEA-96525)
@@ -209,3 +211,18 @@ In proguard:
     -keep class com.nokia.payment.iap.aidl.**
     -dontwarn org.onepf.oms.appstore.FortumoBillingService
 
+##App Store Description##
+
+03-01-15
+
+A simple ejuice calculator for creating ejuice (or eliquid) for electronic cigarettes. Solutions, or recipes, can be saved and loaded. This is a free version of this app that contains ads. A pro version will be coming soon which will have more features.
+
+Calculator Features:
+- Name of Recipe
+- Goal amount and strength
+- The goal PG:VG ratios - Percentage of “other” liquid (such as alcohol or water) to add to the mix
+- The base strength and PG:VG ratio
+- Drops per ml
+- Flavors - any number of flavors can be added
+- Percentage of flavor and liquid type of flavor (PG, VG or other)
+- Recipes can be saved and viewed at a later time

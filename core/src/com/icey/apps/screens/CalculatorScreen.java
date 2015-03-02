@@ -1,22 +1,18 @@
 package com.icey.apps.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.ui.CalcTable;
-import com.icey.apps.ui.CalcWindow;
 import com.icey.apps.ui.LoadWindow;
 import com.icey.apps.utils.CalcUtils;
 import com.icey.apps.utils.Constants;
@@ -71,7 +67,10 @@ import com.icey.apps.utils.UIUtils;
  */
 public class CalculatorScreen implements Screen {
 
-    Skin skin= Assets.manager.get(Constants.DARK_SKIN, Skin.class); //skin
+    //Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class); //skin
+
+    Skin skin = Assets.getSkin();
+
     Stage stage; //main stage
 
     //Tables which hold UI widgets, get added to stage
@@ -86,6 +85,7 @@ public class CalculatorScreen implements Screen {
     CalcUtils calcUtils = CalcUtils.getCalcUtil(); //tool used for calculations, loading, saving
 
     public Button backButton; //back button
+    SnapshotArray<Double> finalMills;
 
 
     public CalculatorScreen(){
@@ -104,23 +104,21 @@ public class CalculatorScreen implements Screen {
     public void setCalcTable(){
         table = new CalcTable(skin);
 
-//        setFlavorScrollTable();
-
         setButtons();
         setLoadWindow();
 
         stage.addActor(table);
     }
 
+
     boolean loadWindowSetup = false;
     protected void setLoadWindow(){
 
         if (!loadWindowSetup){
-            loadWindow = new LoadWindow("Saved Recipes", skin, "default");
-            stage.addActor(loadWindow);
+            loadWindow = new LoadWindow(skin, "window-large");
         }
         else{
-            loadWindow.updateRecipes(calcUtils.getAllRecipes());
+            loadWindow.addRecipes(calcUtils.getAllRecipes());
         }
 
     }
@@ -163,22 +161,14 @@ public class CalculatorScreen implements Screen {
         table.row().pad(5);
         
         //the save button
-        TextButton saveButton = new TextButton("Save", skin, "medium");
-        saveButton.addListener(new InputListener(){
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                calcUtils.saveData();
-                if (calcUtils.saved = true){
-                    log("wrong values!");
-                    new Dialog("", skin).text("ERROR SAVING:\n").text("Wrong Values Entered or lacking values!")
-                            .button("Fix it!").key(Input.Keys.ESCAPE, false).key(Input.Keys.ENTER, true).
-                            show(stage); //, Actions.fadeOut(2f)
-                }
-
-                return true;
-            }
+        final TextButton saveButton = new TextButton("Save", skin, "medium");
+        saveButton.addListener(new ChangeListener() {
+           @Override
+           public void changed(ChangeEvent event, Actor actor) {
+               saveRecipe();
+           }
         });
+
         table.add(saveButton).width(100).align(Align.center);
 
 
@@ -189,8 +179,8 @@ public class CalculatorScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (loadButton.isPressed()){
-                    loadWindow.updateRecipes(calcUtils.getAllRecipes());
-                    loadWindow.showWindow();
+                    loadWindow.addRecipes(calcUtils.getAllRecipes());
+                    loadWindow.show(stage);
                 }
             }
         });
@@ -202,8 +192,9 @@ public class CalculatorScreen implements Screen {
 //        final TextButton backButton = UIUtils.Buttons.textButton("BACK", skin, "menu");
         final TextButton backButton = UIUtils.Buttons.textButton("Back", skin, "medium");
         backButton.addListener(UIUtils.backTextButtonListener(backButton));
-                table.add(backButton).width(100).align(Align.left);
+        table.add(backButton).width(100).align(Align.left);
     }
+
 
 
     /** returns an error dialog which gets added to stage
@@ -243,27 +234,32 @@ public class CalculatorScreen implements Screen {
         }
         else{
             log("calculating now...");
-            Array<Double> finalMills = calcUtils.calcAmounts();
-            displayResults(finalMills);
+            finalMills = calcUtils.calcAmounts();
+            table.updateCalcLabels(calcUtils.calcAmounts());
         }
     }
-    
 
-    /** display the calculated results
-     *
-     * @param finalMills - calculated amounts
-     */
-    protected void displayResults(Array<Double> finalMills){
 
-        new CalcWindow(skin, "default", finalMills, calcUtils.getFlavors()).show(stage);
+
+    protected void saveRecipe(){
+        //calculate amounts
+        if (calcUtils.getRecipeName()==""){
+            showErrorDialog("Forgot to add recipe name.", "");
+        }
+        else{
+            log("saving now...");
+            calculate();
+            calcUtils.saveData(finalMills);
+            setLoadWindow(); //add new saved data to load window
+        }
     }
-    
-    
+
     //display data that is loaded
-    private void displayLoadedData(){
+    protected void displayLoadedData(){
         
         table.setLoadedRecipe();
-        table.flavorTable.setLoadedData();
+
+        table.updateCalcLabels(calcUtils.loadedAmounts);
 
         //displayResults(); //display the loaded recipe results
     }
@@ -293,8 +289,10 @@ public class CalculatorScreen implements Screen {
 
         //if a recipe is chosen in loadwindow, hide it, display results
         if (loadWindow.recipeChosen) {
-            loadWindow.hideWindow();
+//            loadWindow.hide();
             displayLoadedData();
+
+            loadWindow.recipeChosen = false;
         }
 
         stage.act(Gdx.graphics.getDeltaTime());

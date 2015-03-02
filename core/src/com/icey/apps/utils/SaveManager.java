@@ -41,6 +41,8 @@ public class SaveManager {
 
     //the supply key String modifier
     private final String SUPPLY_KEY = "Supply_"; //modifier for supply key in object map
+
+    public ObjectMap<String, RecipeData> recipeData;
     public IntMap<Supply> supplyData; //supply data in map form
     
 
@@ -51,8 +53,8 @@ public class SaveManager {
         this.save = getSave();
         this.userPrefs = Gdx.app.getPreferences(prefsName);
 
-        //set supply map, empty if it does not exist
-        setSupplyData();
+        setRecipeData(); //set recipe data, size 0 if none exist
+        setSupplyData();//set supply map, empty if it does not exist
     }
 
 
@@ -124,26 +126,22 @@ public class SaveManager {
      *
      * @param key : the name of the recipe
      */
-    public void saveRecipeData(String key){
+    public void saveRecipeData(String key, Array<Double> finalMills){
         SaveManager.RecipeData recipeData = new SaveManager.RecipeData();
         recipeData.recipeName = key;
 
         recipeData.base = CalcUtils.getCalcUtil().base;
-
         recipeData.amountDesired = CalcUtils.getCalcUtil().amountDesired;
         recipeData.strengthDesired = CalcUtils.getCalcUtil().strengthDesired;
         recipeData.desiredPercents = CalcUtils.getCalcUtil().desiredPercents;
-
         recipeData.flavors = CalcUtils.getCalcUtil().flavors;
 
-        recipeData.finalMills = CalcUtils.getCalcUtil().finalMills;
-
+        recipeData.finalMills = finalMills;
 
         save.data.put(key, recipeData);
 
         saveToJson();
     }
-
 
 //    public void renameSavedRecipe(String newName, String oldName){
 //        Object data = save.data.get(oldName);
@@ -161,6 +159,8 @@ public class SaveManager {
      */
     public void deleteRecipe(String name){
         save.data.remove(name);
+
+        saveToJson();
     }
 
 
@@ -248,6 +248,17 @@ public class SaveManager {
 //        saveToJson();
 //    }
 
+    //sets recipe data
+    public void setRecipeData(){
+        this.recipeData = new ObjectMap<String, RecipeData>();
+
+        for (String key : save.data.keys()){
+            if (save.data.get(key) instanceof RecipeData){
+                recipeData.put(key, (RecipeData)save.data.get(key));
+            }
+        }
+    }
+
 
 
     //sets the supply data
@@ -265,8 +276,13 @@ public class SaveManager {
     }
 
 
-    public ObjectMap<String, Object> getRecipeData(){
+    public ObjectMap<String, Object> getData(){
         return save.data;
+    }
+
+
+    public ObjectMap<String, RecipeData> getRecipeData(){
+        return recipeData;
     }
 
 
@@ -326,6 +342,8 @@ public class SaveManager {
         public Array<Flavor> flavors;
 
         public Array<Double> finalMills;
+
+        public int rating; //5 is max
     }
 
     //----User defaults---these can be altered by user in settings

@@ -47,24 +47,19 @@ public class Base extends Supply{
         this.baseStrength = supply.getBaseStrength();
     }
 
-    //returns the amount of nicotine base needed
-    public double getRecipeAmount(double amountDesired, double strengthDesired){
-        this.amountNeeded = (strengthDesired/baseStrength)*amountDesired;
-        return amountNeeded;
-    }
-
-    /** modifies the final amount of PG, VG amounts,
-     *  & the amount of base needed
-     *
-     * @param finalMills: final amount - will get updated
-     * @return - updated PG, VG & Other amounts in array
-     */
-    public void recalcLiquidAmts(Array<Double> finalMills){
-        for (int i = 0; i < 2; i++){
-            double amt = finalMills.get(i).doubleValue() - (amountNeeded*(basePercents.get(i).doubleValue()/100));
-            finalMills.set(i, amt);
-        }
-    }
+//
+//    /** modifies the final amount of PG, VG amounts,
+//     *  & the amount of base needed
+//     *
+//     * @param finalMills: final amount - will get updated
+//     * @return - updated PG, VG & Other amounts in array
+//     */
+//    public void recalcLiquidAmts(Array<Double> finalMills){
+//        for (int i = 0; i < 2; i++){
+//            double amt = finalMills.get(i).doubleValue() - (amountNeeded*(basePercents.get(i).doubleValue()/100));
+//            finalMills.set(i, amt);
+//        }
+//    }
 
     /** checks to see that base is set
      *

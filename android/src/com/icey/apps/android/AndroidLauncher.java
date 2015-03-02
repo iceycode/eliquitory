@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.google.android.gms.ads.AdRequest;
@@ -58,10 +57,10 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
         mainApp = new MainApp(); //create main app
 
-        showAds = MainApp.adsEnabled;
+        //showAds = MainApp.adsEnabled;
+        showAds = true;
 
         if (showAds){
-            log("starting app with ads");
             createWithAds();
         }
         else{
@@ -88,16 +87,16 @@ public class AndroidLauncher extends AndroidApplication {
         //creates ad layout
         RelativeLayout layout = setAdLayout();
 
-        //creates the MainApp view - add first, or else will cover ads
-        View gameView = createAppView(config);
-        layout.addView(gameView);
-
         //creates the AdMob view
-        AdView admobView = createAdView();
-        layout.addView(admobView);
+        adView = createAdView();
+        layout.addView(adView);
+
+        //creates the MainApp view - add first, or else will cover ads
+        appView = createAppView(config);
+        layout.addView(appView);
 
         setContentView(layout);
-        startAdvertising(admobView);
+        startAdvertising(adView);
 
     }
 
@@ -119,7 +118,7 @@ public class AndroidLauncher extends AndroidApplication {
 
     //The ad view - contains a seperate thread containing AdMob view
     protected AdView createAdView() {
-        adView = new AdView(this);
+        AdView adView = new AdView(this);
         adView.setAdSize(AdSize.SMART_BANNER);
         adView.setAdUnitId(AD_UNIT_ID);
 
@@ -136,12 +135,12 @@ public class AndroidLauncher extends AndroidApplication {
 
     //The MainApp view - libgdx view
     protected View createAppView(AndroidApplicationConfiguration cfg) {
-        appView = initializeForView(mainApp, cfg);
+        View appView = initializeForView(mainApp, cfg);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-        params.addRule(RelativeLayout.BELOW, adView.getId());
+        params.addRule(RelativeLayout.ABOVE, adView.getId());
         appView.setLayoutParams(params);
 
         return appView;
@@ -200,11 +199,6 @@ public class AndroidLauncher extends AndroidApplication {
 
         dialog.setContentView(ll);
         dialog.show();
-    }
-
-
-    private void log(String message){
-        Gdx.app.log("AndroidLauncher LOG: ", message);
     }
 
 }

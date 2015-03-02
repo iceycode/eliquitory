@@ -37,7 +37,8 @@ public class SupplyScreen implements Screen{
     
     public static SupplyScreen instance; //in order to access this screen from supplyWindow
     
-    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+//    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+    Skin skin = Assets.getSkin();
     SupplyUtils supplyUtils = SupplyUtils.getSupplyUtils();
 
     Stage stage; //the stage, holds ui - table & supply Table
