@@ -1,11 +1,10 @@
 //Dark skin for all screen UI elements
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
-    default-font: { file: fonts/roboto/roboto-reg14.fnt },
+    default-font: { file: fonts/roboto/roboto-reg16.fnt },
     medium-font: { file: fonts/roboto/roboto-reg20.fnt },
     light-font: {file: fonts/roboto/roboto-light14.fnt},
-    bold-font: {file: fonts/roboto/roboto-bold14.fnt},
-    bold-small: {file: fonts/roboto/roboto-bold12.fnt}
+    bold-font: {file: fonts/roboto/roboto-bold16.fnt}
   } ,
   com.badlogic.gdx.graphics.Color: {
     green: { a: 1, b: 0, g: 1, r: 0 },
@@ -19,7 +18,7 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
     default: {down: buttonDown, up: buttonUp, font: default-font, fontColor: white},
-    small: {down: buttonDown-small, up: buttonUp-small, font: bold-small, fontColor: white},
+    small: {down: buttonDown-small, up: buttonUp-small, font: bold-font, fontColor: white},
     medium: {down: buttonDown-med, up: buttonUp-med, font: default-font, fontColor: white},
     large: { down: buttonDown-large, up: buttonUp-large, font: default-font, fontColor: white },
     rounded: { down: buttonDown-rounded, up: buttonUp-rounded, font: default-font, fontColor: white}
@@ -37,22 +36,22 @@
     default-blue: {font: default-font, fontColor: blue},
     default-yellow: {font: default-font, fontColor: yellow},
     default-green: {font: default-font, fontColor: green},
-    bold-cyan:{font: bold-small, fontColor: cyan},
+    bold-cyan:{font: bold-font, fontColor: cyan},
     title: {font: default-font, fontColor: white, background: title-large},
     title-small: {font: default-font, fontColor: white, background: title-small},
     tab: {font: default-font, fontColor: red, background: window-tab}
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
     default: {selection: selection, background: textfield-text, font: default-font, fontColor: white, cursor: cursor,
-      messageFont: light-font, messageFontColor: grey},
-    title: {selection: selection, background: titleBack, font: default-font, fontColor: white, cursor: cursor,
-      messageFont: light-font, messageFontColor: grey},
+      messageFont: light-font, messageFontColor: white},
+    title: {selection: selection, background: titleBack, font: bold-font, fontColor: white, cursor: cursor,
+      messageFont: default-font, messageFontColor: white},
     digit: {selection: selection, background: textfield-digit, font: default-font, fontColor: white, cursor: cursor,
-      messageFont: light-font, messageFontColor: grey} //this is for when editing a supply
+      messageFont: light-font, messageFontColor: white} //this is for when editing a supply
     green-digit: {selection: selection, background: textfield-digit, font: default-font, fontColor: white, cursor: cursor,
-    messageFont: light-font, messageFontColor: green},
+      messageFont: light-font, messageFontColor: green},
     green-text: {selection: selection, background: textfield-text, font: default-font, fontColor: white, cursor: cursor,
-    messageFont: light-font, messageFontColor: green}
+      messageFont: light-font, messageFontColor: green}
   },
   com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
     default: { checkboxOn: radio-on, checkboxOff: radio-off, font: default-font, fontColor: white },
@@ -66,7 +65,8 @@
     default: { fontColorUnselected: grey, selection: selection, fontColorSelected: white, font: default-font }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
-    default-horizontal: { background: slider-track, knob: slider-knob } //need to put -horizontal or -vertical identifier
+    default-horizontal: { background: slider-track, knob: slider-knob }, //need to put -horizontal or -vertical identifier
+    large-horizontal: {background: slider-track-large, knob: slider-knob-large}
   },
   com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
     default: { font: default-font, fontColor: white, background: selectBox-back, scrollStyle: default,

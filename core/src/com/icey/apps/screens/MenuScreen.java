@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.utils.Constants;
@@ -39,9 +39,9 @@ public class MenuScreen implements Screen{
 
     public MenuScreen(){
         //set the stage
-//stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
-        stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
-        this.supplyEnabled = MainApp.supplyEnabled;;
+        stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+//        stage = new Stage(new ExtendViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+//        this.supplyEnabled = MainApp.supplyEnabled;
 
         //set the table which contains menu UI (just buttons)
         setTable();
@@ -51,20 +51,23 @@ public class MenuScreen implements Screen{
     protected void setTable(){
         table = new Table();
 
-        table.setClip(true); //this may the answer to scaling problem
-        table.setBounds(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-        table.setLayoutEnabled(true); //need this for invalidating hierarchy
+        table.setFillParent(true);
+        //table.setClip(true);
+        table.setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT-50);
+        table.center();
 
         table.setBackground(new TextureRegionDrawable(new TextureRegion(skin.getRegion("background"))));
 
-        table.center();
+
 
         setTitleLabel(); //title added to table
         setCalcButton(); //calc button added
 
-        setDrops();
+        setDropFields();
         //setSupplyButton(); //supply button added
         //setSettingsButton();
+
+        setAboutButton();
 
         stage.addActor(table);
     }
@@ -162,7 +165,7 @@ public class MenuScreen implements Screen{
 //    }
 
 
-    protected void setDrops(){
+    protected void setDropFields(){
         //ROW 2 : drops per ml
         table.row().padBottom(100).padTop(25);
 
@@ -172,13 +175,15 @@ public class MenuScreen implements Screen{
         TextField textField = new TextField("", skin, "digit");
         textField.setMaxLength(2);
         textField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
-        textField.setTextFieldListener(UIUtils.SettingsUI.dropsListener());
+//        textField.setTextFieldListener(UIUtils.SettingsUI.dropsListener());
         textField.setAlignment(Align.center);
         textField.setText(Double.toString(MainApp.saveManager.getDropsPerML()));
 
+        UIUtils.setDialogKeyboard(textField, 3, "Drops per ml", "Enter drops per ml", 0);
+
         table.add(textField).left().width(50).height(25).padLeft(2);
 
-        final Slider slider = new Slider(10, 40, 1, false, skin);
+        final Slider slider = new Slider(10, 60, 1, false, skin, "large-horizontal");
         slider.setValue((float)MainApp.saveManager.getDropsPerML());
         slider.addListener(UIUtils.SettingsUI.dropsSliderListener(slider, textField));
 
@@ -186,35 +191,86 @@ public class MenuScreen implements Screen{
     }
 
 
+//    protected void setDefaultFields(){
+//        table.row().padBottom(100).padTop(25);
+//
+//        Label label = new Label("Drops per ml: ", skin);
+//        table.add(label).right();
+//
+//        TextField textField = new TextField("", skin, "digit");
+//        textField.setMaxLength(2);
+//        textField.setTextFieldFilter(new UIUtils.MyTextFieldFilter());
+////        textField.setTextFieldListener(UIUtils.SettingsUI.dropsListener());
+//        textField.setAlignment(Align.center);
+//        textField.setText(Double.toString(MainApp.saveManager.getDropsPerML()));
+//        UIUtils.setDialogKeyboard(textField, 3, "Drops per ml", "Enter drops per ml", 0);
+//
+//        table.add(textField).left().width(50).height(25).padLeft(2);
+//
+//        final Slider slider = new Slider(10, 60, 1, false, skin);
+//        slider.setValue((float)MainApp.saveManager.getDropsPerML());
+//        slider.addListener(UIUtils.SettingsUI.dropsSliderListener(slider, textField));
+//
+//        table.add(slider).width(110).height(25);
+//    }
 
-    public void updateAppFeatures(){
-        Array<Actor> children = table.getChildren();
 
-        final TextButton supplyButton = new TextButton("SUPPLIES", skin, "large");
-//            supplyButton.setSize(BTN_SIZE[0], BTN_SIZE[1]);
-        supplyButton.addListener(new ChangeListener() {
+    protected void setAboutButton(){
+        table.row().padTop(100);
+
+        //button which sends user to calculator screen
+        final TextButton aboutButton = new TextButton("Info", skin, "large");
+
+        aboutButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (supplyButton.isPressed())
-                    MainApp.setState(2);
+                if (aboutButton.isPressed())
+                    MainApp.setState(2); //FIXME: in pro version, this is 4
             }
         });
 
-        children.set(2, supplyButton);
+        table.add(aboutButton).width(aboutButton.getWidth()).height(aboutButton.getHeight()).center().colspan(3);
     }
+
+
+//    public void updateAppFeatures(){
+//        Array<Actor> children = table.getChildren();
+//
+//        final TextButton supplyButton = new TextButton("SUPPLIES", skin, "large");
+////            supplyButton.setSize(BTN_SIZE[0], BTN_SIZE[1]);
+//        supplyButton.addListener(new ChangeListener() {
+//            @Override
+//            public void changed(ChangeEvent event, Actor actor) {
+//                if (supplyButton.isPressed())
+//                    MainApp.setState(2);
+//            }
+//        });
+//
+//        children.set(2, supplyButton);
+//    }
 
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
-        if (supplyEnabled!= MainApp.supplyEnabled){
-            updateAppFeatures();
-        }
+//        if (supplyEnabled!= MainApp.supplyEnabled){ //FIXME: in pro version enable
+//            updateAppFeatures();
+//        }
 
         stage.act();
         stage.draw();
 
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)){
+//            new Dialog("", skin){
+//                @Override
+//                protected void result(Object object) {
+//                    if ((Boolean)object){
+//                        MainApp.exitApp = true;
+//                    }
+//                }
+//            }.text("Exit Application?").button("Yes", true).button("No", false).show(stage);
+//        }
     }
 
 
@@ -230,7 +286,7 @@ public class MenuScreen implements Screen{
 //        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         //restore the stage's viewport; true updates camera to center
-        stage.getViewport().update(width, height, true);
+        stage.getViewport().update(width, height, false);
         //stage.getCamera().update();//updates camera
 
         table.invalidateHierarchy();

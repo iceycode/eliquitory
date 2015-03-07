@@ -80,6 +80,9 @@ Bluish - Cyan? (don't know official name):
         cyan: {a: 1, b: 1, g: .7, r: .4}
     }
 
+Background:
+
+    R: 37, B: 37, G: 37
 
 ##Themes##
 ----

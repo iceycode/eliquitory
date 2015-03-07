@@ -17,6 +17,9 @@ public class Constants {
     public static final float SCREEN_HEIGHT = 800f;
     public static final float SCREEN_WIDTH = 480f;
 
+    public static final float MIN_SCREEN_WIDTH = 800f/3;
+    public static final float MIN_SCREEN_HEIGHT = 480f/3;
+
     //default values for advertisements
     public static final float AD_HEIGHT = 50;
 
@@ -68,6 +71,7 @@ public class Constants {
     public static final String[] AMOUNTS_TITLES = {"Amt (mL): ", "Str (mg): "}; //0=liq ml; 1 = str nicotine
 
     public static final String[] TYPE_NAMES = {"PG %: ", "VG %: ", "Other %: "};
+    public static final String[] FLAV_TYPE_NAMES = {"PG", "VG", "Other"};
     public static final int[] GOAL_PERCENT_TYPES = {0, 1, 2, 5};
     public static final int[] BASE_PERCENT_TYPES = {3, 4, 6};
 
@@ -104,13 +108,13 @@ public class Constants {
     //----these are empty initial values---
     //default base strength & percents - user can change in settings
     public static final double ZERO_FINAL_AMOUNT = 0.0;
-    public static final Array<Integer> ZERO_DESIRED_PERCENTS = new Array<Integer>(new Integer[]{0, 0, 0});
+    public static Array<Integer> DEFAULT_DESIRED_PERCENTS = new Array<Integer>(new Integer[]{50, 50, 0});
     public static final double ZERO_STRENGTH = 0.0; //desired strength (medium)
     
     //base defaults - user will be able to change in settings
     public static final double EMPTY_BASE_STR = 100.0;
-    public static final Array<Integer> ZERO_BASE_PERCENTS = new Array<Integer>(new Integer[]{0, 0});
-    public static final Base EMPTY_BASE = new Base(0, EMPTY_BASE_STR, ZERO_BASE_PERCENTS);
+    public static Array<Integer> DEFAULT_BASE_PERCENTS = new Array<Integer>(new Integer[]{50, 50});
+    public static Base DEFAULT_BASE = new Base(0, EMPTY_BASE_STR, DEFAULT_BASE_PERCENTS);
 
     //flavor default - the go-to flavor for user, can change in settings
     public static final  double DEFAULT_FLAV_AMT = 0; //amount of the flavor supply
@@ -121,6 +125,21 @@ public class Constants {
 
     //set to 20 as default value, but user can change this
     public static double DROPS_PER_ML = 20;
+
+
+    public static class InfoText{
+        public static final String ABOUT_LITE_V1 = "This is the first version of EJuice Toolkit Lite\n\n"+
+                "A paid version will be coming shortly and this version will " +
+                "\nlikely be updated soon after to include more features!";
+
+        public static final String FEATURES_LITE_V1 = "Feature in lite version include:\n" +
+                "- Setting drops per ml\n" +
+                "- Basic calculations for Propylene Glycol, Vegetable Glycerin\n and Nicotine Base\n" +
+                "- 'Other' amounts - this can be water, alcohol or other liquid\n added for consistency\n" +
+                "- Ability to save and load recipes\n" +
+                "- Ability to copy and paste calculated amounts\n";
+    }
+
 
 
     /** constants for tests

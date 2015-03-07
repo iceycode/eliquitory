@@ -8,24 +8,12 @@ Current state of services:
 02-17:
 Currently, google_play_services_lib is module outside of root. Keep this in mind if cloning from git or recreating project.
 
-##Google Play##
-----
-
-Project ID: handy-digit-860
-Project Name: E-Juice Maker
-
-AdMob Publisher ID: pub-8567699201008640
-Testing AdMob id: ca-app-pub-3940256099942544/6300978111
-
-Get an AdMob unit ID https://support.google.com/admob/v2/answer/3052638
-
 This app will mainly be using Google Play services for pushing updates. Also, possibly to sync users up with Google Plus
 and maybe for various features to be added in the future.
 
 I have now had to import 3 times, each time after closing and reopening project. This most likely has to do with Gradle
 not having the module in the build. Might have to add a build stub to the google-play.. module to make gradle recognize
 that it is being used.
-
 
 
 Solutions to importing google play services library into project:
@@ -211,11 +199,14 @@ In proguard:
     -keep class com.nokia.payment.iap.aidl.**
     -dontwarn org.onepf.oms.appstore.FortumoBillingService
 
-##App Store Description##
 
-03-01-15
+##Google Play App Store Description##
 
-A simple ejuice calculator for creating ejuice (or eliquid) for electronic cigarettes. Solutions, or recipes, can be saved and loaded. This is a free version of this app that contains ads. A pro version will be coming soon which will have more features.
+03-05-15
+
+A simple ejuice calculator for creating ejuice (or eliquid) for electronic cigarettes. Solutions, or recipes, can be saved and loaded.
+This is a free version of this app that contains ads. A pro version will be coming soon which will have more features.
+After the pro version comes out, this version will also be updated to include more features.
 
 Calculator Features:
 - Name of Recipe

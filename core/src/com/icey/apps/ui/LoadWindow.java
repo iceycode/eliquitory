@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.SnapshotArray;
+import com.icey.apps.screens.CalculatorScreen;
 import com.icey.apps.utils.CalcUtils;
 
 /** Popup Window for loading saved recipes
@@ -32,7 +32,7 @@ public class LoadWindow extends Dialog{
     
     ScrollPane scrollPane;
     Table table;
-    ObjectMap<String, ButtonGroup<CheckBox>> ratingMap = new ObjectMap<String, ButtonGroup<CheckBox>>(); //future recipe stars
+//    ObjectMap<String, ButtonGroup<CheckBox>> ratingMap = new ObjectMap<String, ButtonGroup<CheckBox>>(); //future recipe stars
 
     public CalcUtils calcUtils = CalcUtils.getCalcUtil();
     public boolean recipeChosen = false; //if a recipe chosen, then true
@@ -134,8 +134,8 @@ public class LoadWindow extends Dialog{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (loadButton.isPressed()){
-                    calcUtils.loadData(recipeName);
-                    recipeChosen = true;
+                    calcUtils.loadRecipeData(recipeName);
+                    CalculatorScreen.loadedRecipe = true;
                     closeWindow();
                 }
             }
@@ -156,7 +156,7 @@ public class LoadWindow extends Dialog{
         table.add(deleteButton).pad(3);
         table.row();
 
-        //setCheckBoxes(table, recipeName); //TODO: add rating checkboxes to pro version
+        //setCheckBoxes(table, recipeName); //FIXME: uncomment in pro version
 
         verticalGroup.addActor(table);
     }
@@ -180,67 +180,67 @@ public class LoadWindow extends Dialog{
     }
 
 
-    /** Sets up stars to rate recipe
-     *
-     * @param table : table recipe is in
-     * @param recipeName : name of recipe to rate
-     */
-    protected void setCheckBoxes(Table table, final String recipeName){
+//    /** Sets up stars to rate recipe //FIXME: uncomment in pro version
+//     *
+//     * @param table : table recipe is in
+//     * @param recipeName : name of recipe to rate
+//     */
+//    protected void setCheckBoxes(Table table, final String recipeName){
+//
+//        Label label = new Label("Rating: ", skin, "default-green");
+//        table.add(label);
+//
+//        //checkBox button group - for setting max buttons checked
+//        ButtonGroup<CheckBox> buttonGroup = new ButtonGroup<CheckBox>();
+//        buttonGroup.setMaxCheckCount(5); //sets max check count to 5
+//        buttonGroup.setUncheckLast(false); //so that buttons are not checked initially
+//
+//        int numChecked = calcUtils.getRecipeRating(recipeName, true);
+//
+//        //add the checkboxes to buttongroup
+//        for (int i = 0; i < 5; i++){
+//            final CheckBox checkBox = new CheckBox("", skin, "star");
+//            checkBox.setName(Integer.toString(i)); //set the name as index in group
+//            checkBox.addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    if (checkBox.isPressed()){
+//                        checkBox.setChecked(true);
+//                        updateRecipeRating(recipeName, Integer.parseInt(checkBox.getName()));
+//                    }
+//                }
+//            });
+//
+//            //check star CheckBox if meets conditions
+//            if (numChecked > 0 && i+1<=numChecked){
+//                checkBox.setChecked(true);
+//            }
+//
+//            //add to button group
+//            buttonGroup.add(checkBox);
+//
+//            table.add(checkBox).width(checkBox.getWidth()).pad(1).height(20);
+//        }
+//
+//        ratingMap.put(recipeName, buttonGroup);
+//    }
 
-        Label label = new Label("Rating: ", skin, "default-green");
-        table.add(label);
 
-        //checkBox button group - for setting max buttons checked
-        ButtonGroup<CheckBox> buttonGroup = new ButtonGroup<CheckBox>();
-        buttonGroup.setMaxCheckCount(5); //sets max check count to 5
-        buttonGroup.setUncheckLast(false); //so that buttons are not checked initially
-
-        int numChecked = calcUtils.getRecipeRating(recipeName, true);
-
-        //add the checkboxes to buttongroup
-        for (int i = 0; i < 5; i++){
-            final CheckBox checkBox = new CheckBox("", skin, "star");
-            checkBox.setName(Integer.toString(i)); //set the name as index in group
-            checkBox.addListener(new ChangeListener() {
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    if (checkBox.isPressed()){
-                        checkBox.setChecked(true);
-                        updateRecipeRating(recipeName, Integer.parseInt(checkBox.getName()));
-                    }
-                }
-            });
-
-            //check star CheckBox if meets conditions
-            if (numChecked > 0 && i+1<=numChecked){
-                checkBox.setChecked(true);
-            }
-
-            //add to button group
-            buttonGroup.add(checkBox);
-
-            table.add(checkBox).width(checkBox.getWidth()).pad(1).height(20);
-        }
-
-        ratingMap.put(recipeName, buttonGroup);
-    }
-
-
-    /** Updates the recipe rating & display of checked stars
-     *
-     * @param recipeName : recipe name
-     * @param index : index of CheckBox checked in ButtonGroup - in order for others to be checked
-     */
-    protected void updateRecipeRating(String recipeName, int index){
-        ButtonGroup<CheckBox> checkBoxes = ratingMap.get(recipeName);
-        checkBoxes.getCheckedIndex(); //get first index of checked box
-
-        for (int i = 0; i <= index; i++){
-            checkBoxes.getButtons().get(i).setChecked(true);
-        }
-
-        calcUtils.setRecipeRating(recipeName, checkBoxes.getAllChecked().size, true);
-    }
+//    /** Updates the recipe rating & display of checked stars //FIXME: in pro version
+//     *
+//     * @param recipeName : recipe name
+//     * @param index : index of CheckBox checked in ButtonGroup - in order for others to be checked
+//     */
+//    protected void updateRecipeRating(String recipeName, int index){
+//        ButtonGroup<CheckBox> checkBoxes = ratingMap.get(recipeName);
+//        checkBoxes.getCheckedIndex(); //get first index of checked box
+//
+//        for (int i = 0; i <= index; i++){
+//            checkBoxes.getButtons().get(i).setChecked(true);
+//        }
+//
+//        calcUtils.setRecipeRating(recipeName, checkBoxes.getAllChecked().size, true);
+//    }
 
 
     /** removes the recipe fields from dialog
@@ -249,17 +249,20 @@ public class LoadWindow extends Dialog{
      */
     public void removeRecipeFields(int recipeID){
 
-        SnapshotArray<Actor> children = verticalGroup.getChildren(); //remove the table from this array
+        SnapshotArray<Actor> children = verticalGroup.getChildren(); //children are tables in vertical group
 
         if (children.size > 1){
             for (int i = recipeID; i < children.size - 1; i++) {
-                //delete from the vertical group
-                children.swap(i, i + 1);
-                verticalGroup.swapActor(i, i + 1);
+                children.swap(i, i + 1); //swap widgets
+                verticalGroup.swapActor(i, i + 1);//swap tables in verticalGroup
+
+                currRecipes.swap(i, i + 1); //swap recipes
+
             }
         }
         numRecipes--; //decrement number of flavors
 
+        currRecipes.removeIndex(currRecipes.size - 1); //delete last recipe
         verticalGroup.removeActor(children.removeIndex(children.size - 1));
     }
 
@@ -279,6 +282,7 @@ public class LoadWindow extends Dialog{
 
     //hides the window
     public void closeWindow(){
+        //recipeChosen = false;
         this.hide();
     }
 

@@ -15,7 +15,6 @@ import com.icey.apps.data.Flavor;
 import com.icey.apps.utils.CalcUtils;
 import com.icey.apps.utils.Constants;
 import com.icey.apps.utils.SupplyUtils;
-import com.icey.apps.utils.UIUtils;
 
 /** Popup window showing the calculations
  *
@@ -195,11 +194,10 @@ public class CalcWindow extends Dialog{
             }
 
             text += "\n\t Amount: "+amounts.get(i).toString() + " ml ("+
-                    (amounts.get(i).intValue()*20) + " drops)" + "\tSupply: " + supplies.get(i);
+                    (amounts.get(i).intValue()*Constants.DROPS_PER_ML) + " drops)" + "\tSupply: " + supplies.get(i);
         }
 
-        UIUtils.ClipboardText clipboardText = new UIUtils.ClipboardText();
-        clipboardText.setContents(text);
+        Gdx.app.getClipboard().setContents(text);
     }
 
 

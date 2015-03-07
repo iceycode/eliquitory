@@ -159,7 +159,7 @@ public class SupplyWindow extends Dialog {
             titleLabel.setText("Add Nicotine Base");
             amountTF.setMessageText("  0.0");
             strengthTF.setMessageText("  0.0");
-            supply.setBasePercents(Constants.ZERO_BASE_PERCENTS); //set empty percents
+            supply.setBasePercents(Constants.DEFAULT_BASE_PERCENTS); //set empty percents
         }
         
         //ROW 1 - title
