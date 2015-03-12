@@ -16,22 +16,31 @@ public class Assets {
 
     public static AssetManager manager;
 
+    private static int skinID; //id of skin (default is 0)
+
     //loads the assets as Textures
     public static void loadAssets(){
         manager = new AssetManager();
 
         loadSkins();
+        setCurrentSkin(0);
     }
 
     //loads the skins of screens
     private static void loadSkins(){
-        manager.load(Constants.CALC_SKIN, Skin.class);
-        manager.load(Constants.MENU_SKIN, Skin.class);
-        manager.load(Constants.SUPPLY_MENU_SKIN, Skin.class);
-        manager.load(Constants.SETTING_SKIN, Skin.class);
 
         //dark theme - implement this in every screen
         manager.load(Constants.DARK_SKIN, Skin.class);
+    }
+
+
+    //FIXME: add more skins to make id param useful
+    public static void setCurrentSkin(int id){
+        skinID = id;
+    }
+
+    public static Skin getSkin(){
+        return manager.get(Constants.DARK_SKIN, Skin.class);
     }
 
 

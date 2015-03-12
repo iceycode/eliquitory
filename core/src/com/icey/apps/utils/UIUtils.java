@@ -2,14 +2,18 @@ package com.icey.apps.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Clipboard;
+import com.badlogic.gdx.utils.SnapshotArray;
 import com.icey.apps.MainApp;
+import com.icey.apps.assets.Assets;
+import com.icey.apps.data.Flavor;
 import com.icey.apps.data.Supply;
+import com.icey.apps.screens.CalculatorScreen;
 
 /** Class holds listeners & common elements for UI
  *  
@@ -73,19 +77,43 @@ public class UIUtils {
     }
 
 
+
+
     /** sets the number value based on type of textfield & its text
      * 
      * @param type : type of textfield
      * @param text : String value from textfield
      */
     protected static void setAmountValue(int type, String text){
+        //desired amount
         if (type == 0){
             CalcUtils.getCalcUtil().setAmountDesired(Double.parseDouble(text));
         }
+        //desired strength
         else if (type == 1){
             CalcUtils.getCalcUtil().setStrengthDesired(Double.parseDouble(text));
         }
-        
+        //base strength
+        else if (type == 2){
+            CalcUtils.getCalcUtil().setBaseStrength(Double.parseDouble(text));
+        }
+        //drops per ml
+        else if (type == 3){
+            Constants.DROPS_PER_ML = Double.parseDouble(text);
+            MainApp.saveManager.saveDropsPerML((float)Constants.DROPS_PER_ML);
+        }
+        //Defaults - desired ratio
+        else if (type == 4){
+
+        }
+        //defaults - base ratio
+        else if (type == 5){
+
+        }
+        //defaults - base strength
+        else if (type == 6){
+
+        }
     }
     
 
@@ -110,6 +138,30 @@ public class UIUtils {
 
         return percentFieldListener;
     }
+
+
+    /** Listener for a percent slider
+     *
+     * @param slider : the Slider
+     * @param type : 0=PG/VG desired; 1=PG/VG base; 2=Other percent; 3=Flavor percent
+     * @return : a ChangeListener for slider
+     */
+    public static ChangeListener sliderListener(final Slider slider, final int type){
+        return new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                int percent = (int)(slider.getValue()/1.5); //returns a percent value of slider
+
+                if (slider.getName()!= null){
+                    CalcUtils.getCalcUtil().setFlavorPercent(percent, type);
+                }
+                else{
+                    CalcUtils.getCalcUtil().setRatio(percent, type);
+                }
+            }
+        };
+    }
+
 
 
     /** listener for flavor name TextField on calculator screen
@@ -193,52 +245,206 @@ public class UIUtils {
     }
 
 
-    public static ChangeListener backButtonListener(final Button button){
-        return new ChangeListener() {
+//    public static ChangeListener backButtonListener(final Button button){
+//        return new ChangeListener() {
+//            @Override
+//            public void changed(ChangeEvent event, Actor actor) {
+//                if (button.isPressed()){
+//                    MainApp.setState(MainApp.prevState);
+//                }
+//            }
+//        };
+//    }
+
+
+    /** For textFields in mobile platforms
+     * - detects when textField is pressed & prevents it from showing keyboard
+     * - creates a native dialog instead which moves up & down with keyboard
+     * - gets the input from native dialog, & puts it into the textField
+     *
+     * @param textField : the textField in question
+     * @param type: -1 = recipe name, 0 = amount desired, 1 = strength desired, 2 = base str, -2: flavor name (index)
+     *              3: drop per ml
+     * @param title : title of the dialog box
+     * @param hintMsg : the hint displayed (background text) if no text there
+     * @param flavIndex : only for flavors - index in flavor Array
+     */
+    public static void setDialogKeyboard(final TextField textField, final int type, final String title, String hintMsg, final int flavIndex){
+//        Gdx.input.setInputProcessor(myInputProcessor(type));
+//        Gdx.input.setOnscreenKeyboardVisible(true);
+
+        String currText = "";
+        if (textField.getText()!=null) {
+            currText = textField.getText();
+            hintMsg = ""; //get rid of "hint" message
+        }
+
+        final String hint = hintMsg;
+        final String text = currText;
+
+        textField.setOnscreenKeyboard(new TextField.OnscreenKeyboard() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                if (button.isPressed()){
-                    MainApp.setState(MainApp.prevState);
-                }
+            public void show(boolean visible) {
+
+                Gdx.input.getTextInput(new Input.TextInputListener(){
+                    @Override
+                    public void input(String text) {
+                        if (type == -1){
+                            textField.setText(text);
+                            CalcUtils.getCalcUtil().setRecipeName(text);
+                        }
+                        else if (type == -2){
+                            textField.setText(text);
+                            CalcUtils.getCalcUtil().setFlavorName(text, flavIndex);
+                        }
+                        else{
+                            setNumberText(textField, text, type);
+                        }
+                    }
+
+                    @Override
+                    public void canceled() {
+                        log("cancelled");
+                    }
+                }, title, text, hint);
             }
-        };
+        });
     }
 
 
-    /** a customized inputlistener - not currently in use
+    /** method that will only set textField if follows decimal format
      *
-     * @param supply : supply being added
-     * @param textField :
-     * @param type
-     * @return
+     * @param textField : textfield being set
+     * @param text : the text user input
+     * @param type : type of value to set
      */
-    public static InputListener amountValueListener(final Supply supply, final TextField textField, final int type){
-        InputListener listener = new InputListener(){
-            @Override
-            public boolean keyTyped(InputEvent event, char character) {
-                if ((character == '\r' || character == '\n')) {
-                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
-                            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
-                }
-                else if (isDecimalDigit(character)) {
-                    if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
-                        if (type == 0) {
-                            supply.setTotalAmount(Double.parseDouble(textField.getText()));
-                        }
-                        else {
-                            supply.setBaseStrength(Double.parseDouble(textField.getText()));
-                        }
-                    }
-                }
+    protected static void setNumberText(final TextField textField, String text, final int type){
+        try{
+            Double.parseDouble(text); //test to see if double value
 
+            setAmountValue(type, text);
+            textField.setText(text);
+        }
+        catch(Exception e){
+            log("text not numberic");
+            calcErrorDialog("Error", text, CalculatorScreen.stage);
+        }
+    }
+
+
+    protected static void calcErrorDialog(String title, String text, Stage stage){
+        String message = "Did not enter correct value.";
+        String detail = "Entered " + text;
+
+        Dialog dialog = new Dialog("", Assets.getSkin());
+
+        dialog.getContentTable().top();
+        Label tab = new Label(title, Assets.getSkin(), "tab");
+        tab.setAlignment(Align.center);
+        dialog.getContentTable().add(tab).fillX().expandX().center();
+
+        dialog.getContentTable().row();
+        dialog.getContentTable().add(new Label(message, Assets.getSkin())).center();
+
+        dialog.getContentTable().row();
+        dialog.getContentTable().add(new Label(detail, Assets.getSkin())).center();
+
+        dialog.setMovable(true);
+
+        dialog.getButtonTable().setHeight(40);
+        dialog.button("Fix it");
+
+        dialog.show(stage);
+    }
+
+
+//    /** a customized inputlistener - not currently in use
+//     *
+//     * @param supply : supply being added
+//     * @param textField :
+//     * @param type
+//     * @return
+//     */
+//    public static InputListener amountValueListener(final Supply supply, final TextField textField, final int type){
+//        InputListener listener = new InputListener(){
+//            @Override
+//            public boolean keyTyped(InputEvent event, char character) {
+//                if ((character == '\r' || character == '\n')) {
+//                    textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
+//                            Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
+//                }
+//                else if (isDecimalDigit(character)) {
+//                    if (textField.getText().matches("\\\\d+(\\\\.\\\\d+)*")){
+//                        if (type == 0) {
+//                            supply.setTotalAmount(Double.parseDouble(textField.getText()));
+//                        }
+//                        else {
+//                            supply.setBaseStrength(Double.parseDouble(textField.getText()));
+//                        }
+//                    }
+//                }
+//
+//                return false;
+//            }
+//        };
+//
+//
+//        return listener;
+//    }
+
+    /** sets input processor for number values only
+     *
+     * @param type : numbers only or digits as well
+     */
+    public static InputProcessor myInputProcessor(final int type){
+        return new InputProcessor() {
+            @Override
+            public boolean keyDown(int keycode) {
+                return false;
+            }
+
+            @Override
+            public boolean keyUp(int keycode) {
+                return false;
+            }
+
+            @Override
+            public boolean keyTyped(char character) {
+                if (type == 1){
+                    return !isDecimalDigit(character);
+                }
+                else if (type == 2){
+                    return !isInteger(character);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                return false;
+            }
+
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+                return false;
+            }
+
+            @Override
+            public boolean touchDragged(int screenX, int screenY, int pointer) {
+                return false;
+            }
+
+            @Override
+            public boolean mouseMoved(int screenX, int screenY) {
+                return false;
+            }
+
+            @Override
+            public boolean scrolled(int amount) {
                 return false;
             }
         };
-
-
-        return listener;
     }
-
 
 
     protected static boolean isDecimalDigit(char c){
@@ -267,19 +473,32 @@ public class UIUtils {
     }
 
 
-    public static class ClipboardText implements Clipboard{
 
-        @Override
-        public String getContents() {
-            return null;
+    final static String[] TEXTS = {"PG: ", "VG: ", "Other: ", "Nic. Base: "};
+
+    /** method to send to clipboard without supply tracking
+     *
+     * @param amounts : amounts calculated
+     * @param flavors : flavor names
+     */
+    public static void sendToClipBoard_NoSupply(SnapshotArray<Double> amounts, SnapshotArray<Flavor> flavors){
+        String text = ""; //final text which will be sent to clipboard
+
+        for (int i = 0; i < amounts.size; i++){
+            if (i < 4){
+                text+= TEXTS[i];
+            }
+            else{
+                text+="Flavor: " + flavors.get(i-4).getName();
+            }
+
+            text += " -- Amount: "+amounts.get(i).toString() + " ml ("+
+                    (amounts.get(i).intValue()*Constants.DROPS_PER_ML) + " drops)\n";
+            text += "----------";
         }
 
-        @Override
-        public void setContents(String content) {
-
-        }
+        Gdx.app.getClipboard().setContents(text);
     }
-
 
     //methods for creating common buttons
     public static class Buttons{
@@ -375,7 +594,7 @@ public class UIUtils {
             TextField.TextFieldListener numTextFieldListener = new TextField.TextFieldListener() {
                 @Override
                 public void keyTyped(TextField textField, char c){
-//                if (c == '\n') textField.getOnscreenKeyboard().show(false);
+
 
                     if ((c == '\r' || c == '\n')) {
                         textField.next(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
@@ -442,7 +661,6 @@ public class UIUtils {
 
 
 
-
     //UI listeners for settings UI
     public static class SettingsUI{
 
@@ -479,9 +697,31 @@ public class UIUtils {
             };
         }
 
-
+        //FIXME: enable these features in pro, maybe in lite
+//        public static void setDefaultListeners(final Slider slider, final TextField textField, final int type, final String[] dialogTexts){
+//            slider.addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ChangeEvent event, Actor actor) {
+//                    if (type == 3){
+//                        Constants.DROPS_PER_ML = (double)slider.getValue();
+//                        textField.setText(Double.toString(Constants.DROPS_PER_ML));
+//                        MainApp.saveManager.saveDropsPerML(slider.getValue());
+//                    }
+//                    else if (type == 4){
+//
+//                    }
+//                    else if (type == 5){
+//
+//                    }
+//                    else if (type == 6){
+//
+//                    }
+//                }
+//            });
+//
+//            setDialogKeyboard(textField, type, dialogTexts[0], dialogTexts[1], 0);
+//        }
     }
-
 
 
 

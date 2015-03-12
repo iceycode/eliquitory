@@ -81,7 +81,7 @@ public class SupplyUtils {
         if (supplyMap.containsKey(3))
             return new Base(supplyMap.get(3));
         
-        return new Base(0, 0, Constants.ZERO_BASE_PERCENTS);
+        return new Base(0, 0, Constants.DEFAULT_BASE_PERCENTS);
     }
 
     //returns an array of all the flavors
@@ -233,7 +233,7 @@ public class SupplyUtils {
             data.put(i, supplyData);
         }
         
-        data.put(3, new Supply(Constants.EMPTY_BASE));
+        data.put(3, new Supply(Constants.DEFAULT_BASE));
         
         return data;
     }

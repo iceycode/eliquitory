@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.icey.apps.MainApp;
 import com.icey.apps.assets.Assets;
-import com.icey.apps.data.SaveData;
 import com.icey.apps.utils.Constants;
 import com.icey.apps.utils.SaveManager;
 
@@ -22,12 +21,14 @@ import com.icey.apps.utils.SaveManager;
  */
 public class RecipeScreen implements Screen {
 
-    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+//    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+    Skin skin = Assets.getSkin();
+
     Stage stage;
     Table table;
 
     SaveManager saveManager = MainApp.saveManager;
-    Array<SaveData.RecipeData> recipes;
+    Array<SaveManager.RecipeData> recipes;
 
 
     public RecipeScreen(){

@@ -41,6 +41,14 @@ public class SaveManager {
 
     //the supply key String modifier
     private final String SUPPLY_KEY = "Supply_"; //modifier for supply key in object map
+
+    //keys for default values user sets
+    private final String DROPS_KEY = "dropsPerML";
+    private final String GOAL_RATIO_KEY = "goalRatio";
+    private final String BASE_RATIO_KEY = "baseRatio";
+    private final String BASE_STR_KEY = "baseStrength";
+
+    public ObjectMap<String, RecipeData> recipeMap;
     public IntMap<Supply> supplyData; //supply data in map form
     
 
@@ -51,8 +59,8 @@ public class SaveManager {
         this.save = getSave();
         this.userPrefs = Gdx.app.getPreferences(prefsName);
 
-        //set supply map, empty if it does not exist
-        setSupplyData();
+        setRecipeMap(); //set recipe data, size 0 if none exist
+        //setSupplyData();//set supply map, empty if it does not exist
     }
 
 
@@ -124,26 +132,23 @@ public class SaveManager {
      *
      * @param key : the name of the recipe
      */
-    public void saveRecipeData(String key){
+    public void saveRecipeData(String key, Array<Double> finalMills){
         SaveManager.RecipeData recipeData = new SaveManager.RecipeData();
         recipeData.recipeName = key;
 
         recipeData.base = CalcUtils.getCalcUtil().base;
-
         recipeData.amountDesired = CalcUtils.getCalcUtil().amountDesired;
         recipeData.strengthDesired = CalcUtils.getCalcUtil().strengthDesired;
         recipeData.desiredPercents = CalcUtils.getCalcUtil().desiredPercents;
-
         recipeData.flavors = CalcUtils.getCalcUtil().flavors;
+        recipeData.finalMills = finalMills;
 
-        recipeData.finalMills = CalcUtils.getCalcUtil().finalMills;
+        recipeMap.put(key, recipeData); //put into local map
 
-
-        save.data.put(key, recipeData);
+        save.data.put(key, recipeData); //put into save data
 
         saveToJson();
     }
-
 
 //    public void renameSavedRecipe(String newName, String oldName){
 //        Object data = save.data.get(oldName);
@@ -160,7 +165,11 @@ public class SaveManager {
      * @param name : recipe name (aka key)
      */
     public void deleteRecipe(String name){
+        recipeMap.remove(name);
+
         save.data.remove(name);
+
+        saveToJson();
     }
 
 
@@ -219,7 +228,38 @@ public class SaveManager {
      * @param value :
      */
     public void saveDropsPerML(float value){
-        userPrefs.putFloat("dropsPerML", value);
+        userPrefs.putFloat(DROPS_KEY, value);
+
+        userPrefs.flush();
+    }
+
+
+    /** saves desired PG:VG ratio
+     *
+     * @param value : the PG value to set
+     */
+    public void saveGoalRatio(int value){
+        userPrefs.putInteger(GOAL_RATIO_KEY, value);
+
+        userPrefs.flush();
+    }
+
+    /** saves default base ratio
+     *
+     * @param value
+     */
+    public void saveBaseRatio(int value){
+        userPrefs.putInteger(BASE_RATIO_KEY, value);
+
+        userPrefs.flush();
+    }
+
+    /** saves base strength default
+     *
+     * @param value
+     */
+    public void saveBaseStrength(double value){
+        userPrefs.putFloat(BASE_STR_KEY, (float)value);
 
         userPrefs.flush();
     }
@@ -235,7 +275,7 @@ public class SaveManager {
         //sets default states
         userPrefs.putBoolean("adsEnabled", adsDisabled); //default is true
         userPrefs.putBoolean("supplyDisabled", supplyDisabled); //default is true
-        userPrefs.putFloat("dropsPerML", 20);
+        userPrefs.putFloat(DROPS_KEY, 20);
 
         userPrefs.flush(); //need to call this after updating Preferences
     }
@@ -247,6 +287,17 @@ public class SaveManager {
 //
 //        saveToJson();
 //    }
+
+    //sets recipe data
+    public void setRecipeMap(){
+        this.recipeMap = new ObjectMap<String, RecipeData>();
+
+        for (String key : save.data.keys()){
+            if (save.data.get(key) instanceof RecipeData){
+                recipeMap.put(key, (RecipeData) save.data.get(key));
+            }
+        }
+    }
 
 
 
@@ -265,8 +316,14 @@ public class SaveManager {
     }
 
 
-    public ObjectMap<String, Object> getRecipeData(){
+    public ObjectMap<String, Object> getData(){
         return save.data;
+    }
+
+
+    public ObjectMap<String, RecipeData> getRecipeMap(){
+
+        return recipeMap;
     }
 
 
@@ -288,7 +345,20 @@ public class SaveManager {
 
 
     public double getDropsPerML(){
-        return (double)userPrefs.getFloat("dropsPerML", 20); //default is 20
+        return (double)userPrefs.getFloat(DROPS_KEY, 20); //default is 20
+    }
+
+
+    public int getGoalRatio(){
+        return userPrefs.getInteger(GOAL_RATIO_KEY, 50); //default 50
+    }
+
+    public int getBaseRatio(){
+        return userPrefs.getInteger(BASE_RATIO_KEY, 50); //default 50
+    }
+
+    public double getBaseStrength(){
+        return (double)userPrefs.getFloat(BASE_STR_KEY, 100); //default 100
     }
 
 
@@ -326,27 +396,29 @@ public class SaveManager {
         public Array<Flavor> flavors;
 
         public Array<Double> finalMills;
+
+        public int rating; //5 is max
     }
 
     //----User defaults---these can be altered by user in settings
-    public static class UserDefaultData {
+    public class UserDefaultData {
 
         //a value between 20 & 40
         // scientific standard is 20 drops per milliter (~.02 ml per drop)
         //  though this value can vary based on measuring device & liquid density
-        public static double dropsPerMl; //default is about 20 drops per ml
+        public double dropsPerMl; //default is about 20 drops per ml
 
         //default base strength & percents - user can change in settings
-        public static double defaultDesiredAmt;
-        public static Array<Integer> defaultDesiredPercents;
-        public static double desiredStr; //desired strength (medium)
+        public double defaultDesiredAmt;
+        public Array<Integer> defaultDesiredPercents;
+        public double desiredStr; //desired strength (medium)
 
         //base defaults - user will be able to change in settings
-        public static Base defaultBase ;
+        public Base defaultBase ;
 
         //flavor default - the go-to flavor for user, can change in settings
-        public static double defaultFlavPercent; //amount of the flavor supply
-        public static String defaultFlavorName = "Flavor1"; //name of flavor
-        public static Flavor defaultFlavor ;
+        public double defaultFlavPercent; //amount of the flavor supply
+        public String defaultFlavorName = "Flavor1"; //name of flavor
+        public Flavor defaultFlavor ;
     }
 }

@@ -1,22 +1,22 @@
 package com.icey.apps.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.SnapshotArray;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.icey.apps.assets.Assets;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.ui.CalcTable;
-import com.icey.apps.ui.CalcWindow;
 import com.icey.apps.ui.LoadWindow;
 import com.icey.apps.utils.CalcUtils;
 import com.icey.apps.utils.Constants;
@@ -56,23 +56,17 @@ import com.icey.apps.utils.UIUtils;
  *
  * --------TODOs for Calculator------- 
  * * see CalcTable/FlavorTable for details
- *  TODO: center messageText labels - figure out how to do this
- * TODO: expand recipe title name
- *
- * TODO: create a popup window for final amounts instead of keeping in table
- *            
- *  TODO: menu buttons need to be offset a little
- *     TODO: load needs to be cenetered, back button goes to left side
- *
- * TODO: increase size of percent fields a bit
- * TODO; set a selectbox for selecting "Other"
- * TODO: specify error (which flavor or percent) in popup
  *
  */
 public class CalculatorScreen implements Screen {
 
-    Skin skin= Assets.manager.get(Constants.DARK_SKIN, Skin.class); //skin
-    Stage stage; //main stage
+    //Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class); //skin
+
+    Skin skin = Assets.getSkin();
+
+    public static Stage stage; //main stage
+
+    public static boolean loadedRecipe = false; //loaded recipe flag
 
     //Tables which hold UI widgets, get added to stage
     CalcTable table;  //root table
@@ -85,11 +79,15 @@ public class CalculatorScreen implements Screen {
     LoadWindow loadWindow;
     CalcUtils calcUtils = CalcUtils.getCalcUtil(); //tool used for calculations, loading, saving
 
-    public Button backButton; //back button
+    SnapshotArray<Double> finalMills; //final amounts
 
+    TextButton copyButton;
+    String currRecipe = ""; //currently loaded recipe
 
     public CalculatorScreen(){
-        stage = new Stage(new FitViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+        stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+
+        //setCopyDialog();
 
         setCalcTable();
 
@@ -104,25 +102,30 @@ public class CalculatorScreen implements Screen {
     public void setCalcTable(){
         table = new CalcTable(skin);
 
-//        setFlavorScrollTable();
-
         setButtons();
         setLoadWindow();
 
         stage.addActor(table);
     }
 
+
     boolean loadWindowSetup = false;
     protected void setLoadWindow(){
 
         if (!loadWindowSetup){
-            loadWindow = new LoadWindow("Saved Recipes", skin, "default");
-            stage.addActor(loadWindow);
+            loadWindow = new LoadWindow(skin, "window-large");
         }
         else{
-            loadWindow.updateRecipes(calcUtils.getAllRecipes());
+            loadWindow.addRecipes(calcUtils.getAllRecipes());
         }
 
+    }
+
+
+    protected void showCopyDialog(){
+        Dialog copyDialog = new Dialog("", skin).text("Copied to clipboard");
+        copyDialog.show(stage);
+        copyDialog.addAction(Actions.sequence(Actions.alpha(1), Actions.fadeOut(3, Interpolation.fade), Actions.removeActor(copyDialog)));
     }
 
 
@@ -132,13 +135,17 @@ public class CalculatorScreen implements Screen {
         flavorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (flavorButton.isPressed()) 
-                    table.flavorTable.addNewFlavor(new Flavor("Flavor " + table.flavorTable.numFlavors));//add new flavor
+                if (flavorButton.isPressed()) {
+                    Flavor newFlavor = new Flavor("Flavor " + Integer.toString(table.flavorTable.numFlavors + 1));
+                    table.flavorTable.addNewFlavor(newFlavor);//add new flavor
+
+                }
             }
+
         });
 
-        table.add(flavorButton).width(200).height(50).colspan(table.cols).center().padBottom(5);
-        table.row();
+        table.add(flavorButton).width(150).colspan(2).height(50).center().padBottom(5); //.colspan(table.cols)
+//        table.row();
 
         //the calculator button
 //        final TextButton calcButton = new TextButton("Calculate!", skin);
@@ -151,7 +158,7 @@ public class CalculatorScreen implements Screen {
             }
         });
 
-        table.add(calcButton).width(200).height(50).colspan(table.cols).center().padBottom(5);
+        table.add(calcButton).width(175).height(50).padBottom(5).padRight(5).colspan(2);
         
 
         setMenuButtons();
@@ -160,26 +167,30 @@ public class CalculatorScreen implements Screen {
 
 
     protected void setMenuButtons(){
-        table.row().pad(5);
-        
+        table.row() ;
+
+        //table for menu buttons
+        Table buttonTable = new Table();
+        buttonTable.top();
+
         //the save button
-        TextButton saveButton = new TextButton("Save", skin, "medium");
-        saveButton.addListener(new InputListener(){
+        final TextButton saveButton = new TextButton("Save", skin, "medium");
+        saveButton.addListener(new ChangeListener() {
+           @Override
+           public void changed(ChangeEvent event, Actor actor) {
 
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                calcUtils.saveData();
-                if (calcUtils.saved = true){
-                    log("wrong values!");
-                    new Dialog("", skin).text("ERROR SAVING:\n").text("Wrong Values Entered or lacking values!")
-                            .button("Fix it!").key(Input.Keys.ESCAPE, false).key(Input.Keys.ENTER, true).
-                            show(stage); //, Actions.fadeOut(2f)
-                }
-
-                return true;
-            }
+               new Dialog("", skin){
+                   @Override
+                   protected void result(Object object) {
+                       if ((Boolean)object){
+                           saveRecipe();
+                       }
+                   }
+               }.text("Save this ejuice recipe?").button("Yes", true).button("No", true).show(stage);
+           }
         });
-        table.add(saveButton).width(100).align(Align.center);
+
+        buttonTable.add(saveButton).width(100).height(50).pad(2);
 
 
         //the load button
@@ -189,12 +200,29 @@ public class CalculatorScreen implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (loadButton.isPressed()){
-                    loadWindow.updateRecipes(calcUtils.getAllRecipes());
-                    loadWindow.showWindow();
+                    loadWindow.addRecipes(calcUtils.getAllRecipes());
+                    loadWindow.show(stage);
                 }
             }
         });
-        table.add(loadButton).width(100).colspan(2).align(Align.center);
+        buttonTable.add(loadButton).width(100).height(50).pad(2);
+
+
+        //copy button
+        copyButton = new TextButton("Copy", skin, "disabled-med");
+        copyButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (copyButton.isPressed()){
+                    UIUtils.sendToClipBoard_NoSupply(finalMills, new SnapshotArray<Flavor>(calcUtils.getFlavors()));
+                    showCopyDialog();
+                }
+            }
+        });
+        copyButton.setDisabled(true);
+        copyButton.setTouchable(Touchable.disabled);
+
+        buttonTable.add(copyButton).width(100).height(50).pad(2);
 
 
         //the back button
@@ -202,8 +230,12 @@ public class CalculatorScreen implements Screen {
 //        final TextButton backButton = UIUtils.Buttons.textButton("BACK", skin, "menu");
         final TextButton backButton = UIUtils.Buttons.textButton("Back", skin, "medium");
         backButton.addListener(UIUtils.backTextButtonListener(backButton));
-                table.add(backButton).width(100).align(Align.left);
+        buttonTable.add(backButton).width(100).height(50).pad(2); //.align(Align.right);
+
+
+        table.add(buttonTable).colspan(table.cols).center();
     }
+
 
 
     /** returns an error dialog which gets added to stage
@@ -231,40 +263,63 @@ public class CalculatorScreen implements Screen {
     }
 
 
-
+    boolean error = false; //error calculating, means cannot save
     public void calculate(){
         //calculate amounts if touchdown
         if (!calcUtils.areFlavorsSet()){
             log("flavors not set!");
             showErrorDialog(errorMsgs[0], calcUtils.getError());
+            error = true;
         }
         else if (!calcUtils.isGoalSet()){
             showErrorDialog(errorMsgs[3], "");
+            error = true;
         }
         else{
             log("calculating now...");
-            Array<Double> finalMills = calcUtils.calcAmounts();
-            displayResults(finalMills);
+            finalMills = calcUtils.calcAmounts();
+            table.updateCalcLabels(calcUtils.calcAmounts());
+
+            updateCopyButton();
         }
     }
-    
 
-    /** display the calculated results
-     *
-     * @param finalMills - calculated amounts
-     */
-    protected void displayResults(Array<Double> finalMills){
-
-        new CalcWindow(skin, "default", finalMills, calcUtils.getFlavors()).show(stage);
+    protected void updateCopyButton(){
+        //update copy button
+        copyButton.setStyle(skin.get("medium", TextButton.TextButtonStyle.class));
+        copyButton.setDisabled(false); //enable button
+        copyButton.setTouchable(Touchable.enabled);
     }
-    
-    
+
+    protected void saveRecipe(){
+        //calculate amounts
+        if (calcUtils.getRecipeName()==""){
+            showErrorDialog("Forgot to add recipe name.", "");
+        }
+        else{
+            log("saving now...");
+            calculate();
+
+            if (!error){
+                calcUtils.saveData(finalMills);
+                setLoadWindow(); //add new saved data to load window
+            }
+            else{
+                error = true; //reset error
+            }
+
+        }
+    }
+
     //display data that is loaded
-    private void displayLoadedData(){
+    protected void displayLoadedData(){
         
         table.setLoadedRecipe();
-        table.flavorTable.setLoadedData();
 
+        finalMills = calcUtils.loadedAmounts;
+        table.updateCalcLabels(finalMills);
+
+        updateCopyButton(); //so that results can be copied
         //displayResults(); //display the loaded recipe results
     }
 
@@ -287,14 +342,17 @@ public class CalculatorScreen implements Screen {
 
     @Override
     public void show() {
-        Gdx.gl.glClearColor(.2f, .4f, 0.2f, 1);
+        Gdx.gl.glClearColor(37/255f, 37/255f, 37/255f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.input.setInputProcessor(stage);
 
         //if a recipe is chosen in loadwindow, hide it, display results
-        if (loadWindow.recipeChosen) {
-            loadWindow.hideWindow();
+        if (loadedRecipe) {
+//            loadWindow.hide();
             displayLoadedData();
+
+//            currRecipe = calcUtils.getRecipeName();
+            loadedRecipe = false;
         }
 
         stage.act(Gdx.graphics.getDeltaTime());

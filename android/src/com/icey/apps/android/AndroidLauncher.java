@@ -18,6 +18,9 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.icey.apps.MainApp;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /** Android Launcher (aka Main Activity)
  *
  * A lot of this code was taken from tutorial-libgdx-google-ads-android found via libgdx wiki
@@ -43,9 +46,11 @@ import com.icey.apps.MainApp;
 public class AndroidLauncher extends AndroidApplication {
 
     //NOTE: this is currently a test ad unit
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
+    private static final String AD_UNIT_ID_TEST = "ca-app-pub-3940256099942544/6300978111"; //google test ad
+    private static final String AD_UNIT_ID = "ca-app-pub-8567699201008640/7700422013";
     //private static final String GOOGLE_PLAY_URL = "https://play.google.com/store/apps/developer?id=";
 
+    //for getting actual device ID
     private MainApp mainApp; //main app instance
     private AdView adView;
     private View appView;
@@ -58,10 +63,10 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
         mainApp = new MainApp(); //create main app
 
-        showAds = MainApp.adsEnabled;
+        //showAds = MainApp.adsEnabled;
+        showAds = true;
 
         if (showAds){
-            log("starting app with ads");
             createWithAds();
         }
         else{
@@ -88,16 +93,16 @@ public class AndroidLauncher extends AndroidApplication {
         //creates ad layout
         RelativeLayout layout = setAdLayout();
 
-        //creates the MainApp view - add first, or else will cover ads
-        View gameView = createAppView(config);
-        layout.addView(gameView);
-
         //creates the AdMob view
-        AdView admobView = createAdView();
-        layout.addView(admobView);
+        adView = createAdView();
+        layout.addView(adView);
+
+        //creates the MainApp view - add first, or else will cover ads
+        appView = createAppView(config);
+        layout.addView(appView);
 
         setContentView(layout);
-        startAdvertising(admobView);
+        startAdvertising(adView);
 
     }
 
@@ -119,9 +124,11 @@ public class AndroidLauncher extends AndroidApplication {
 
     //The ad view - contains a seperate thread containing AdMob view
     protected AdView createAdView() {
-        adView = new AdView(this);
+        AdView adView = new AdView(this);
         adView.setAdSize(AdSize.SMART_BANNER);
-        adView.setAdUnitId(AD_UNIT_ID);
+        adView.setAdUnitId(AD_UNIT_ID_TEST);
+
+        //adView.setAdUnitId(AD_UNIT_ID); //my ad unit
 
         //NOTE: had to disable inspection on this since it was showing incorrect error (type mismatch)
         adView.setId(12345); // this is an arbitrary id, allows for relative positioning in createGameView()
@@ -136,12 +143,12 @@ public class AndroidLauncher extends AndroidApplication {
 
     //The MainApp view - libgdx view
     protected View createAppView(AndroidApplicationConfiguration cfg) {
-        appView = initializeForView(mainApp, cfg);
+        View appView = initializeForView(mainApp, cfg);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-        params.addRule(RelativeLayout.BELOW, adView.getId());
+        params.addRule(RelativeLayout.ABOVE, adView.getId());
         appView.setLayoutParams(params);
 
         return appView;
@@ -151,13 +158,45 @@ public class AndroidLauncher extends AndroidApplication {
     protected void startAdvertising(AdView adView) {
         AdRequest adRequest = new AdRequest.Builder().build();
 
-        AdRequest.Builder builder = new AdRequest.Builder();
-        builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR);
+        //NOTE: for testing on external device if using own test unit
+//        String android_id = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+//        String deviceId = md5(android_id).toUpperCase();
+//        boolean isTestDevice = adRequest.isTestDevice(this);
+//
+//        log("is Admob Test Device ? "+deviceId+" "+isTestDevice); //to confirm it worked
+
+//        AdRequest.Builder builder = new AdRequest.Builder();
+//        builder.addTestDevice(deviceId); //for external DEVICE
+////        builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build(); //for EMULATOR
+//        builder.build();
+
 
         adView.loadAd(adRequest);
     }
 
+    //for obtaining device ID for testing AdMob ads
+    public static final String md5(final String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
 
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < messageDigest.length; i++) {
+                String h = Integer.toHexString(0xFF & messageDigest[i]);
+                while (h.length() < 2)
+                    h = "0" + h;
+                hexString.append(h);
+            }
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            log(e.getMessage());
+        }
+        return "";
+    }
 
     @Override
     public void onPause() {
@@ -203,7 +242,7 @@ public class AndroidLauncher extends AndroidApplication {
     }
 
 
-    private void log(String message){
+    private static void log(String message){
         Gdx.app.log("AndroidLauncher LOG: ", message);
     }
 

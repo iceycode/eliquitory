@@ -27,7 +27,7 @@ background
   index: -1
 buttonDown
   rotate: false
-  xy: 972, 914
+  xy: 916, 801
   size: 50, 30
   orig: 50, 30
   offset: 0, 0
@@ -41,7 +41,7 @@ buttonDown-large
   index: -1
 buttonDown-med
   rotate: false
-  xy: 665, 14
+  xy: 916, 918
   size: 100, 50
   orig: 100, 50
   offset: 0, 0
@@ -55,14 +55,14 @@ buttonDown-rounded
   index: -1
 buttonDown-small
   rotate: false
-  xy: 916, 876
+  xy: 916, 833
   size: 52, 32
   orig: 52, 32
   offset: 0, 0
   index: -1
 buttonUp
   rotate: false
-  xy: 916, 910
+  xy: 792, 24
   size: 54, 34
   orig: 54, 34
   offset: 0, 0
@@ -97,7 +97,7 @@ buttonUp-rounded
   index: -1
 buttonUp-small
   rotate: false
-  xy: 916, 842
+  xy: 970, 833
   size: 52, 32
   orig: 52, 32
   offset: 0, 0
@@ -111,28 +111,28 @@ cursor
   index: -1
 deleteBtnDown
   rotate: false
-  xy: 767, 12
+  xy: 869, 52
   size: 45, 25
   orig: 45, 25
   offset: 0, 0
   index: -1
 deleteBtnUp
   rotate: false
-  xy: 916, 813
+  xy: 968, 804
   size: 47, 27
   orig: 47, 27
   offset: 0, 0
   index: -1
 editBtnDown
   rotate: false
-  xy: 814, 12
+  xy: 916, 52
   size: 45, 25
   orig: 45, 25
   offset: 0, 0
   index: -1
 editBtnUp
   rotate: false
-  xy: 916, 784
+  xy: 916, 772
   size: 47, 27
   orig: 47, 27
   offset: 0, 0
@@ -146,21 +146,21 @@ loadWindow
   index: -1
 radio-off
   rotate: false
-  xy: 998, 948
+  xy: 792, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
   index: -1
 radio-on
   rotate: false
-  xy: 911, 703
+  xy: 814, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
   index: -1
 scroll-knob
   rotate: false
-  xy: 996, 47
+  xy: 1017, 801
   size: 5, 30
   orig: 5, 30
   offset: 0, 0
@@ -174,21 +174,21 @@ scroll-vertical
   index: -1
 selectBox-back
   rotate: false
-  xy: 869, 64
+  xy: 665, 21
   size: 125, 13
   orig: 125, 13
   offset: 0, 0
   index: -1
 selectBox-selection
   rotate: false
-  xy: 869, 40
+  xy: 665, 36
   size: 125, 22
   orig: 125, 22
   offset: 0, 0
   index: -1
 selection
   rotate: false
-  xy: 916, 946
+  xy: 916, 867
   size: 80, 22
   orig: 80, 22
   offset: 0, 0
@@ -200,6 +200,13 @@ slider-knob
   orig: 8, 8
   offset: 0, 0
   index: -1
+slider-knob-large
+  rotate: false
+  xy: 998, 873
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 slider-track
   rotate: false
   xy: 144, 3
@@ -207,30 +214,37 @@ slider-track
   orig: 110, 2
   offset: 0, 0
   index: -1
+slider-track-large
+  rotate: false
+  xy: 665, 60
+  size: 200, 4
+  orig: 200, 4
+  offset: 0, 0
+  index: -1
 star-down
   rotate: false
-  xy: 916, 751
+  xy: 963, 46
   size: 36, 31
   orig: 36, 31
   offset: 0, 0
   index: -1
 star-on
   rotate: false
-  xy: 916, 751
+  xy: 963, 46
   size: 36, 31
   orig: 36, 31
   offset: 0, 0
   index: -1
 star-off
   rotate: false
-  xy: 911, 725
+  xy: 916, 746
   size: 29, 24
   orig: 29, 24
   offset: 0, 0
   index: -1
 star-up
   rotate: false
-  xy: 911, 725
+  xy: 916, 746
   size: 29, 24
   orig: 29, 24
   offset: 0, 0
@@ -251,7 +265,7 @@ textfield-digit
   index: -1
 textfield-text
   rotate: false
-  xy: 767, 39
+  xy: 916, 891
   size: 100, 25
   orig: 100, 25
   offset: 0, 0

@@ -45,7 +45,7 @@ public class CalcUtilsTest {
 //        calcUtils.addFlavor(Constants.Tests.FLAV1);
 //
 //        calcUtils.calcAmounts(); //calculate amounts
-//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//        Double[] finalMls = calcUtils.getGoalAmounts().toArray();
 //
 //        assertArrayEquals("Calc test 1: ", Constants.Tests.EXPECTED_FAs[0], finalMls);
 //
@@ -75,7 +75,7 @@ public class CalcUtilsTest {
 //
 //        calcUtils.calcAmounts(); //calculate amounts
 //
-//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//        Double[] finalMls = calcUtils.getGoalAmounts().toArray();
 //        assertArrayEquals("Calc test 2: ", Constants.Tests.EXPECTED_FAs[1], finalMls);
 //
 //        double finalTotal = 0;
@@ -100,7 +100,7 @@ public class CalcUtilsTest {
 //        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
 //
 //        calcUtils.calcAmounts(); //calculate amounts
-//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//        Double[] finalMls = calcUtils.getGoalAmounts().toArray();
 //
 //
 //        double finalTotal = 0;
@@ -125,7 +125,7 @@ public class CalcUtilsTest {
 //
 //        calcUtils.addFlavor(Constants.Tests.FLAV1);
 //        calcUtils.calcAmounts(); //calculate amounts
-//        Double[] finalMls = calcUtils.getFinalMills().toArray();
+//        Double[] finalMls = calcUtils.getGoalAmounts().toArray();
 //
 //        double finalTotal = 0;
 //        for (int i = 0; i < finalMls.length; i++){
@@ -151,7 +151,7 @@ public class CalcUtilsTest {
 //        calcUtils.addFlavor(Constants.Tests.FLAV3);
 //
 //        calcUtils.calcAmounts(); //calculate amounts
-//        assertArrayEquals("Calc test 5: ", Constants.Tests.EXPECTED_FAs[4], calcUtils.getFinalMills().toArray());
+//        assertArrayEquals("Calc test 5: ", Constants.Tests.EXPECTED_FAs[4], calcUtils.getGoalAmounts().toArray());
 //
 //    }
 //
@@ -167,7 +167,7 @@ public class CalcUtilsTest {
 //        calcUtils.setFlavors(Constants.Tests.TEST_FLAVORS);
 //
 //        calcUtils.calcAmounts(); //calculate amounts
-//        assertArrayEquals("Calc test 6: ", Constants.Tests.EXPECTED_FAs[5], calcUtils.getFinalMills().toArray());
+//        assertArrayEquals("Calc test 6: ", Constants.Tests.EXPECTED_FAs[5], calcUtils.getGoalAmounts().toArray());
 //    }
 
 

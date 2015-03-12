@@ -29,10 +29,11 @@ import com.icey.apps.utils.UIUtils;
  */
 public class SettingScreen implements Screen {
 
+    Skin skin = Assets.getSkin();
     Stage stage;
     Table table; //main table for buttons/settings
 
-    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+//    Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
 
     SaveManager saveManager = MainApp.saveManager;
     Preferences settings;
@@ -147,23 +148,23 @@ public class SettingScreen implements Screen {
     }
 
 
-    //updates features buttons to disabled
-    public void updateFeatureButtons(){
-
-
-    }
-
-
-
-    //TODO: set up the in-app payment method/API
-    protected void purhcaseFeature(int type){
-        if (type == 0){
-
-        }
-        else{
-
-        }
-    }
+//    //updates features buttons to disabled
+//    public void updateFeatureButtons(){
+//
+//
+//    }
+//
+//
+//
+//    //TODO: set up the in-app payment method/API
+//    protected void purhcaseFeature(int type){
+//        if (type == 0){
+//
+//        }
+//        else{
+//
+//        }
+//    }
 
 
     @Override

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--<string name="app_id">YOUR APP ID HERE</string>-->
+    <!--<string name="app_id">ca-app-pub-8567699201008640/7700422013 [MY AD UNIT]</string>-->
+    <!--google test Ad Unit ID: ca-app-pub-3940256099942544/6300978111-->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 </resources>
