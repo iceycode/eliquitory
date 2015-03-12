@@ -6,10 +6,21 @@ Info about assets here. They are in android module, in assets directory.
 ----
 
 Libgdx uses BitmapFont format, so need to convert using Hiero.jar (in gdx-tools) or BMFont.
+If using ttf format, use gdx-freetype extension. This can help with scaling of fonts.
 
 Currently using roboto.
 
-<b>Font Paths:</b>
+
+<b> Font Paths for TrueType Font (ttf) </b>
+
+roboto:
+
+    fonts/ttf/Roboto-Light.ttf
+    fonts/ttf/Roboto-Light.ttf
+    fonts/ttf/Roboto-Regular.ttf
+    fonts/ttf/Roboto-Medium.ttf
+
+<b>Font Paths for BitmapFont (fnt) files:</b>
 
 roboto:
 
@@ -80,11 +91,15 @@ Bluish - Cyan? (don't know official name):
         cyan: {a: 1, b: 1, g: .7, r: .4}
     }
 
-Background:
+<b>Textures:</b>
 
-    R: 37, B: 37, G: 37
+| Texture Type | Colors (RGB)        | Fill % | Opacity % |
+|--------------|---------------------|--------|-----------|
+| Background   | R: 37, B: 37, G: 37 | 100    | 100       |
+| Button blue  | R: 0, B: 128, G: 74 | 70     | 100       |
+| Label Title - Grey| R: 70, B: 70, G: 70 | 100 | 80      |
 
-##Themes##
+##Themes/Skins##
 ----
 
 Current theme is dark-blue. See folder assets/skins/dark & assets/textures/theme-dark
@@ -97,6 +112,17 @@ in terms of ease of implementation and time spent on creating the skins.
 
 I mainly used Photoshop and created most of the theme myself, but see credits for items I used to create certain
 graphical elements of the app (icon and some of the UI).
+
+NOTE: in Skin, make sure .atlas file the filters are set to
+
+    filter: Linear,Linear
+
+instead of original:
+
+    filter: Nearest,Nearest
+
+In the future, use Adobe Illustrator to create resolution-independent vector graphics or in Photoshop set
+the DPI to a high value (instead of standard 72, 300).
 
 ##Credits##
 ----

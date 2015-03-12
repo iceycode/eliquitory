@@ -493,8 +493,8 @@ public class UIUtils {
             }
 
             text += " -- Amount: "+amounts.get(i).toString() + " ml ("+
-                    (amounts.get(i).intValue()*Constants.DROPS_PER_ML) + " drops)\n";
-            text += "----------";
+                    (amounts.get(i).intValue()*Constants.DROPS_PER_ML) + " drops)"+
+                    "\n----------\n";
         }
 
         Gdx.app.getClipboard().setContents(text);

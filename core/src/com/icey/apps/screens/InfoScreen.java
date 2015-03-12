@@ -28,8 +28,6 @@ public class InfoScreen implements Screen{
     Table table; //main table
 
 
-
-
     public InfoScreen(){
         stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
@@ -135,6 +133,6 @@ public class InfoScreen implements Screen{
 
     @Override
     public void dispose() {
-
+        stage.dispose();
     }
 }

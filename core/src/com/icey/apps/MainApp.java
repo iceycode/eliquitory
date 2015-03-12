@@ -6,7 +6,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Array;
 import com.icey.apps.assets.AssetHelper;
 import com.icey.apps.assets.Assets;
@@ -39,9 +38,7 @@ import com.icey.apps.utils.SaveManager;
  *
  * * * * * * * * TODOS * * * * * * * * *
  * TODO: add recipe screen (maybe?)
- * FIXME: increase size of fonts if not manually scaling
  * FIXME: set menuscreen & calculator screen table correctly
- *
  *
  * Created by Allen on 01/06.
  */
@@ -66,14 +63,15 @@ public class MainApp implements ApplicationListener{
 
     private static boolean screenSet = false; //value determines whether screen is set
     ApplicationType appType;
-    
-    //main fonts used throughout all screens
-    Array<BitmapFont> bitmapFonts;
 
-    public static float appWidth;
-    public static float appHeight;
+    public static float appWidth = Constants.SCREEN_WIDTH;
+    public static float appHeight = Constants.SCREEN_HEIGHT;
 
-    boolean closeApp = false; //closes android app
+    //scales for modifying screen view to maintain aspect ratio
+    public static float scaleX;
+    public static float scaleY;
+
+    public static float aspectDiff = 0; //difference in aspect ratio
 
 	@Override
 	public void create () {
@@ -97,15 +95,23 @@ public class MainApp implements ApplicationListener{
 
         if (appType == ApplicationType.Android || appType == ApplicationType.iOS){
             //sets display to device width, height & fullscreen (T/F)
-//            Gdx.graphics.setDisplayMode(Gdx.app.getGraphics().getWidth(), Gdx.app.getGraphics().getHeight(), true);
+//            Gdx.graphics.setDisplayMode(Gdx.app.getGraphics().getWidth(), Gdx.app.getGraphics().getHeight(), false);
 
             appWidth = Gdx.graphics.getWidth();
             appHeight = Gdx.graphics.getHeight();
+            log("App Size: " + Gdx.graphics.getWidth() + " x " + Gdx.graphics.getHeight());
 
-            //scaleFonts();
         }
 
-        log("App Size: " + Gdx.graphics.getWidth() + " x " + Gdx.graphics.getHeight());
+        //set scale by dividing by preferred screen sizes
+        scaleX = appWidth/Constants.SCREEN_WIDTH;
+        scaleY = appHeight/Constants.SCREEN_HEIGHT;
+
+        float virtualAspectRatio = Constants.SCREEN_WIDTH/Constants.SCREEN_HEIGHT;
+        float realAspectRatio = appWidth/appHeight;
+
+        aspectDiff = virtualAspectRatio - realAspectRatio;
+
 
 
     }
@@ -148,6 +154,9 @@ public class MainApp implements ApplicationListener{
 
 
     protected void initScreens(){
+        //smooth Skin fonts for screens
+        AssetHelper.smoothFonts();
+
         screens = new Array<Screen>(3);
 
         //add all the screens to an Array for switching
@@ -156,20 +165,15 @@ public class MainApp implements ApplicationListener{
 //        screens.add(new SupplyScreen());
 //        screens.add(new SettingScreen());
         screens.add(new InfoScreen());
+//
+//        if (appHeight!= Constants.SCREEN_HEIGHT || appWidth != Constants.SCREEN_HEIGHT){
+//            for (Screen s : screens){
+//                s.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//            }
+//        }
 
         setState(0);
         screensLoaded = true;
-    }
-
-
-    //scaling factor for the Density Independent Pixel unit
-    // scales fonts to appropriate proportions (see the javadoc)
-    protected void scaleFonts(){
-        bitmapFonts = AssetHelper.getAllFonts();
-
-        for (BitmapFont font : bitmapFonts){
-            font.setScale(Gdx.graphics.getDensity());
-        }
     }
 
 	@Override
@@ -197,14 +201,13 @@ public class MainApp implements ApplicationListener{
 
     //updates state if back button or escape hit
     protected void updateState(){
-        if ((state == 1 && prevState == 2) || (state == 2 && prevState == 1))
+        if ((state == 1 && prevState == 2) || (state == 2 && prevState == 0))
             setState(0); //to prevent user being stuck on calc & supply screens
         else if (state > 0)
             setState(prevState);
         else
             exitApp();
     }
-
 
     //shows the screens
     protected void showScreen(){
@@ -215,6 +218,7 @@ public class MainApp implements ApplicationListener{
 //            else setScreen(new SupplyScreen());
             
             setScreen(screens.get(state));
+
             screenSet = true;
         }
 
@@ -223,6 +227,8 @@ public class MainApp implements ApplicationListener{
             this.screen.show();
         }
     }
+
+
 
 
 
@@ -281,22 +287,12 @@ public class MainApp implements ApplicationListener{
 
     //exit app methods of disposal
     protected void exitApp(){
-        if (appType == ApplicationType.Android){
-            Gdx.app.exit();
-        }
-        else{
-            for (Screen s : screens){
-                s.dispose();
-            }
-            //on android, will cause dispose/pause in near future
-            Gdx.app.exit();
-        }
-
+        Gdx.app.exit(); //on Android, will pause & exit later
         //dispose();
     }
 
 
     private void log(String message){
-        Gdx.app.log("MainApp log: ", message);
+        System.out.println("MainApp log: "+message);
     }
 }

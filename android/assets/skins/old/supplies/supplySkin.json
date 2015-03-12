@@ -1,0 +1,65 @@
+{
+  com.badlogic.gdx.graphics.g2d.BitmapFont: {
+    default-font: { file: fonts/roboto/roboto-reg14.fnt },
+    medium-font: { file: fonts/roboto/roboto-reg20.fnt },
+    light-font: {file: fonts/roboto/roboto-light14.fnt},
+    bold-font: {file: fonts/roboto/roboto-bold14.fnt},
+    bold-small-font: {file: fonts/roboto/roboto-bold12.fnt}
+  } ,
+  com.badlogic.gdx.graphics.Color: {
+    green: { a: 1, b: 0, g: 1, r: 0 },
+    white: { a: 1, b: 1, g: 1, r: 1 },
+    red: { a: 1, b: 0, g: 0, r: 1 },
+    black: { a: 1, b: 0, g: 0, r: 0 },
+    grey: { a: 1, b: .5, g: .5, r: .5}, //divide by 255 to get the float value
+    blue : { a: .8, b: 1, g: 0, r : 0}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+    default: { up: back-up, down: back-down},
+    delete: {up: deleteButton, down: deleteButton}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: {down: menuButtonDown, up: menuBtnUp, font: default-font, fontColor: black},
+    save: {down: saveBtnSmallDown, up: saveBtnSmallUp, font: default-font, fontColor: black},
+    edit: {down: editBtnDown, up: editBtnUp, font: default-font, fontColor: black},
+    flavor: { down: flavorBtnDown, up: flavorBtnUp, font: default-font, fontColor: black },
+    supply: { down: supplyBtnDown, up: supplyBtnUp, font: default-font, fontColor: black},
+    base: {down: baseBtnDown, up: baseBtnUp, font: default-font, fontColor: black}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+  //background: default-rect, hScroll: default-scroll, hScrollKnob: default-round-large
+    default: { vScroll: flavorVScroll, background: supplyWindowBack, vScrollKnob: flavorVKnob}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+    default: { font: default-font, fontColor: black }, //default also does not have background
+    base: {font: default-font, fontColor: black, background: baseLabelBack},
+    flavor: {font: default-font, fontColor: black, background: flavorLabelBack},
+    title: {font: default-font, fontColor: white, background: titleBack},
+    supply: {font: default-font, fontColor: black, background: supplyLabelBack},
+    supplyTab: {font: default-font, fontColor: black, background: supplyTabBack}
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+    default: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor, 
+      messageFont: light-font, messageFontColor: grey},
+    editField: {selection: defaultSelection, background: defaultTFBack, font: default-font, fontColor: black, cursor: cursor,
+      messageFont: light-font, messageFontColor: blue} //this is for when editing a supply
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+    default: { checkboxOn: check-on, checkboxOff: check-off, font: default-font, fontColor: black }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+    default: { titleFont: default-font, background: addSupplyBack, titleFontColor: black},
+    base: { titleFont: default-font, background: addBaseBack, titleFontColor: black },
+    flavor: { titleFont: default-font, background: addFlavorBack, titleFontColor: black }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
+    default: { fontColorUnselected: grey, selection: defaultSelection, fontColorSelected: black, font: default-font }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+    default-horizontal: { background: slider, knob: sliderKnob } //need to put -horizontal or -vertical identifier
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+    default: { font: default-font, fontColor: black, background: selectBox-back, scrollStyle: default,
+      listStyle: { font: default-font, selection: selectBox-selection}}
+  }
+}

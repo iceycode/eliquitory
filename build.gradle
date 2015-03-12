@@ -44,6 +44,8 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
 
+        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+
 //        compile "com.google.code.gson:gson:2.3.1"
         compile "org.mockito:mockito-core:2.0.3-beta"
         compile "junit:junit:4.12-beta-1"
@@ -62,6 +64,12 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
+
+
+        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi"
+        natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a"
+        natives "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86"
 
         compile fileTree(dir: 'libs', include: '*.jar') //for ouya.jar (gdx-pay dependency)
 
@@ -115,6 +123,8 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdxpay:gdx-pay:0.3.0"
+
+        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         compile fileTree(dir: 'libs', include: '*.jar') //for gdx-pay jars
 //        compile "com.google.code.gson:gson:2.3.1"

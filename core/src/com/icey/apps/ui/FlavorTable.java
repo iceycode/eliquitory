@@ -28,13 +28,12 @@ public class FlavorTable extends Table{
 
     boolean supplyEnabled = MainApp.supplyEnabled;
 
-    private final float FIELD_WIDTH = Constants.TEXT_FIELD_WIDTH;
     private final float FIELD_HEIGHT = Constants.TEXT_FIELD_HEIGHT;
 
     //the group & collections of individual flavor widgets
     VerticalGroup vertGroup; //vertical group for insertion/removal of flavor fields
     public Array<Label> calcLabels = new Array<Label>();; //labels for the calculated amounts to add
-    public Array<Label> supplyLabels = new Array<Label>();; //flavor supply labels
+//    public Array<Label> supplyLabels = new Array<Label>();; //flavor supply labels
     public Array<TextField> flavorNameTFs = new Array<TextField>(); //flavor names
 
     public Array<Slider> flavorSliders = new Array<Slider>(); //array for sliders
@@ -59,15 +58,15 @@ public class FlavorTable extends Table{
 //        if (supplyEnabled)
 //            setSupplies(); //set the supplies (if any)
 
-
+        //debug();
         initFlavorGroup(); //set the flavor group
     }
 
     //sets table properties
     protected void setTableProperties(){
         //        defaults().maxWidth(480).maxHeight(200);
-        setFillParent(true);
-        top().center();
+        //setFillParent(true); //causes space to occur at ScrollPane
+        top();
 
         //debug(); //debug this table
         //pack();
@@ -91,9 +90,10 @@ public class FlavorTable extends Table{
         initFirstFlavor(); //initialize first flavor
 
         vertGroup = new VerticalGroup(); //add indiviual flavors to a VerticalGroup
+        vertGroup.align(Align.top);
 
         addNewFlavor(currFlavor); //adds 1 flavor initially
-        add(vertGroup).align(Align.top).center(); //.expandX() add this nested table into the root flavor table
+        add(vertGroup).top(); //.expandX() add this nested table into the root flavor table
     }
 
 
@@ -121,6 +121,7 @@ public class FlavorTable extends Table{
 //        }
 
         Table table = new Table(); //new table added to vertGroup
+        table.top();
 //        table.debug();
         table.padBottom(5);
         table.columnDefaults(1).width(125);

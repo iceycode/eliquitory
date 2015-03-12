@@ -1,10 +1,12 @@
 package com.icey.apps.assets;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -36,6 +38,17 @@ public class AssetHelper {
         Texture texture = new Texture(pixmap);
 
         return texture;
+    }
+
+
+    public static BitmapFont createBMFont(String path, int size){
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(path));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = size;
+        BitmapFont font = generator.generateFont(parameter); // font size 12 pixels
+        generator.dispose(); // don't forget to dispose to avoid memory leaks!
+
+        return font;
     }
 
 
@@ -73,4 +86,14 @@ public class AssetHelper {
         return fonts;
     }
 
+    //smoothes the fonts in the skin
+    //NOTE: this seems to help a lot with fonts
+    public static void smoothFonts() {
+
+        Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
+
+        for (BitmapFont font : skin.getAll(BitmapFont.class).values()){
+            font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        }
+    }
 }

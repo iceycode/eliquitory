@@ -3,6 +3,7 @@ package com.icey.apps.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -64,6 +65,10 @@ public class CalculatorScreen implements Screen {
 
     Skin skin = Assets.getSkin();
 
+    float realWidth = Constants.SCREEN_WIDTH;
+    float realHeight = Constants.SCREEN_HEIGHT;
+
+    ScalingViewport viewport;
     public static Stage stage; //main stage
 
     public static boolean loadedRecipe = false; //loaded recipe flag
@@ -82,18 +87,26 @@ public class CalculatorScreen implements Screen {
     SnapshotArray<Double> finalMills; //final amounts
 
     TextButton copyButton;
-    String currRecipe = ""; //currently loaded recipe
+
+    OrthographicCamera camera;
+
+
 
     public CalculatorScreen(){
-        stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+//        viewport = new VirtualViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+//        camera = new OrthographicCamera(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        viewport = new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
-        //setCopyDialog();
+        stage = new Stage(viewport);
+//        stage = new Stage(new ExtendViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT, MainApp.appWidth, MainApp.appHeight));
 
         setCalcTable();
 
         errorTitle = new Label(Constants.ERROR_MAIN, skin, "tab");
         errorTitle.setAlignment(Align.center);
     }
+
+
 
 
     /** sets up the main table
@@ -125,13 +138,14 @@ public class CalculatorScreen implements Screen {
     protected void showCopyDialog(){
         Dialog copyDialog = new Dialog("", skin).text("Copied to clipboard");
         copyDialog.show(stage);
-        copyDialog.addAction(Actions.sequence(Actions.alpha(1), Actions.fadeOut(3, Interpolation.fade), Actions.removeActor(copyDialog)));
+        copyDialog.addAction(Actions.sequence(Actions.alpha(1), Actions.fadeOut(3, Interpolation.fade),
+                Actions.removeActor(copyDialog)));
     }
 
 
     protected void setButtons(){
         //the flavor button
-        final TextButton flavorButton = new TextButton("Add Flavor", skin, "rounded");
+        final TextButton flavorButton = new TextButton("Add Flavor", skin, "medium");
         flavorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -171,22 +185,28 @@ public class CalculatorScreen implements Screen {
 
         //table for menu buttons
         Table buttonTable = new Table();
-        buttonTable.top();
 
         //the save button
         final TextButton saveButton = new TextButton("Save", skin, "medium");
         saveButton.addListener(new ChangeListener() {
            @Override
            public void changed(ChangeEvent event, Actor actor) {
+               calculate();
 
-               new Dialog("", skin){
-                   @Override
-                   protected void result(Object object) {
-                       if ((Boolean)object){
-                           saveRecipe();
+               if (!error) {
+                   new Dialog("", skin) {
+                       @Override
+                       protected void result(Object object) {
+                           if ((Boolean) object) {
+                               saveRecipe();
+                           }
                        }
-                   }
-               }.text("Save this ejuice recipe?").button("Yes", true).button("No", true).show(stage);
+                   }.text("Save this ejuice recipe?").button("Yes", true).button("No", true).show(stage);
+
+               }
+               else{
+                   error = false;
+               }
            }
         });
 
@@ -233,7 +253,7 @@ public class CalculatorScreen implements Screen {
         buttonTable.add(backButton).width(100).height(50).pad(2); //.align(Align.right);
 
 
-        table.add(buttonTable).colspan(table.cols).center();
+        table.add(buttonTable).height(50).colspan(table.cols).center().padBottom(50);
     }
 
 
@@ -298,16 +318,9 @@ public class CalculatorScreen implements Screen {
         }
         else{
             log("saving now...");
-            calculate();
 
-            if (!error){
-                calcUtils.saveData(finalMills);
-                setLoadWindow(); //add new saved data to load window
-            }
-            else{
-                error = true; //reset error
-            }
-
+            calcUtils.saveData(finalMills);
+            setLoadWindow(); //add new saved data to load window
         }
     }
 
@@ -346,6 +359,12 @@ public class CalculatorScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.input.setInputProcessor(stage);
 
+//        if (!resized && (Constants.SCREEN_HEIGHT!=Gdx.graphics.getHeight() || Constants.SCREEN_WIDTH!=Gdx.graphics.getWidth())){
+//            this.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//            resized = true;
+//        }
+
+
         //if a recipe is chosen in loadwindow, hide it, display results
         if (loadedRecipe) {
 //            loadWindow.hide();
@@ -367,14 +386,14 @@ public class CalculatorScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        //restore the stage's viewport; true updates camera to 0,0 - do not need this
         stage.getViewport().update(width, height, false);
 
-        table.invalidateHierarchy();
+//        table.invalidateHierarchy();
         table.setSize(width, height);
 
-        log("Resized screen");
+        log("Resized CalcScreen; new size : " + width + "x" + height);
     }
+
 
     @Override
     public void pause() {

@@ -99,7 +99,7 @@ public class Constants {
     public static final float TEXT_FIELD_HEIGHT = 25f;
 
 
-    public static final float TITLE_HEIGHT = 50f;
+    public static final float TITLE_HEIGHT = 30f;
     public static final float TITLE_WIDTH = 200f;
 
 
@@ -130,7 +130,8 @@ public class Constants {
     public static class InfoText{
         public static final String ABOUT_LITE_V1 = "This is the first version of EJuice Toolkit Lite\n\n"+
                 "A paid version will be coming shortly and this version will " +
-                "\nlikely be updated soon after to include more features!";
+                "\nlikely be updated soon after to include more features!\n" +
+                "Also, graphics will change and multiple themes will be added\n";
 
         public static final String FEATURES_LITE_V1 = "Feature in lite version include:\n" +
                 "- Setting drops per ml\n" +
@@ -138,6 +139,9 @@ public class Constants {
                 "- 'Other' amounts - this can be water, alcohol or other liquid\n added for consistency\n" +
                 "- Ability to save and load recipes\n" +
                 "- Ability to copy and paste calculated amounts\n";
+
+        public static final String WARNING_V1 = "WARNING!\nDo not exceed 30mg nicotine content per EJuice Recipe.\n" +
+                "Anything over even 24 mg is dangerously high.";
     }
 
 

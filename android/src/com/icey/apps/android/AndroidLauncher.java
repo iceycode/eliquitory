@@ -78,7 +78,7 @@ public class AndroidLauncher extends AndroidApplication {
     protected void createWithoutAds(){
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 
-        initialize(mainApp, config); //FOR WITHOUT ADS
+        initialize(new MainApp(), config); //FOR WITHOUT ADS
     }
 
 
@@ -143,7 +143,7 @@ public class AndroidLauncher extends AndroidApplication {
 
     //The MainApp view - libgdx view
     protected View createAppView(AndroidApplicationConfiguration cfg) {
-        View appView = initializeForView(mainApp, cfg);
+        View appView = initializeForView(new MainApp(), cfg);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
@@ -240,6 +240,8 @@ public class AndroidLauncher extends AndroidApplication {
         dialog.setContentView(ll);
         dialog.show();
     }
+
+
 
 
     private static void log(String message){
