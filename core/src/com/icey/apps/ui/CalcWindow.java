@@ -3,7 +3,6 @@ package com.icey.apps.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -14,7 +13,6 @@ import com.icey.apps.MainApp;
 import com.icey.apps.data.Flavor;
 import com.icey.apps.utils.CalcUtils;
 import com.icey.apps.utils.Constants;
-import com.icey.apps.utils.SupplyUtils;
 
 /** Popup window showing the calculations
  *
@@ -46,7 +44,7 @@ public class CalcWindow extends Dialog{
 
         this.amounts = amounts;
         this.flavors = flavors;
-        this.supplies = SupplyUtils.getSupplyUtils().getSupplyAmounts();
+//        this.supplies = SupplyUtils.getSupplyUtils().getSupplyAmounts();
 
         setTable();
 
@@ -77,13 +75,13 @@ public class CalcWindow extends Dialog{
         Label calcsLabelTitle = new Label(Constants.FINAL_CALCS_TITLE, skin, "default-red");
         table.add(calcsLabelTitle).width(FIELD_WIDTH*2); //.align(Align.left) //calcsLabelTitle.getWidth() - prev width
 
-
-        if (MainApp.supplyEnabled){
-            Label supplyLabelTitle = new Label("Supply After", skin);
-            supplyLabelTitle.setColor(Color.YELLOW);
-            table.add(supplyLabelTitle).width(FIELD_WIDTH*1.25f);
-        }
-
+//
+//        if (MainApp.supplyEnabled){
+//            Label supplyLabelTitle = new Label("Supply After", skin);
+//            supplyLabelTitle.setColor(Color.YELLOW);
+//            table.add(supplyLabelTitle).width(FIELD_WIDTH*1.25f);
+//        }
+//
 
         //---ROWS 3-? ---- contain amounts
         table.row();

@@ -143,13 +143,13 @@ public class CalcUtils {
         if (type == 0){
             desiredPercents.set(0, percent);
 //            CalcTable.percentTextFields.get(0).setText(Double.toString(percent));
-            String newText = "PG:VG : " + Integer.toString(percent) + ":" + Integer.toString(change);
+            String newText = "PG:VG : " + percent + ":" + change;
             CalcTable.percentLabels.get(0).setText(newText);
             updateVG(change, true);
         }
         else if (type == 2){
             desiredPercents.set(2, percent);
-            String newText = "Other % : " + Integer.toString(percent);
+            String newText = "Other % : " + percent ;
             CalcTable.percentLabels.get(1).setText(newText);
         }
         else{
@@ -173,9 +173,9 @@ public class CalcUtils {
     }
     
     
-    public void switchFlavor(int index, Flavor flavor){
-        flavors.set(index, flavor);
-    }
+//    public void switchFlavor(int index, Flavor flavor){
+//        flavors.set(index, flavor);
+//    }
     
 
     public void removeFlavor(int index){
@@ -202,7 +202,7 @@ public class CalcUtils {
     //flavor percent from slider
     public void setFlavorPercent(int percent, int index){
         flavors.get(index).setPercent(percent);
-        String newText = "Flavor % : " + Integer.toString(percent);
+        String newText = "Flavor % : " + percent;
         FlavorTable.percentLabels.get(index).setText(newText);
     }
     

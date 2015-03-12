@@ -24,6 +24,9 @@ import com.icey.apps.utils.UIUtils;
  */
 public class CalcTable extends Table{
 
+//    float SCREEN_WIDTH = Constants.SCREEN_WIDTH* MainApp.scaleX;
+//    float SCREEN_HEIGHT = Constants.SCREEN_HEIGHT* MainApp.scaleY;
+
     Skin skin;
     
     //width & height of the text fields (percents)
@@ -81,18 +84,18 @@ public class CalcTable extends Table{
 
     //table properties
     protected void setTableProperties(){
-        setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT-50);
+        setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT - 50);
 
-        setClip(true); //clips any widget on outside of table bounds
+        //setClip(true); //clips any widget on outside of table bounds
         setLayoutEnabled(true); //default is true
         setFillParent(true); //fills parent (stage in this case)
 
-        align(Align.bottomRight); //align the table to top
+        align(Align.bottomLeft); //align the table
 //        defaults().padRight(2f);
 
-        columnDefaults(0).prefWidth(100).right();
-        columnDefaults(1).prefWidth(FIELD_WIDTH).left();
-        columnDefaults(2).prefWidth(110).center();
+//        columnDefaults(0).prefWidth(100).right();
+//        columnDefaults(1).prefWidth(FIELD_WIDTH).left();
+//        columnDefaults(2).prefWidth(110).center();
         columnDefaults(3).prefWidth(80).left().maxWidth(100);
 
 //        if (cols == 4)
@@ -361,6 +364,7 @@ public class CalcTable extends Table{
 
         scrollPane = new ScrollPane(flavorTable, skin); //create scrollabel flavor table
         scrollPane.setCancelTouchFocus(false); //to prevent touchUp from canceling on flavorTable widgets
+//        scrollPane.setHeight(800);
 
         add(scrollPane).width(480).height(200).colspan(cols).left().top(); //add to the outer table
         row();

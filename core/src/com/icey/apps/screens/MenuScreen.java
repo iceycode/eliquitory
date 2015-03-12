@@ -2,6 +2,7 @@ package com.icey.apps.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -24,6 +25,8 @@ import com.icey.apps.utils.UIUtils;
  */
 public class MenuScreen implements Screen{
 
+//    float SCREEN_WIDTH = Constants.SCREEN_WIDTH*MainApp.scaleX;
+//    float SCREEN_HEIGHT = Constants.SCREEN_HEIGHT* MainApp.scaleY;
 
     //dimensions & positions of labels, textbutton
     private final float[] TITLE_SIZE = Constants.MENU_TITLE_SIZE;
@@ -31,6 +34,8 @@ public class MenuScreen implements Screen{
     //Skin skin = Assets.manager.get(Constants.DARK_SKIN, Skin.class);
     Skin skin = Assets.getSkin();
 
+    OrthographicCamera camera;
+    ScalingViewport viewport;
     Stage stage;
     Table table;
 
@@ -38,8 +43,13 @@ public class MenuScreen implements Screen{
 
 
     public MenuScreen(){
+
+        //set the viewport
+        viewport = new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH,Constants.SCREEN_HEIGHT);
+
         //set the stage
-        stage = new Stage(new ScalingViewport(Scaling.fill, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
+        stage = new Stage(viewport);
+
 //        stage = new Stage(new ExtendViewport(Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 //        this.supplyEnabled = MainApp.supplyEnabled;
 
@@ -51,14 +61,12 @@ public class MenuScreen implements Screen{
     protected void setTable(){
         table = new Table();
 
-        table.setFillParent(true);
-        //table.setClip(true);
-        table.setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT-50);
+        //table.setFillParent(true);
+        table.setClip(true);
+        table.setBounds(0, 50, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT - 50);
         table.center();
 
         table.setBackground(new TextureRegionDrawable(new TextureRegion(skin.getRegion("background"))));
-
-
 
         setTitleLabel(); //title added to table
         setCalcButton(); //calc button added
@@ -67,7 +75,7 @@ public class MenuScreen implements Screen{
         //setSupplyButton(); //supply button added
         //setSettingsButton();
 
-        setAboutButton();
+        setInfoButton();
 
         stage.addActor(table);
     }
@@ -170,7 +178,7 @@ public class MenuScreen implements Screen{
         table.row().padBottom(100).padTop(25);
 
         Label label = new Label("Drops per ml: ", skin);
-        table.add(label).right();
+        table.add(label).right().height(25);
 
         TextField textField = new TextField("", skin, "digit");
         textField.setMaxLength(2);
@@ -215,7 +223,7 @@ public class MenuScreen implements Screen{
 //    }
 
 
-    protected void setAboutButton(){
+    protected void setInfoButton(){
         table.row().padTop(100);
 
         //button which sends user to calculator screen
@@ -287,10 +295,11 @@ public class MenuScreen implements Screen{
 
         //restore the stage's viewport; true updates camera to center
         stage.getViewport().update(width, height, false);
-        //stage.getCamera().update();//updates camera
 
         table.invalidateHierarchy();
         table.setSize(width, height);
+
+        log("Resized Screen; new size : " + width + "x" + height);
     }
 
 

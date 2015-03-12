@@ -2,7 +2,7 @@
 darkSkin.png
 size: 1024,1024
 format: RGBA8888
-filter: Linear,Nearest
+filter: Linear,Linear
 repeat: none
 addButtonDown
   rotate: false
@@ -90,9 +90,9 @@ buttonUp-med
   index: -1
 buttonUp-rounded
   rotate: false
-  xy: 869, 79
-  size: 142, 64
-  orig: 142, 64
+  xy: 869, 72
+  size: 148, 71
+  orig: 148, 71
   offset: 0, 0
   index: -1
 buttonUp-small
@@ -111,7 +111,7 @@ cursor
   index: -1
 deleteBtnDown
   rotate: false
-  xy: 869, 52
+  xy: 916, 745
   size: 45, 25
   orig: 45, 25
   offset: 0, 0
@@ -125,7 +125,7 @@ deleteBtnUp
   index: -1
 editBtnDown
   rotate: false
-  xy: 916, 52
+  xy: 911, 718
   size: 45, 25
   orig: 45, 25
   offset: 0, 0
@@ -202,7 +202,7 @@ slider-knob
   index: -1
 slider-knob-large
   rotate: false
-  xy: 998, 873
+  xy: 848, 42
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -223,28 +223,28 @@ slider-track-large
   index: -1
 star-down
   rotate: false
-  xy: 963, 46
+  xy: 911, 685
   size: 36, 31
   orig: 36, 31
   offset: 0, 0
   index: -1
 star-on
   rotate: false
-  xy: 963, 46
+  xy: 911, 685
   size: 36, 31
   orig: 36, 31
   offset: 0, 0
   index: -1
 star-off
   rotate: false
-  xy: 916, 746
+  xy: 911, 659
   size: 29, 24
   orig: 29, 24
   offset: 0, 0
   index: -1
 star-up
   rotate: false
-  xy: 916, 746
+  xy: 911, 659
   size: 29, 24
   orig: 29, 24
   offset: 0, 0
